@@ -40,7 +40,7 @@ var server_host = process.env.YOUR_HOST || '0.0.0.0';
 
 
 app.listen(server_port,server_host, () => {
-    console.log('Listening to port '+server_porty);
+    console.log('Listening to port '+server_port);
   
 });
 
