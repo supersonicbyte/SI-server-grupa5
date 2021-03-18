@@ -10,7 +10,7 @@ const app = uWS.App().ws('/*', {  // handle messages from client
   open: (socket, req) => {
     /* For now we only have one canvas */
     socket.send("Connected");
-    console.log("Someone connected");
+    console.log("Someone connected "+socket.value);
   },
   message: (socket, message, isBinary) => {
 
@@ -34,9 +34,12 @@ const app = uWS.App().ws('/*', {  // handle messages from client
 
 });
 
-app.listen(25565, (listenSocket) => {
+var server_port = process.env.YOUR_PORT || process.env.PORT || 25565;
+var server_host = process.env.YOUR_HOST || '0.0.0.0';
+
+app.listen(server_port,server_host, (listenSocket) => {
   if (listenSocket) {
-    console.log('Listening to port 25565');
+    console.log('Listening to port '+server_port);
   }
 });
 
