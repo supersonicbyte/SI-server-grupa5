@@ -1,34 +1,12 @@
-// npm install uNetworking/uWebSockets.js#v18.14.0
-const { json } = require('express');
-const uWS = require('uWebSockets.js');
-const PORT = process.env.PORT || 8080;
-// an "app" is much like Express.js apps with URL routes,
-// here we handle WebSocket traffic on the wildcard "/*" route
-const app = uWS.App().ws('/*', { // handle messages from client
+const http = require('http');
+const port = process.env.PORT || 3000
 
-    open: (socket, req) => {
-        /* For now we only have one canvas */
-        socket.send("Connected");
-        console.log("Someone connected");
-    },
-    message: (socket, message, isBinary) => {
-
-        var theMessage = JSON.parse(Buffer.from(message));
-
-        if (theMessage.key === 'subscribeToImage') {
-            socket.subscribe('imageReciever');
-            socket.send("subscribed");
-        } else if (theMessage.key === 'image') {
-            app.publish("imageReciever", theMessage.value);
-        }
-
-        console.log("I got " + theMessage.key + " " + theMessage.value);
-
-    }
+const server = http.createServer((req, res) => {
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'text/html');
+    res.end('<h1>Hello World</h1>');
 });
 
-app.listen(PORT, (listenSocket) => {
-    if (listenSocket) {
-        console.log('Listening to port ' + PORT);
-    }
+server.listen(port, () => {
+    console.log(`Server running at port ` + port);
 });
