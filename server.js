@@ -5,10 +5,11 @@ const uWS = require('uWebSockets.js');
 // an "app" is much like Express.js apps with URL routes,
 // here we handle WebSocket traffic on the wildcard "/*" route
 
-const app = uWS.App().ws('/*', {  // handle messages from client
+
+/*
+const app = uWS.App().ws('/*', {  
 
   open: (socket, req) => {
-    /* For now we only have one canvas */
     socket.send("Connected");
     console.log("Someone connected "+socket.value);
   },
@@ -34,12 +35,16 @@ const app = uWS.App().ws('/*', {  // handle messages from client
 
 });
 
+*/
+
 var server_port = process.env.YOUR_PORT || process.env.PORT || 25565;
 var server_host = process.env.YOUR_HOST || '0.0.0.0';
 
+
+
 app.listen(server_port,server_host, (listenSocket) => {
   if (listenSocket) {
-    console.log('Listening to port '+server_port);
+    console.log('Listening to port '+server_porty);
   }
 });
 
