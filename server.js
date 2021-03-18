@@ -4,6 +4,7 @@ const uWS = require('uWebSockets.js');
 
 // an "app" is much like Express.js apps with URL routes,
 // here we handle WebSocket traffic on the wildcard "/*" route
+
 const app = uWS.App().ws('/*', {  // handle messages from client
 
   open: (socket, req) => {
@@ -27,6 +28,10 @@ const app = uWS.App().ws('/*', {  // handle messages from client
     console.log("I got "+theMessage.key + " " +theMessage.value);
     
   }
+}).get('/', (res,req) => {
+
+  res.end("Nothing to see here");
+
 });
 
 app.listen(25565, (listenSocket) => {
@@ -34,3 +39,4 @@ app.listen(25565, (listenSocket) => {
     console.log('Listening to port 25565');
   }
 });
+
