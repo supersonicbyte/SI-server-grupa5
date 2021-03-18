@@ -1,12 +1,9 @@
-// npm install uNetworking/uWebSockets.js#v18.14.0
+
 const { json } = require('express');
 const uWS = require('uWebSockets.js');
 
-// an "app" is much like Express.js apps with URL routes,
-// here we handle WebSocket traffic on the wildcard "/*" route
 
 
-/*
 const app = uWS.App().ws('/*', {  
 
   open: (socket, req) => {
@@ -35,16 +32,15 @@ const app = uWS.App().ws('/*', {
 
 });
 
-*/
+
 
 var server_port = process.env.YOUR_PORT || process.env.PORT || 25565;
 var server_host = process.env.YOUR_HOST || '0.0.0.0';
 
 
 
-app.listen(server_port,server_host, (listenSocket) => {
-  if (listenSocket) {
+app.listen(server_port,server_host, () => {
     console.log('Listening to port '+server_porty);
-  }
+  
 });
 
