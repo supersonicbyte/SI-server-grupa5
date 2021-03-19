@@ -40,6 +40,7 @@ const app = uWS.App().ws('/*', {
 const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
+app.use(express.json());
 
 const cors = require('cors')
 
@@ -66,7 +67,34 @@ var server_port = process.env.YOUR_PORT || process.env.PORT || 25565;
 var server_host = process.env.YOUR_HOST || '0.0.0.0';
 
 
-app.get('/', (req,res) => res.send("Hello world"));
+app.get('/komanda', (req,res) => {
+  
+  
+});
 
-server.listen(server_port, () => console.log("Listening on port "+server_port))
+app.post('/komanda', function(request, response){
+  var komanda = request.body.command.komanda;
+  var parametri = request.body.command.parametri;
+
+  if(komanda==='cd'){
+
+    console.log("Dobili smo komandu cd i parametar "+parametri.parametar1);
+    response.send("Dobili smo komandu cd i parametar "+parametri.parametar1);
+
+  } else if(komanda==='clear'){
+
+    console.log("Dobili smo komandu clear i nema paramtera");
+    response.send("Dobili smo komandu clear i nema paramtera");
+
+  }
+
+});
+
+
+
+
+server.listen(server_port, () => console.log("Listening on port "+server_port));
+
+
+
 
