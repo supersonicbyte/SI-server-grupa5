@@ -2,119 +2,93 @@ const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
 app.use(express.json());
-
 const cors = require('cors')
-
+const emptyPromise = require('empty-promise')
 const WebSocket = require('ws');
-const { publicDecrypt } = require('crypto');
-
-const wss = new WebSocket.Server({server:server});
-
-
+// web socket server
+const wss = new WebSocket.Server({ server:server });
+// cross origin
 app.use(cors());
-
-var klijent;
-var resp=null;
-
+ 
+// map of clients
+const clients = [];
+// map of responses {id, promise}
+const responseMap = [];
+//
+ 
 wss.on('connection', function connection(ws){
+    console.log("Client connected ");
+    ws.send("Connected");
+    ws.on('message',  (message) =>{
+    message = JSON.parse(message);
+    //kada primi inicijalnu prvu poruku, taj remote PC pošalje svoje ime i lokaciju, to se spremi u mapu (name + lokacija je unikatno kako u bazi tako će i ovdje biti pa možemo pod tim šifrirati)
+    if(message.type === 'sendCredentials') { //ovo je prva poruka koju klijent pošalje prilikom prvog javljanja
+        clients[message.name + message.location] = ws;
+        responseMap[message.name+message.location] = emptyPromise(); //kreiraj prazan promise koji se moze resolvat kad mi hoćemo
+    } 
+    else 
+    {
+        var tempResp = {
+            status : message.type,
+        }
+        responseMap[message.name + message.location].resolve(tempResp) //klijent taj i taj je odgovorio sa nekom porukom tako da možemo resolve-ati njegov promise (odnosno idemo u 72 liniju koda!)
+    }
+});
+ 
+});
 
-console.log("Client connected ");
+function errFunction(name,location)
+{
+    console.log("ovo se smije ispisati u konzoli samo ako bude neki error!");
+    var errResp = {
+        status : "execution failed",
+        name : name,
+        location : location
+    }
+    responseMap[name + location].reject(errResp);
+}
 
-ws.send("Connected");
+/** POST request for executing command on remote machine
+ * {
+ *  name: "mirza-pc",
+ *  location: "Sarajevo",
+ *  command: "mkdir folder"
+ * }
+ */
+app.post('/command', async(req,res) => {
+  const {name, location, command} = req.body;
+  
+  //Potrebno AUTH uraditi sa grupom 6
 
-ws.on('message',  (message) =>{
+  let ws = clients[name + location];
+  if(ws!== undefined)
+  {
+    ws.send(command); // ako dati PC je konektovan na server, pošalji mu komandu!
 
-  message = JSON.parse(message);
-
-  if(message.key === 'clientConnected'){
-    klijent = ws;
-
-  } else if (message.key === "image"){
-    //resp.send("You got something");
-    resp.send(message.value);
-  }else if (message.key === "testImage"){
-    //resp.send("You got something");
-    console.log(message.value);
+    var errorTimeout = setTimeout(errFunction, 10000, name, location); //sigurnosni timeout koji će rejectati gore navedeni promise u slučaju da ne dođe odgovor unutar 10sekundi
+  
+    responseMap[name + location].then((val) => { //startaj taj prazan promise koji je kreiran pri prvoj konekciji Remote PC-a (čekaj na odgovor klijenta)
+      clearTimeout(errorTimeout);
+      responseMap[name + location] = emptyPromise();
+      res.json(val);
+    }).catch((err)=>{
+        res.statusCode=404;
+        res.json(err);
+    });
   }
-
-});
-
-});
-
-// { pcID, pcName, socket, response }
-
-var server_port = process.env.YOUR_PORT || process.env.PORT || 25565;
-var server_host = process.env.YOUR_HOST || '0.0.0.0';
-
-app.get('/screenshot', (req,res) => {
-
-  klijent.send("getScreenshot");
-
-  resp=res;
-  
-});
-
-app.post('/cget', (req,res) => {
-
-  console.log("Got c# post "+req.key);
-  res.send("sometekst");
-  
-});
-
-app.post('/komanda', function(request, response){
-  
-  var komanda = request.body.command.komanda;
-  var parametri = request.body.command.parametri;
-
-  if(komanda==='cd'){
-
-    console.log("Dobili smo komandu cd i parametar "+parametri.parametar1);
-    response.send("Dobili smo komandu cd i parametar "+parametri.parametar1);
-
-  } else if(komanda==='clear'){
-
-    console.log("Dobili smo komandu clear i nema paramtera");
-    response.send("Dobili smo komandu clear i nema paramtera");
-
-  }else if( komanda==='echo'){
-    console.log("Dobili smo komandu echo i parametar"+parametri.parametar1);
-    response.send("Dobili smo komandu echo i parametar "+parametri.parametar1);
-
-  }else if(komanda==='erase'){
-    console.log("Dobili smo komandu erase i parametar"+parametri.parametar1);
-    response.send("Dobili smo komandu erase i parametar "+parametri.parametar1);
-
-  }else if(komanda==='kill'){
-    console.log("Dobili smo komandu kill i parametar"+parametri.parametar1);
-    response.send("Dobili smo komandu kill i parametar "+parametri.parametar1);
-
-  }else if(komanda=='ls'){
-    console.log("Dobili smo komandu ls i nema paramtera");
-    response.send("Dobili smo komandu ls i nema paramtera");
-
-  }else if(komanda==='move'){
-    console.log("Dobili smo komandu move i parametar"+parametri.parametar1);
-    response.send("Dobili smo komandu move i parametar "+parametri.parametar1);
-
-  }else if(komanda=='rd'){
-    console.log("Dobili smo komandu rd i parametar"+parametri.parametar1);
-    response.send("Dobili smo komandu rd i parametar "+parametri.parametar1);
-
-  }else if(komanda==='set'){
-    console.log("Dobili smo komandu set i parametar"+parametri.parametar1);
-    response.send("Dobili smo komandu set i parametar "+parametri.parametar1);
-
-  }else if(komanda==='?'){
-    console.log("Dobili smo komandu '?' i nema paramtera");
-    response.send("Dobili smo komandu '?' i nema paramtera");
-
+  else
+  {
+    var errResp = {
+        status : "device is not connected to the server!",
+        name : name,
+        location : location
+    }
+    res.statusCode=404;
+    res.json(errResp);
   }
-
 });
 
 
-server.listen(server_port, () => console.log("Listening on port "+server_port));
 
-
-
-
+const PORT = process.env.PORT || 8080;
+server.listen(PORT, () => console.log("Listening on port " + PORT));
