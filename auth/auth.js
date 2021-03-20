@@ -1,21 +1,16 @@
 
 const fetch = require('node-fetch');
+/**
+ * Validates token
+ */
+async function validateJWT(token) {
+    const tokenResponse = fetch(process.env.AUTH_URL, {
+        headers: { "Authorization": token }
+    }).then(res => {
+        return res.status;
+    });
+    return tokenResponse;
+}
 
 
-
-   async function validateJWT(token){
-
-    const returnValue =fetch('http://167.99.244.168:3333/jwt/verify', {
-
-       headers: {"Authorization" : token}
-       }).then(res => {  
-           console.log(token);
-           return res.status;   
-       });
-       return returnValue;
-       
-
-   }
-
-
-   module.exports.validateJWT = validateJWT;
+module.exports.validateJWT = validateJWT;
