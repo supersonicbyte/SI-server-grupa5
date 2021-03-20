@@ -1,3 +1,5 @@
+
+const auth = require('./auth/auth.js');
 const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
@@ -9,7 +11,9 @@ const WebSocket = require('ws');
 const wss = new WebSocket.Server({ server:server });
 // cross origin
 app.use(cors());
- 
+
+const fetch = require('node-fetch');
+
 // map of clients
 const clients = [];
 // map of responses {id, promise}
@@ -56,13 +60,29 @@ function errFunction(name,location)
  * }
  */
 app.post('/command', async(req,res) => {
+
   const {name, location, command} = req.body;
   
+  const authHeader = req.headers.authorization;
+
+  //console.log(authHeader);
+
   //Potrebno AUTH uraditi sa grupom 6
+
+   const tokenStatus = await auth.validateJWT(authHeader);
+
+   console.log(tokenStatus);
+
+   if(tokenStatus!= 200 ){
+     res.status(tokenStatus);
+     res.send("Token not valid");
+     return;
+   }
 
   let ws = clients[name + location];
   if(ws!== undefined)
   {
+
     ws.send(command); // ako dati PC je konektovan na server, pošalji mu komandu!
 
     var errorTimeout = setTimeout(errFunction, 10000, name, location); //sigurnosni timeout koji će rejectati gore navedeni promise u slučaju da ne dođe odgovor unutar 10sekundi
@@ -75,6 +95,8 @@ app.post('/command', async(req,res) => {
         res.statusCode=404;
         res.json(err);
     });
+
+
   }
   else
   {
