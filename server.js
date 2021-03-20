@@ -44,13 +44,17 @@ wss.on('connection', function connection(ws) {
 // validator for all /api routes, checks if token is valid
 app.use('/api', async function (req, res, next) {
   const authHeader = req.headers.authorization;
-  const tokenStatus = await auth.validateJWT(authHeader);
-  if (tokenStatus != 200) {
-    res.status(tokenStatus);
+  const validation = await auth.validateJWT(authHeader);
+  if (validation.status != 200) {
+    console.log("Radi");
+    res.status(validation.status);
     res.send("Token not valid");
     return;
+  }else{
+    var x=await validation.json();
+  
   }
-  next()
+  next(x.accessToken)
 })
 
 /** POST request for executing command on remote machine

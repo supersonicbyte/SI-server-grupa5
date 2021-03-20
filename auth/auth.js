@@ -7,8 +7,9 @@ async function validateJWT(token) {
     const tokenResponse = fetch(process.env.AUTH_URL, {
         headers: { "Authorization": token }
     }).then(res => {
-        return res.status;
+        return res;    
     });
+    
     return tokenResponse;
 }
 
