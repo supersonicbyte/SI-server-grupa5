@@ -23,19 +23,20 @@ const clients = [];
 const responseMap = [];
 
 wss.on('connection', function connection(ws) {
-  console.log("Client connected ");
   ws.send("Connected");
+  console.log("Client connected: " + Date.now().toString());
   ws.on('message', (message) => {
     message = JSON.parse(message);
     if (message.type === 'sendCredentials') { 
       clients[message.name + message.location] = ws;
       responseMap[message.name + message.location] = emptyPromise(); 
     }
-    else {
-      var tempResp = {
-        status: message.type,
+    else if (message.type === "command_result"){
+      const commandResponse = 
+      {
+        command_result: message.message,
       }
-      responseMap[message.name + message.location].resolve(tempResp);
+      responseMap[message.name + message.location].resolve(commandResponse);
     }
   });
 
