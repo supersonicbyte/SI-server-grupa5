@@ -1,0 +1,123 @@
+{
+    
+    "openapi": "3.0.0",
+    "info": {
+        "version": "1.0.0",
+        "title": "Main server to MWA interface /interakcija",
+        "description":"NodeJS",
+        "license": {
+            "name": "si-grupa5.herokuapp.com",
+            "url": "https://si-grupa5.herokuapp.com/"
+        }
+    },
+    "servers": [
+        {
+            "description": "Heroku"
+        }
+    ],
+    "tags": [
+        {
+           "name": "Screenshot",
+            "description": "API for Command in the system"
+         
+        }
+    ],
+ 
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        
+       
+        "/api/screenshot": {
+            
+            "post": {
+                "tags": [
+                    "Screenshot"
+                ],
+                "summary": "Create a new screenshot in system",
+                "requestBody": {
+                    "description": "Comand Object",
+                    "required": true,
+                   
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/definitions/id"
+                                
+
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "parameters":[{"name":"name","in":"query","required":false,"type":"string"},
+                    {"name":"location","in":"query","required":false,"type":"string"}
+                                            ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                       
+                    },
+                    "404": {
+                        "description": "Failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/error"
+                                    
+    
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "id": {
+            "properties": {
+                "messange": {
+                    "type": "string"
+                }
+            }
+        },
+        "Command": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "command": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "error": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                }
+            }
+        }
+       
+    }
+   
+    
+}

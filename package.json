@@ -25,6 +25,7 @@
         "empty-promise": "^1.2.0",
         "express": "^4.17.1",
         "node-fetch": "^2.6.1",
+        "swagger-ui-express": "^4.1.6",
         "uWebSockets.js": "github:uNetworking/uWebSockets.js#v18.14.0",
         "ws": "^7.4.4"
     },

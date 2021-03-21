@@ -16,6 +16,9 @@ app.use(cors());
 env.config()
 const fetch = require('node-fetch');
 
+const swaggerUi = require('swagger-ui-express'),
+swaggerDocument = require('./swagger.json');
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // map of clients
 const clients = [];
