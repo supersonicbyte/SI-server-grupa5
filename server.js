@@ -29,7 +29,8 @@ wss.on('connection', function connection(ws) {
   ws.on('message', (message) => {
     message = JSON.parse(message);
     if (message.type === 'sendCredentials') {
-      console.log("Client connected: " + "Client: " + message.name + " " + Date.now().toUTCString());
+      const date = new Date()
+      console.log("Client connected: " + "Client: " + message.name + " " + date.toUTCString());
       clients[message.name + message.location] = ws;
       responseMap[message.name + message.location] = emptyPromise(); 
     }
