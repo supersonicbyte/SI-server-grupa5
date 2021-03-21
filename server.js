@@ -26,10 +26,10 @@ const messageMap = [];//
 
 wss.on('connection', function connection(ws) {
   ws.send("Connected");
-  console.log("Client connected: " + Date.now().toString());
   ws.on('message', (message) => {
     message = JSON.parse(message);
-    if (message.type === 'sendCredentials') { 
+    if (message.type === 'sendCredentials') {
+      console.log("Client connected: " + "Client: " + message.name + " " + Date.now().toUTCString());
       clients[message.name + message.location] = ws;
       responseMap[message.name + message.location] = emptyPromise(); 
     }
