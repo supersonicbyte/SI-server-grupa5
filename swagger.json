@@ -1,10 +1,9 @@
 {
-    
     "openapi": "3.0.0",
     "info": {
         "version": "1.0.0",
         "title": "Main server to MWA interface /interakcija",
-        "description":"NodeJS",
+        "description": "NodeJS",
         "license": {
             "name": "si-grupa5.herokuapp.com",
             "url": "https://si-grupa5.herokuapp.com/"
@@ -17,12 +16,14 @@
     ],
     "tags": [
         {
-           "name": "Screenshot",
+            "name": "Screenshot",
             "description": "API for Command in the system"
-         
+        }, 
+        {
+            "name": "Command",
+            "description": "API for Command in the system"
         }
     ],
- 
     "consumes": [
         "application/json"
     ],
@@ -30,10 +31,7 @@
         "application/json"
     ],
     "paths": {
-        
-       
         "/api/screenshot": {
-            
             "post": {
                 "tags": [
                     "Screenshot"
@@ -42,13 +40,10 @@
                 "requestBody": {
                     "description": "Comand Object",
                     "required": true,
-                   
                     "content": {
                         "application/json": {
                             "schema": {
                                 "$ref": "#/definitions/id"
-                                
-
                             }
                         }
                     }
@@ -56,13 +51,23 @@
                 "produces": [
                     "application/json"
                 ],
-                "parameters":[{"name":"name","in":"query","required":false,"type":"string"},
-                    {"name":"location","in":"query","required":false,"type":"string"}
-                                            ],
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "location",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK"
-                       
                     },
                     "404": {
                         "description": "Failed",
@@ -70,8 +75,63 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/definitions/error"
-                                    
-    
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/command": {
+            "post": {
+                "tags": [
+                    "Command"
+                ],
+                "summary": "Execute a command",
+                "requestBody": {
+                    "description": "Comand Object",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/definitions/id"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "location",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "command",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "404": {
+                        "description": "Device is not connected to the server!",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/error"
                                 }
                             }
                         }
@@ -83,7 +143,7 @@
     "definitions": {
         "id": {
             "properties": {
-                "messange": {
+                "message": {
                     "type": "string"
                 }
             }
@@ -116,8 +176,5 @@
                 }
             }
         }
-       
     }
-   
-    
 }
