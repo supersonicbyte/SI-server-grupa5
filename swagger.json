@@ -89,12 +89,12 @@
                 ],
                 "summary": "Execute a command",
                 "requestBody": {
-                    "description": "Comand Object",
+                    "description": "JSON Object",
                     "required": false,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/definitions/id"
+                                "$ref": "#/definitions/Command"
                             }
                         }
                     }
@@ -158,7 +158,7 @@
                     "type": "string"
                 },
                 "command": {
-                    "type": "boolean"
+                    "type": "string"
                 }
             }
         },
