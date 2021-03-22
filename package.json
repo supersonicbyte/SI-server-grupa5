@@ -19,7 +19,8 @@
     },
     "homepage": "https://github.com/tylerwetrust/SI-server-grupa5#readme",
     "dependencies": {
-        "express": "^4.17.1"
+        "express": "^4.17.1",
+        "ws-heartbeat": "^1.2.0"
     },
     "engines": {
         "node": "7.6.3"
