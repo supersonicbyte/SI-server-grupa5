@@ -25,15 +25,27 @@ const responseMap = [];
 // map of response messages//
 const messageMap = [];//
 
-setWsHeartbeat(wss, (ws, data, binary) => {
-  if(data == '{"kind":"ping"}') {
-    ws.send('"kibd":"pong"');
-  }
-}, 60000) // Close connection after 60s
+const DELAY = 300000; // In ms
+
+function heartbeat() {
+  
+ this.isAlive = true; 
+}
+
+const interval = setInterval(function ping() {
+  wss.clients.forEach(function each(ws) {
+    if(ws.isAlive == false) {
+      return ws.terminate();
+    }
+    
+    ws.isAlive = false;
+    ws.ping();
+  });
+}, DELAY);
 
 wss.on('connection', function connection(ws) {
   ws.send("Connected");
-
+  ws.isAlive = true;
   ws.on('message', (message) => {
     message = JSON.parse(message);
     if (message.type === 'sendCredentials') {
@@ -48,6 +60,12 @@ wss.on('connection', function connection(ws) {
       messageMap[message.name + message.location].message = message.message;//
       responseMap[message.name + message.location].resolve(messageMap[message.name + message.location]);
     }
+  });
+
+  ws.on('pong', heartbeat);
+
+  ws.on('close', (e) => {
+    // clearInterval(interval); Drops every connected socket
   });
 });
 
