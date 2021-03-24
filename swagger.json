@@ -16,13 +16,16 @@
     ],
     "tags": [
         {
-            "name": "Screenshot"            
-        }, 
+            "name": "Screenshot"
+        },
         {
             "name": "Command"
-        }, 
+        },
         {
             "name": "Agent"
+        },
+        {
+            "name": "Files"
         }
     ],
     "consumes": [
@@ -209,7 +212,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/definitions/Command"
+                                "$ref": "#/definitions/agent"
                             }
                         }
                     }
@@ -231,7 +234,7 @@
                         "type": "string"
                     },
                     {
-                        "name": "command",
+                        "name": "ip",
                         "in": "query",
                         "required": false,
                         "type": "string"
@@ -239,14 +242,36 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "connected"
                     },
                     "404": {
-                        "description": "Device is not connected to the server!",
+                        "description": "Device is not found!",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/definitions/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/agent/online": {
+            "get": {
+                "tags": [
+                    "Agent"
+                ],
+                "summary": "Get all connected clients",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/agent"
                                 }
                             }
                         }
@@ -291,7 +316,7 @@
                 }
             }
         },
-        "agent" : {
+        "agent": {
             "type": "object",
             "properties": {
                 "name": {
@@ -305,6 +330,5 @@
                 }
             }
         }
-        
     }
 }
