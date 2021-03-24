@@ -29,13 +29,20 @@ const responseMap = [];
 const messageMap = [];//
 
 wss.on('connection', function connection(ws) {
-  ws.send("Connected");
+  ws.send(JSON.stringify({type : "Connected"}));
   ws.on('message', (message) => {
     message = JSON.parse(message);
     if (message.type === 'sendCredentials') {
       const date = new Date()
-      console.log("Client connected: " + "Client: " + message.name + " " + date.toUTCString());
-      clients[message.name + message.location + message.ip] = ws;
+      console.log("Client connected: " + "Client: " + message.name + " "+message.ip+" " + date.toUTCString());
+      var client={
+        ws:ws,
+        name:message.name,
+        location:message.location,
+        ip:message.ip,
+        isAlive:true
+      }
+      clients[message.name + message.location + message.ip] = client;
       responseMap[message.name + message.location + message.ip] = emptyPromise(); 
     }
     else if (message.type === "command_result"){
@@ -46,14 +53,12 @@ wss.on('connection', function connection(ws) {
       responseMap[message.name + message.location + message.ip].resolve(messageMap[message.name + message.location + message.ip]);
     } else if (message.type === "sendFile") {
       //messageMap[message.name + message.location].message = message.message;//
-
-      console.log("I got a file to write "+message.fileName);
  
       let buff = new Buffer.from(message.data, 'base64');
  
       fs.writeFile(message.fileName, buff,  function (err) {
           if (err) {
-              console.log("error")
+            console.log("error: "+err)
           }
           else {
               console.log("done")
@@ -64,8 +69,9 @@ wss.on('connection', function connection(ws) {
   });
 
 });
-// validator for all /api routes, checks if token is valid
-/*app.use('/api', async function (req, res, next) {
+
+ /*alidator for all /api routes, checks if token is valid**/
+ app.use('/api', async function (req, res, next) {
   const { name, location, ip, command } = req.body;
   const authHeader = req.headers.authorization;
   const validation = await auth.validateJWT(authHeader);
@@ -86,7 +92,7 @@ wss.on('connection', function connection(ws) {
   }
   
   next();
-});*/
+});
 
 app.post('/api/command', async (req, res) => {
   const { name, location, ip, command } = req.body;
@@ -188,16 +194,17 @@ app.post('/api/screenshot', async (req, res) => {
 app.post('/web/getFile', async (req, res) => {
   const { name, location, ip, fileName} = req.body;
 
-  fs.readFile(fileName, {encoding: 'base64'},  function (err, data) {
+  fs.readFile(name+location+ip+"/"+fileName, {encoding: 'base64'},  function (err, data) {
     if (err) {
-        console.log("error")
+      console.log("error: "+err)
     }
     else {
        var response = {
          fileName: fileName,
          base64Data: data
        }
-       res.json(response);
+       res.status=200;
+       res.send(response);
     }
 });
  
@@ -208,13 +215,13 @@ app.post('/web/putFile', async (req, res) => {
   
   let buff = new Buffer.from(base64Data, 'base64');
  
-  fs.writeFile(fileName, buff,  function (err) {
+  fs.writeFile(name+location+ip+"/"+fileName, buff,  function (err) {
       if (err) {
-          console.log("error")
+          console.log("error: "+err)
       }
       else {
           console.log("done");
-          res.json({messnage: "Done!"});
+          res.json({message: "Done!"});
       }
   });
  
@@ -236,5 +243,5 @@ function errFunction(name, location, ip) {
 
 
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 25565;
 server.listen(PORT, () => console.log("Listening on port " + PORT));
