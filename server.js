@@ -148,6 +148,12 @@ app.get('/onlineClients', async (req, res) => {
   res.send(clientArray)
 });
 
+app.post('/agent/disconnectClient', async (req, res) => {
+  const { name, location, ip } = req.body;
+
+  clients[name + location + ip].close();
+});
+
 
 app.post('/api/screenshot', async (req, res) => {
   const { name, location, ip } = req.body;
