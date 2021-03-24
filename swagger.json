@@ -143,7 +143,7 @@
                 }
             }
         },
-        "/agent/disconnect": {
+        "/api/agent/disconnect": {
             "post": {
                 "tags": [
                     "Agent"
@@ -200,7 +200,7 @@
                 }
             }
         },
-        "/agent/connect": {
+        "/api/agent/connect": {
             "post": {
                 "tags": [
                     "Agent"
@@ -257,24 +257,134 @@
                 }
             }
         },
-        "/agent/online": {
-            "get": {
+        "/api/web/getFile": {
+            "post": {
                 "tags": [
-                    "Agent"
+                    "Files"
                 ],
-                "summary": "Get all connected clients",
+                "summary": "Get file from server",
+                "requestBody": {
+                    "description": "JSON Object",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/definitions/filesreqget"
+                            }
+                        }
+                    }
+                },
                 "produces": [
                     "application/json"
                 ],
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "location",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "ip",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "fileName",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
                 "responses": {
                     "200": {
+                        "description": "OK",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/definitions/agent"
+                                    "$ref": "#/definitions/files200"
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "description": "Error: message",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/files404"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/web/putFile": {
+            "post": {
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Put file to the server",
+                "requestBody": {
+                    "description": "JSON Object",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/definitions/filesreqput"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "location",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "ip",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "fileName",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "base64Data",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Done!"
+                    },
+                    "404": {
+                        "description": "Error"
                     }
                 }
             }
@@ -329,6 +439,63 @@
                     "type": "string"
                 }
             }
+        },
+        "filesreqget": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "fileName": {
+                    "type": "string"
+                }
+            }
+        },
+        "files200": {
+            "type": "object",
+            "properties": {
+                "fileName": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "string"
+                }
+            }
+        },
+        "files404": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "filesreqput": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "fileName": {
+                    "type": "string"
+                },
+                "base64Data": {
+                    "type": "string"
+                }
+            }
         }
+
     }
 }
