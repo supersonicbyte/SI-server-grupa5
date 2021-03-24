@@ -18,7 +18,8 @@ env.config()
 const fetch = require('node-fetch');
 
 const swaggerUi = require('swagger-ui-express'),
-swaggerDocument = require('./swagger.json');
+  swaggerDocument = require('./swagger.json');
+const { disconnect } = require('process');
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // map of clients
@@ -29,86 +30,86 @@ const responseMap = [];
 const messageMap = [];//
 
 wss.on('connection', function connection(ws) {
-  ws.send(JSON.stringify({type : "Connected"}));
+  ws.send(JSON.stringify({ type: "Connected" }));
   ws.on('message', (message) => {
     message = JSON.parse(message);
     if (message.type === 'sendCredentials') {
 
       const date = new Date()
-      console.log("Client connected: " + "Client: " + message.name + " "+message.ip+" " + date.toUTCString());
+      console.log("Client connected: " + "Client: " + message.name + " " + message.ip + " " + date.toUTCString());
       ws.name = message.name;
-      ws.location=message.location;
-      ws.ip=message.ip;
-      ws.path=message.path;
-      ws.status="Online";
+      ws.location = message.location;
+      ws.ip = message.ip;
+      ws.path = message.path;
+      ws.status = "Online";
       clients[message.name + message.location + message.ip] = ws;
-      responseMap[message.name + message.location + message.ip] = emptyPromise(); 
+      responseMap[message.name + message.location + message.ip] = emptyPromise();
     }
-    else if (message.type === "command_result"){
+    else if (message.type === "command_result") {
       messageMap[message.name + message.location + message.ip].message = message.message;//
       responseMap[message.name + message.location + message.ip].resolve(messageMap[message.name + message.location + message.ip]);
-    } else if (message.type === "sendScreenshot"){
+    } else if (message.type === "sendScreenshot") {
       messageMap[message.name + message.location + message.ip].message = message.message;//
       responseMap[message.name + message.location + message.ip].resolve(messageMap[message.name + message.location + message.ip]);
     } else if (message.type === "sendFile") {
       //messageMap[message.name + message.location].message = message.message;//
       //check if file exists
       let buff = new Buffer.from(message.data, 'base64');
- 
-      fs.writeFile(message.fileName, buff,  function (err) {
-          if (err) {
-            console.log("error: "+err)
-          }
-          else {
-              console.log("done")
-          }
+
+      fs.writeFile(message.fileName, buff, function (err) {
+        if (err) {
+          console.log("error: " + err)
+        }
+        else {
+          console.log("done")
+        }
       });
-     // responseMap[message.name + message.location].resolve(messageMap[message.name + message.location]);
+      // responseMap[message.name + message.location].resolve(messageMap[message.name + message.location]);
     }
   });
 
 });
 
- /*alidator for all /api routes, checks if token is valid**/
- /*app.use('/api', async function (req, res, next) {
-  const { name, location, ip, command } = req.body;
-  const authHeader = req.headers.authorization;
-  const validation = await auth.validateJWT(authHeader);
-  if (validation.status != 200) {
-    res.status(validation.status);
-    res.send("Token not valid");
-    return;
-  }else{
-    var x=await validation.json();
+/*alidator for all /api routes, checks if token is valid**/
+/*app.use('/api', async function (req, res, next) {
+ const { name, location, ip, command } = req.body;
+ const authHeader = req.headers.authorization;
+ const validation = await auth.validateJWT(authHeader);
+ if (validation.status != 200) {
+   res.status(validation.status);
+   res.send("Token not valid");
+   return;
+ }else{
+   var x=await validation.json();
 
-    const messageResponse = //
-      {
-        token: x.accessToken,//
-        message : ""//
-      }
-     messageMap[name + location + ip] = messageResponse;//
+   const messageResponse = //
+     {
+       token: x.accessToken,//
+       message : ""//
+     }
+    messageMap[name + location + ip] = messageResponse;//
 
-  }
-  
-  next();
+ }
+ 
+ next();
 });*/
 
 app.post('/api/command', async (req, res) => {
   const { name, location, ip, command } = req.body;
-  let ws = clients[name + location +ip];
- // console.log("Dobio sam komandu "+name+" "+location+" "+command)
+  let ws = clients[name + location + ip];
+  // console.log("Dobio sam komandu "+name+" "+location+" "+command)
   if (ws !== undefined) {
     var response = {
       type: "command",
       command: command,
       parameters: parameters
     }
-  ws.send(JSON.stringify(response));
-    const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
+    ws.send(JSON.stringify(response));
+    const errorTimeout = setTimeout(errFunction, 10000, name, location, ip);
     responseMap[name + location + ip].then((val) => {
       clearTimeout(errorTimeout);
       responseMap[name + location + ip] = emptyPromise();
-     
+
       res.json(val);
     }).catch((err) => {
       res.statusCode = 404;
@@ -126,15 +127,15 @@ app.post('/api/command', async (req, res) => {
   }
 });
 
-app.get('/online', (req,res) =>{
+app.get('/online', (req, res) => {
 
-    const niz=[];
-    for(var k in clients){
-      const toAdd = {name: clients[k].name,location:clients[k].location,ip:clients[k].ip, status:clients[k].status};
-      niz.push(toAdd);
-    }
+  const niz = [];
+  for (var k in clients) {
+    const toAdd = { name: clients[k].name, location: clients[k].location, ip: clients[k].ip, status: clients[k].status };
+    niz.push(toAdd);
+  }
 
-    res.send(niz);
+  res.send(niz);
 
 });
 
@@ -148,11 +149,29 @@ app.get('/onlineClients', async (req, res) => {
   res.send(clientArray)
 });
 
-app.post('/agent/disconnectClient', async (req, res) => {
+app.post('/agent/disconnect', async (req, res) => {
+
   const { name, location, ip } = req.body;
 
-  clients[name + location + ip].close();
+  let ws = clients[name + location + ip];
+  if (ws !== undefined) {
+    clients[name + location + ip].close();
+    var res = {
+      type: "disconnected"
+    }
+    res.json(res);
+  }
+  else {
+    var errResp = {
+      error: "Device is not connected to the server!",
+      name: name,
+      location: location
+    }
+    res.statusCode = 404;
+    res.json(errResp);
+  }
 });
+
 
 
 app.post('/api/screenshot', async (req, res) => {
@@ -163,8 +182,8 @@ app.post('/api/screenshot', async (req, res) => {
     var response = {
       type: "getScreenshot",
     }
-  ws.send(JSON.stringify(response));
-    const errorTimeout = setTimeout(errFunction, 10000, name, location); 
+    ws.send(JSON.stringify(response));
+    const errorTimeout = setTimeout(errFunction, 10000, name, location);
     responseMap[name + location + ip].then((val) => {
       clearTimeout(errorTimeout);
       responseMap[name + location + ip] = emptyPromise();
@@ -186,36 +205,36 @@ app.post('/api/screenshot', async (req, res) => {
   }
 });
 
- /*app.post('/api/file', async (req, res) => {
-  const { name, location, ip, file_name, path} = req.body;
-  let ws = clients[name + location + ip];
-  if (ws !== undefined) {
-      var response = {
-          type: "getFile",
-          file_name: file_name,
-          path: path
-      }
-    ws.send(JSON.stringify(response));
-    const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
-    responseMap[name + location + ip].then((val) => {
-      clearTimeout(errorTimeout);
-      responseMap[name + location + ip] = emptyPromise();
-      res.json(val);
-    }).catch((err) => {
-      res.statusCode = 404;
-      res.json(err);
-    });
-  }
-  else {
-    var errResp = {
-      error: "Device is not connected to the server!",
-      name: name,
-      location: location,
-      ip: ip
-    }
-    res.statusCode = 404;
-    res.json(errResp);
-  }
+/*app.post('/api/file', async (req, res) => {
+ const { name, location, ip, file_name, path} = req.body;
+ let ws = clients[name + location + ip];
+ if (ws !== undefined) {
+     var response = {
+         type: "getFile",
+         file_name: file_name,
+         path: path
+     }
+   ws.send(JSON.stringify(response));
+   const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
+   responseMap[name + location + ip].then((val) => {
+     clearTimeout(errorTimeout);
+     responseMap[name + location + ip] = emptyPromise();
+     res.json(val);
+   }).catch((err) => {
+     res.statusCode = 404;
+     res.json(err);
+   });
+ }
+ else {
+   var errResp = {
+     error: "Device is not connected to the server!",
+     name: name,
+     location: location,
+     ip: ip
+   }
+   res.statusCode = 404;
+   res.json(errResp);
+ }
 });
 */
 
@@ -224,36 +243,36 @@ app.post('/api/screenshot', async (req, res) => {
 */
 
 app.post('/web/getFile', async (req, res) => {
-  const { name, location, ip, fileName} = req.body;
+  const { name, location, ip, fileName } = req.body;
 
-  fs.readFile(name+location+ip+"/"+fileName, {encoding: 'base64'},  function (err, data) {
+  fs.readFile(name + location + ip + "/" + fileName, { encoding: 'base64' }, function (err, data) {
     if (err) {
-      console.log("error: "+err)
+      console.log("error: " + err)
     }
     else {
-       var response = {
-         fileName: fileName,
-         base64Data: data
-       }
-       res.status=200;
-       res.send(response);
+      var response = {
+        fileName: fileName,
+        base64Data: data
+      }
+      res.status = 200;
+      res.send(response);
     }
-});
+  });
 });
 
 app.post('/web/putFile', async (req, res) => {
-  const {name, location, ip, fileName, base64Data} = req.body;
-  
+  const { name, location, ip, fileName, base64Data } = req.body;
+
   let buff = new Buffer.from(base64Data, 'base64');
- 
-  fs.writeFile(name+location+ip+"/"+fileName, buff,  function (err) {
-      if (err) {
-          console.log("error: "+err)
-      }
-      else {
-          console.log("done");
-          res.json({message: "Done!"});
-      }
+
+  fs.writeFile(name + location + ip + "/" + fileName, buff, function (err) {
+    if (err) {
+      console.log("error: " + err)
+    }
+    else {
+      console.log("done");
+      res.json({ message: "Done!" });
+    }
   });
 });
 
