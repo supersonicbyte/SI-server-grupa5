@@ -39,8 +39,8 @@ wss.on('connection', function connection(ws) {
       ws.name = message.name;
       ws.location=message.location;
       ws.ip=message.ip;
-      ws.parameters=message.path;
-      ws.isAlive=true;
+      ws.path=message.path;
+      ws.status="Online";
       clients[message.name + message.location + message.ip] = ws;
       responseMap[message.name + message.location + message.ip] = emptyPromise(); 
     }
@@ -52,7 +52,7 @@ wss.on('connection', function connection(ws) {
       responseMap[message.name + message.location + message.ip].resolve(messageMap[message.name + message.location + message.ip]);
     } else if (message.type === "sendFile") {
       //messageMap[message.name + message.location].message = message.message;//
- 
+      //check if file exists
       let buff = new Buffer.from(message.data, 'base64');
  
       fs.writeFile(message.fileName, buff,  function (err) {
@@ -70,7 +70,7 @@ wss.on('connection', function connection(ws) {
 });
 
  /*alidator for all /api routes, checks if token is valid**/
- app.use('/api', async function (req, res, next) {
+ /*app.use('/api', async function (req, res, next) {
   const { name, location, ip, command } = req.body;
   const authHeader = req.headers.authorization;
   const validation = await auth.validateJWT(authHeader);
@@ -91,7 +91,7 @@ wss.on('connection', function connection(ws) {
   }
   
   next();
-});
+});*/
 
 app.post('/api/command', async (req, res) => {
   const { name, location, ip, command } = req.body;
@@ -126,11 +126,12 @@ app.post('/api/command', async (req, res) => {
   }
 });
 
-app.get('/online/', async(req,res) =>{
+app.get('/online', (req,res) =>{
 
     const niz=[];
     for(var k in clients){
-      niz.push(clients[k].name+" "+clients[k].location+" "+clients[k].ip)
+      const toAdd = {name: clients[k].name,location:clients[k].location,ip:clients[k].ip, status:clients[k].status};
+      niz.push(toAdd);
     }
 
     res.send(niz);
@@ -201,6 +202,10 @@ app.post('/api/screenshot', async (req, res) => {
 });
 */
 
+/*
+/agent/getFile
+*/
+
 app.post('/web/getFile', async (req, res) => {
   const { name, location, ip, fileName} = req.body;
 
@@ -217,7 +222,6 @@ app.post('/web/getFile', async (req, res) => {
        res.send(response);
     }
 });
- 
 });
 
 app.post('/web/putFile', async (req, res) => {
@@ -234,7 +238,6 @@ app.post('/web/putFile', async (req, res) => {
           res.json({message: "Done!"});
       }
   });
- 
 });
 
 app.get('/', (req, res) => {
