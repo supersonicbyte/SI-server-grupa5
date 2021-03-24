@@ -127,7 +127,7 @@ app.post('/api/command', async (req, res) => {
   }
 });
 
-app.get('/online', (req, res) => {
+app.get('/online', (req, res) => {  //jasminova
 
   const niz = [];
   for (var k in clients) {
@@ -139,7 +139,7 @@ app.get('/online', (req, res) => {
 
 });
 
-app.get('/onlineClients', async (req, res) => {
+app.get('/api/agent/online', async (req, res) => {  //selmina
   var clientArray = [];
 
   for (let client of clients) {
@@ -149,7 +149,7 @@ app.get('/onlineClients', async (req, res) => {
   res.send(clientArray)
 });
 
-app.post('/agent/disconnect', async (req, res) => {
+app.post('/api/agent/disconnect', async (req, res) => {
 
   const { name, location, ip } = req.body;
 
@@ -173,7 +173,7 @@ app.post('/agent/disconnect', async (req, res) => {
   }
 });
 
-app.post('/agent/connect', async (req, res) => {
+app.post('/api/agent/connect', async (req, res) => {
   const { name, location, ip } = req.body;
 
   let ws = clients[name + location + ip];
