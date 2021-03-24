@@ -8,6 +8,7 @@ const cors = require('cors')
 const emptyPromise = require('empty-promise')
 const env = require('dotenv');
 const WebSocket = require('ws');
+const fs = require("fs")
 // web socket server
 const wss = new WebSocket.Server({ server: server });
 // cross origin
@@ -43,6 +44,22 @@ wss.on('connection', function connection(ws) {
     } else if (message.type === "sendScreenshot"){
       messageMap[message.name + message.location].message = message.message;//
       responseMap[message.name + message.location].resolve(messageMap[message.name + message.location]);
+    } else if (message.type === "sendFile") {
+      //messageMap[message.name + message.location].message = message.message;//
+
+      console.log("I got a file to write "+message.fileName);
+ 
+      let buff = new Buffer.from(message.data, 'base64');
+ 
+      fs.writeFile(message.fileName, buff,  function (err) {
+          if (err) {
+              console.log("error")
+          }
+          else {
+              console.log("done")
+          }
+      });
+     // responseMap[message.name + message.location].resolve(messageMap[message.name + message.location]);
     }
   });
 
@@ -76,7 +93,12 @@ app.post('/api/command', async (req, res) => {
   let ws = clients[name + location];
  // console.log("Dobio sam komandu "+name+" "+location+" "+command)
   if (ws !== undefined) {
-    ws.send(command);
+    var response = {
+      type: "command",
+      command: command,
+      parameters: parameters
+    }
+  ws.send(JSON.stringify(response));
     const errorTimeout = setTimeout(errFunction, 10000, name, location); 
     responseMap[name + location].then((val) => {
       clearTimeout(errorTimeout);
@@ -104,8 +126,10 @@ app.post('/api/screenshot', async (req, res) => {
   let ws = clients[name + location];
   //console.log("Dobio sam screen request "+name+" "+location);
   if (ws !== undefined) {
-
-    ws.send("getScreenshot");
+    var response = {
+      type: "getScreenshot",
+    }
+  ws.send(JSON.stringify(response));
     const errorTimeout = setTimeout(errFunction, 10000, name, location); 
     responseMap[name + location].then((val) => {
       clearTimeout(errorTimeout);
@@ -127,6 +151,37 @@ app.post('/api/screenshot', async (req, res) => {
   }
 });
 
+ /*app.post('/api/file', async (req, res) => {
+  const { name, location, file_name, path} = req.body;
+  let ws = clients[name + location];
+  if (ws !== undefined) {
+      var response = {
+          type: "getFile",
+          file_name: file_name,
+          path: path
+      }
+    ws.send(JSON.stringify(response));
+    const errorTimeout = setTimeout(errFunction, 10000, name, location); 
+    responseMap[name + location].then((val) => {
+      clearTimeout(errorTimeout);
+      responseMap[name + location] = emptyPromise();
+      res.json(val);
+    }).catch((err) => {
+      res.statusCode = 404;
+      res.json(err);
+    });
+  }
+  else {
+    var errResp = {
+      error: "Device is not connected to the server!",
+      name: name,
+      location: location
+    }
+    res.statusCode = 404;
+    res.json(errResp);
+  }
+});*/
+
 app.get('/', (req, res) => {
   res.send('<h1>Up and running.</h1>');
 })
@@ -142,5 +197,5 @@ function errFunction(name, location) {
 
 
 
-const PORT = process.env.PORT || 25565;
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log("Listening on port " + PORT));
