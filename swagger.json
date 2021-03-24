@@ -16,12 +16,13 @@
     ],
     "tags": [
         {
-            "name": "Screenshot",
-            "description": "API for Command in the system"
+            "name": "Screenshot"            
         }, 
         {
-            "name": "Command",
-            "description": "API for Command in the system"
+            "name": "Command"
+        }, 
+        {
+            "name": "Agent"
         }
     ],
     "consumes": [
@@ -138,6 +139,120 @@
                     }
                 }
             }
+        },
+        "/agent/disconnect": {
+            "post": {
+                "tags": [
+                    "Agent"
+                ],
+                "summary": "Disconnect a client",
+                "requestBody": {
+                    "description": "JSON Object",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/definitions/agent"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "location",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "ip",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "disconnected"
+                    },
+                    "404": {
+                        "description": "Device is not connected to the server!",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/agent/connect": {
+            "post": {
+                "tags": [
+                    "Agent"
+                ],
+                "summary": "Connect a client",
+                "requestBody": {
+                    "description": "JSON Object",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/definitions/Command"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "location",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "command",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "404": {
+                        "description": "Device is not connected to the server!",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -175,6 +290,21 @@
                     "type": "string"
                 }
             }
+        },
+        "agent" : {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "ip": {
+                    "type": "string"
+                }
+            }
         }
+        
     }
 }
