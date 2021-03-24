@@ -172,7 +172,27 @@ app.post('/agent/disconnect', async (req, res) => {
   }
 });
 
+app.post('/agent/connect', async (req, res) => {
+  const { name, location, ip } = req.body;
 
+  let ws = clients[name + location + ip];
+  if (ws !== undefined) {
+    clients[name + location + ip].open();
+    var res = {
+      type: "connected"
+    }
+    res.json(res);
+  }
+  else {
+    var errResp = {
+      error: "Device is not found!",
+      name: name,
+      location: location
+    }
+    res.statusCode = 404;
+    res.json(errResp);
+  }
+});
 
 app.post('/api/screenshot', async (req, res) => {
   const { name, location, ip } = req.body;
