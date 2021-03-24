@@ -156,10 +156,11 @@ app.post('/agent/disconnect', async (req, res) => {
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
     clients[name + location + ip].close();
-    var res = {
+    var response = {
       type: "disconnected"
     }
-    res.json(res);
+    res.statusCode = 200;
+    res.json(response);
   }
   else {
     var errResp = {
@@ -178,10 +179,11 @@ app.post('/agent/connect', async (req, res) => {
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
     clients[name + location + ip].open();
-    var res = {
+    var response = {
       type: "connected"
     }
-    res.json(res);
+    res.statusCode = 200;
+    res.json(response);
   }
   else {
     var errResp = {
