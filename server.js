@@ -138,6 +138,17 @@ app.get('/online', (req,res) =>{
 
 });
 
+app.get('/onlineClients', async (req, res) => {
+  var clientArray = [];
+
+  for (let client of clients) {
+    clientArray.push({ name: client.name, location: client.location, ip: client.ip })
+  }
+
+  res.send(clientArray)
+});
+
+
 app.post('/api/screenshot', async (req, res) => {
   const { name, location, ip } = req.body;
   let ws = clients[name + location + ip];
