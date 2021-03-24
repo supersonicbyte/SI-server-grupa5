@@ -185,21 +185,38 @@ app.post('/api/screenshot', async (req, res) => {
 });
 */
 
-app.get('/api/file', async (req, res) => {
-  const { name, location, ip, file_name} = req.body;
+app.post('/web/getFile', async (req, res) => {
+  const { name, location, ip, fileName} = req.body;
 
-  fs.readFile(file_name, {encoding: 'base64'},  function (err, data) {
+  fs.readFile(fileName, {encoding: 'base64'},  function (err, data) {
     if (err) {
         console.log("error")
     }
     else {
        var response = {
-         file_name: file_name,
+         fileName: fileName,
          base64Data: data
        }
        res.json(response);
     }
 });
+ 
+});
+
+app.post('/web/putFile', async (req, res) => {
+  const {name, location, ip, fileName, base64Data} = req.body;
+  
+  let buff = new Buffer.from(base64Data, 'base64');
+ 
+  fs.writeFile(fileName, buff,  function (err) {
+      if (err) {
+          console.log("error")
+      }
+      else {
+          console.log("done");
+          res.json({messnage: "Done!"});
+      }
+  });
  
 });
 
