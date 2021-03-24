@@ -35,15 +35,15 @@ wss.on('connection', function connection(ws) {
     if (message.type === 'sendCredentials') {
       const date = new Date()
       console.log("Client connected: " + "Client: " + message.name + " " + date.toUTCString());
-      clients[message.name + message.location] = ws;
-      responseMap[message.name + message.location] = emptyPromise(); 
+      clients[message.name + message.location + message.ip] = ws;
+      responseMap[message.name + message.location + message.ip] = emptyPromise(); 
     }
     else if (message.type === "command_result"){
-      messageMap[message.name + message.location].message = message.message;//
-      responseMap[message.name + message.location].resolve(messageMap[message.name + message.location]);
+      messageMap[message.name + message.location + message.ip].message = message.message;//
+      responseMap[message.name + message.location + message.ip].resolve(messageMap[message.name + message.location + message.ip]);
     } else if (message.type === "sendScreenshot"){
-      messageMap[message.name + message.location].message = message.message;//
-      responseMap[message.name + message.location].resolve(messageMap[message.name + message.location]);
+      messageMap[message.name + message.location + message.ip].message = message.message;//
+      responseMap[message.name + message.location + message.ip].resolve(messageMap[message.name + message.location + message.ip]);
     } else if (message.type === "sendFile") {
       //messageMap[message.name + message.location].message = message.message;//
 
@@ -65,8 +65,8 @@ wss.on('connection', function connection(ws) {
 
 });
 // validator for all /api routes, checks if token is valid
-app.use('/api', async function (req, res, next) {
-  const { name, location, command } = req.body;
+/*app.use('/api', async function (req, res, next) {
+  const { name, location, ip, command } = req.body;
   const authHeader = req.headers.authorization;
   const validation = await auth.validateJWT(authHeader);
   if (validation.status != 200) {
@@ -81,16 +81,16 @@ app.use('/api', async function (req, res, next) {
         token: x.accessToken,//
         message : ""//
       }
-     messageMap[name+location] = messageResponse;//
+     messageMap[name + location + ip] = messageResponse;//
 
   }
   
   next();
-});
+});*/
 
 app.post('/api/command', async (req, res) => {
-  const { name, location, command } = req.body;
-  let ws = clients[name + location];
+  const { name, location, ip, command } = req.body;
+  let ws = clients[name + location +ip];
  // console.log("Dobio sam komandu "+name+" "+location+" "+command)
   if (ws !== undefined) {
     var response = {
@@ -99,10 +99,10 @@ app.post('/api/command', async (req, res) => {
       parameters: parameters
     }
   ws.send(JSON.stringify(response));
-    const errorTimeout = setTimeout(errFunction, 10000, name, location); 
-    responseMap[name + location].then((val) => {
+    const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
+    responseMap[name + location + ip].then((val) => {
       clearTimeout(errorTimeout);
-      responseMap[name + location] = emptyPromise();
+      responseMap[name + location + ip] = emptyPromise();
      
       res.json(val);
     }).catch((err) => {
@@ -122,8 +122,8 @@ app.post('/api/command', async (req, res) => {
 });
 
 app.post('/api/screenshot', async (req, res) => {
-  const { name, location } = req.body;
-  let ws = clients[name + location];
+  const { name, location, ip } = req.body;
+  let ws = clients[name + location + ip];
   //console.log("Dobio sam screen request "+name+" "+location);
   if (ws !== undefined) {
     var response = {
@@ -131,9 +131,9 @@ app.post('/api/screenshot', async (req, res) => {
     }
   ws.send(JSON.stringify(response));
     const errorTimeout = setTimeout(errFunction, 10000, name, location); 
-    responseMap[name + location].then((val) => {
+    responseMap[name + location + ip].then((val) => {
       clearTimeout(errorTimeout);
-      responseMap[name + location] = emptyPromise();
+      responseMap[name + location + ip] = emptyPromise();
       res.json(val);
     }).catch((err) => {
       res.statusCode = 404;
@@ -144,7 +144,8 @@ app.post('/api/screenshot', async (req, res) => {
     var errResp = {
       error: "Device is not connected to the server!",
       name: name,
-      location: location
+      location: location,
+      ip: ip
     }
     res.statusCode = 404;
     res.json(errResp);
@@ -152,8 +153,8 @@ app.post('/api/screenshot', async (req, res) => {
 });
 
  /*app.post('/api/file', async (req, res) => {
-  const { name, location, file_name, path} = req.body;
-  let ws = clients[name + location];
+  const { name, location, ip, file_name, path} = req.body;
+  let ws = clients[name + location + ip];
   if (ws !== undefined) {
       var response = {
           type: "getFile",
@@ -161,10 +162,10 @@ app.post('/api/screenshot', async (req, res) => {
           path: path
       }
     ws.send(JSON.stringify(response));
-    const errorTimeout = setTimeout(errFunction, 10000, name, location); 
-    responseMap[name + location].then((val) => {
+    const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
+    responseMap[name + location + ip].then((val) => {
       clearTimeout(errorTimeout);
-      responseMap[name + location] = emptyPromise();
+      responseMap[name + location + ip] = emptyPromise();
       res.json(val);
     }).catch((err) => {
       res.statusCode = 404;
@@ -175,24 +176,45 @@ app.post('/api/screenshot', async (req, res) => {
     var errResp = {
       error: "Device is not connected to the server!",
       name: name,
-      location: location
+      location: location,
+      ip: ip
     }
     res.statusCode = 404;
     res.json(errResp);
   }
-});*/
+});
+*/
+
+app.get('/api/file', async (req, res) => {
+  const { name, location, ip, file_name} = req.body;
+
+  fs.readFile(file_name, {encoding: 'base64'},  function (err, data) {
+    if (err) {
+        console.log("error")
+    }
+    else {
+       var response = {
+         file_name: file_name,
+         base64Data: data
+       }
+       res.json(response);
+    }
+});
+ 
+});
 
 app.get('/', (req, res) => {
   res.send('<h1>Up and running.</h1>');
 })
 
-function errFunction(name, location) {
+function errFunction(name, location, ip) {
   var errResp = {
     error: "Client took too long to respond",
     name: name,
-    location: location
+    location: location,
+    ip: ip
   }
-  responseMap[name + location].reject(errResp);
+  responseMap[name + location + ip].reject(errResp);
 }
 
 
