@@ -19,6 +19,7 @@ const fetch = require('node-fetch');
 const swaggerUi = require('swagger-ui-express'),
   swaggerDocument = require('./swagger.json');
 const { disconnect } = require('process');
+const { json } = require('express');
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // map of clients
@@ -51,7 +52,7 @@ wss.on('connection', function connection(ws) {
       messageMap[message.name + message.location + message.ip].message = message.message;//
       responseMap[message.name + message.location + message.ip].resolve(messageMap[message.name + message.location + message.ip]);
     } else if (message.type === "sendFile") {
-      //check if file exists
+
       let buff = new Buffer.from(message.data, 'base64');
 
       let path = message.name + message.location + message.ip;
@@ -77,32 +78,10 @@ wss.on('connection', function connection(ws) {
 
 });
 
-/*alidator for all /api routes, checks if token is valid**/
-/*app.use('/api', async function (req, res, next) {
- const { name, location, ip, command } = req.body;
- const authHeader = req.headers.authorization;
- const validation = await auth.validateJWT(authHeader);
- if (validation.status != 200) {
-   res.status(validation.status);
-   res.send("Token not valid");
-   return;
- }else{
-   var x=await validation.json();
-   const messageResponse = //
-     {
-       token: x.accessToken,//
-       message : ""//
-     }
-    messageMap[name + location + ip] = messageResponse;//
- }
- 
- next();
-});*/
 
 app.post('/api/command', async (req, res) => {
   const { name, location, ip, command } = req.body;
   let ws = clients[name + location + ip];
-  // console.log("Dobio sam komandu "+name+" "+location+" "+command)
   if (ws !== undefined) {
     var response = {
       type: "command",
@@ -132,23 +111,12 @@ app.post('/api/command', async (req, res) => {
   }
 });
 
-app.get('/online', (req, res) => {  //jasminova
-
-  const niz = [];
-  for (var k in clients) {
-    const toAdd = { name: clients[k].name, location: clients[k].location, ip: clients[k].ip, status: clients[k].status };
-    niz.push(toAdd);
-  }
-
-  res.send(niz);
-
-});
-
 app.get('/api/agent/online', async (req, res) => {  //selmina
   var clientArray = [];
-
-  for (let client of clients) {
-    clientArray.push({ name: client.name, location: client.location, ip: client.ip })
+  
+  for (let c in clients) {
+    let client = clients[c];
+    clientArray.push({ name: client.name, location: client.location, ip: client.ip, path:client.path,status:client.status })
   }
 
   res.send(clientArray)
@@ -160,10 +128,12 @@ app.post('/api/agent/disconnect', async (req, res) => {
 
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
-    clients[name + location + ip].close();
+    
     var response = {
-      type: "disconnected"
+      type: "Disconnected"
     }
+   ws.send(JSON.stringify(response));
+   ws.status="Disconnected";
     res.statusCode = 200;
     res.json(response);
   }
@@ -183,10 +153,12 @@ app.post('/api/agent/connect', async (req, res) => {
 
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
-    clients[name + location + ip].open();
+    
     var response = {
-      type: "connected"
+      type: "Connected"
     }
+    ws.status="Connected";
+    ws.send(JSON.stringify(response));
     res.statusCode = 200;
     res.json(response);
   }
@@ -204,7 +176,6 @@ app.post('/api/agent/connect', async (req, res) => {
 app.post('/api/screenshot', async (req, res) => {
   const { name, location, ip } = req.body;
   let ws = clients[name + location + ip];
-  //console.log("Dobio sam screen request "+name+" "+location);
   if (ws !== undefined) {
     var response = {
       type: "getScreenshot",
@@ -232,7 +203,7 @@ app.post('/api/screenshot', async (req, res) => {
   }
 });
 
-app.post('/web/getFile', async (req, res) => {
+app.post('/web/file/get', async (req, res) => {
   const { name, location, ip, fileName } = req.body;
 
   fs.readFile(name + location + ip + "/" + fileName, { encoding: 'base64' }, function (err, data) {
@@ -250,7 +221,7 @@ app.post('/web/getFile', async (req, res) => {
   });
 });
 
-app.post('/web/putFile', async (req, res) => {
+app.post('/web/file/put', async (req, res) => {
   const { name, location, ip, fileName, base64Data } = req.body;
 
   let buff = new Buffer.from(base64Data, 'base64');
@@ -265,6 +236,7 @@ app.post('/web/putFile', async (req, res) => {
     }
   });
 });
+
 app.post('/agent/file/get', async (req, res) => {
   const { name, location, ip, fileName, path} = req.body;
   let ws = clients[name + location + ip];
