@@ -72,7 +72,8 @@ wss.on('connection', function connection(ws) {
         }
       });
     } else if (message.type = "savedFile") {
-      responseMap[message.name + message.location + message.ip].resolve("File sacuvan na agentu!");  
+      responseMap[message.name + message.location+message.ip].resolve(JSON.stringify({type:"Success",message:"File saved on agent!"}));
+   
     }
   });
 
@@ -209,6 +210,7 @@ app.post('/web/file/get', async (req, res) => {
   fs.readFile(name + location + ip + "/" + fileName, { encoding: 'base64' }, function (err, data) {
     if (err) {
       console.log("error: " + err)
+      res.json({ error: "Error!" });
     }
     else {
       var response = {
@@ -229,6 +231,7 @@ app.post('/web/file/put', async (req, res) => {
   fs.writeFile(name + location + ip + "/" + fileName, buff, function (err) {
     if (err) {
       console.log("error: " + err)
+      res.json({ error: "Error!" });
     }
     else {
       console.log("done");
@@ -277,6 +280,7 @@ app.post('/agent/file/put', async (req, res) => {
       fs.readFile(name + location + ip + "/" + fileName, { encoding: 'base64' }, function (err, data) {
         if (err) {
           console.log("error: " + err)
+          res.json({ error: "Error!" });
         }
         else {
           var response = {

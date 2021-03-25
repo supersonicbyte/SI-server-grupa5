@@ -257,7 +257,7 @@
                 }
             }
         },
-        "/api/web/getFile": {
+        "/api/web/file/get": {
             "post": {
                 "tags": [
                     "Files"
@@ -327,7 +327,7 @@
                 }
             }
         },
-        "/api/web/putFile": {
+        "/api/web/file/put": {
             "post": {
                 "tags": [
                     "Files"
@@ -381,10 +381,177 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Done!"
+                        "description": "Done!",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/id"
+                                }
+                            }
+                        }
                     },
                     "404": {
-                        "description": "Error"
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/files404"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        
+        "/api/agent/file/get": {
+            "post": {
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Get file from agent to server",
+                "requestBody": {
+                    "description": "JSON Object",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/definitions/filesreqget"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "location",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "ip",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "fileName",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "path",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/id"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Error: message",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/files404"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/agent/file/put": {
+            "post": {
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Put file from server to agent",
+                "requestBody": {
+                    "description": "JSON Object",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/definitions/filesreqput"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "location",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "ip",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "fileName",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "path",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/id"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Error: message",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/files404"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -463,7 +630,7 @@
                 "fileName": {
                     "type": "string"
                 },
-                "data": {
+                "base64Data": {
                     "type": "string"
                 }
             }
