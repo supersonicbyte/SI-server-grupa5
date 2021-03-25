@@ -79,6 +79,29 @@ wss.on('connection', function connection(ws) {
 
 });
 
+// validator for all /api routes, checks if token is valid
+app.use('/api', async function (req, res, next) {
+  const { name, location, command } = req.body;
+  const authHeader = req.headers.authorization;
+  const validation = await auth.validateJWT(authHeader);
+  if (validation.status != 200) {
+    res.status(validation.status);
+    res.send("Token not valid");
+    return;
+  }else{
+    var x=await validation.json();
+
+    const messageResponse = //
+      {
+        token: x.accessToken,//
+        message : ""//
+      }
+     messageMap[name+location] = messageResponse;//
+
+  }
+  
+  next();
+});
 
 app.post('/api/command', async (req, res) => {
   const { name, location, ip, command } = req.body;
