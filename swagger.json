@@ -257,6 +257,28 @@
                 }
             }
         },
+        "/api/agent/online": {
+            "get": {
+                "tags": [
+                    "Agent"
+                ],
+                "summary": "Get all connected clients",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/agent"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/web/file/get": {
             "post": {
                 "tags": [
