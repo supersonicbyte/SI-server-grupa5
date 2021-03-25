@@ -96,7 +96,7 @@ app.use('/api', async function (req, res, next) {
         token: x.accessToken,//
         message : ""//
       }
-     messageMap[name+location] = messageResponse;//
+     messageMap[name+location+ip] = messageResponse;//
 
   }
   
