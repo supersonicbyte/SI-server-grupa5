@@ -16,12 +16,16 @@
     ],
     "tags": [
         {
-            "name": "Screenshot",
-            "description": "API for Command in the system"
-        }, 
+            "name": "Screenshot"
+        },
         {
-            "name": "Command",
-            "description": "API for Command in the system"
+            "name": "Command"
+        },
+        {
+            "name": "Agent"
+        },
+        {
+            "name": "Files"
         }
     ],
     "consumes": [
@@ -138,6 +142,419 @@
                     }
                 }
             }
+        },
+        "/api/agent/disconnect": {
+            "post": {
+                "tags": [
+                    "Agent"
+                ],
+                "summary": "Disconnect a client",
+                "requestBody": {
+                    "description": "JSON Object",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/definitions/agent"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "location",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "ip",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "disconnected"
+                    },
+                    "404": {
+                        "description": "Device is not connected to the server!",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/agent/connect": {
+            "post": {
+                "tags": [
+                    "Agent"
+                ],
+                "summary": "Connect a client",
+                "requestBody": {
+                    "description": "JSON Object",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/definitions/agent"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "location",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "ip",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "connected"
+                    },
+                    "404": {
+                        "description": "Device is not found!",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/web/file/get": {
+            "post": {
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Get file from server",
+                "requestBody": {
+                    "description": "JSON Object",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/definitions/filesreqget"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "location",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "ip",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "fileName",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/files200"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Error: message",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/files404"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/web/file/put": {
+            "post": {
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Put file to the server",
+                "requestBody": {
+                    "description": "JSON Object",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/definitions/filesreqput"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "location",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "ip",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "fileName",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "base64Data",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Done!",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/id"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/files404"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        
+        "/api/agent/file/get": {
+            "post": {
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Get file from agent to server",
+                "requestBody": {
+                    "description": "JSON Object",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/definitions/filesreqget"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "location",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "ip",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "fileName",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "path",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/id"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Error: message",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/files404"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/agent/file/put": {
+            "post": {
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Put file from server to agent",
+                "requestBody": {
+                    "description": "JSON Object",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/definitions/filesreqput"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "location",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "ip",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "fileName",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "path",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/id"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Error: message",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/files404"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -175,6 +592,77 @@
                     "type": "string"
                 }
             }
+        },
+        "agent": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "ip": {
+                    "type": "string"
+                }
+            }
+        },
+        "filesreqget": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "fileName": {
+                    "type": "string"
+                }
+            }
+        },
+        "files200": {
+            "type": "object",
+            "properties": {
+                "fileName": {
+                    "type": "string"
+                },
+                "base64Data": {
+                    "type": "string"
+                }
+            }
+        },
+        "files404": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "filesreqput": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "fileName": {
+                    "type": "string"
+                },
+                "base64Data": {
+                    "type": "string"
+                }
+            }
         }
+
     }
 }
