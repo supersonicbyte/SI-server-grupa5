@@ -51,19 +51,27 @@ wss.on('connection', function connection(ws) {
       messageMap[message.name + message.location + message.ip].message = message.message;//
       responseMap[message.name + message.location + message.ip].resolve(messageMap[message.name + message.location + message.ip]);
     } else if (message.type === "sendFile") {
-      //messageMap[message.name + message.location].message = message.message;//
       //check if file exists
       let buff = new Buffer.from(message.data, 'base64');
 
-      fs.writeFile(message.fileName, buff, function (err) {
+      let path = message.name + message.location + message.ip;
+      let dir = './'+path;
+
+          if (!fs.existsSync(dir)){
+              fs.mkdirSync(dir);
+          }
+      fs.writeFile(path+"/"+message.fileName, buff, function (err) {
         if (err) {
+          responseMap[message.name + message.location+message.ip].resolve(JSON.stringify({type:"Error",message:"Error writing file"}));
           console.log("error: " + err)
         }
         else {
+          responseMap[message.name + message.location+message.ip].resolve(JSON.stringify({type:"Success",message:"File successfully written."}));
           console.log("done")
         }
       });
-      // responseMap[message.name + message.location].resolve(messageMap[message.name + message.location]);
+    } else if (message.type = "savedFile") {
+      responseMap[message.name + message.location + message.ip].resolve("File sacuvan na agentu!");  
     }
   });
 
@@ -224,43 +232,6 @@ app.post('/api/screenshot', async (req, res) => {
   }
 });
 
-/*app.post('/api/file', async (req, res) => {
- const { name, location, ip, file_name, path} = req.body;
- let ws = clients[name + location + ip];
- if (ws !== undefined) {
-     var response = {
-         type: "getFile",
-         file_name: file_name,
-         path: path
-     }
-   ws.send(JSON.stringify(response));
-   const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
-   responseMap[name + location + ip].then((val) => {
-     clearTimeout(errorTimeout);
-     responseMap[name + location + ip] = emptyPromise();
-     res.json(val);
-   }).catch((err) => {
-     res.statusCode = 404;
-     res.json(err);
-   });
- }
- else {
-   var errResp = {
-     error: "Device is not connected to the server!",
-     name: name,
-     location: location,
-     ip: ip
-   }
-   res.statusCode = 404;
-   res.json(errResp);
- }
-});
-*/
-
-/*
-/agent/getFile
-*/
-
 app.post('/web/getFile', async (req, res) => {
   const { name, location, ip, fileName } = req.body;
 
@@ -298,17 +269,16 @@ app.post('/agent/file/get', async (req, res) => {
   const { name, location, ip, fileName, path} = req.body;
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
-     /*var response = {
+     var response = {
          type: "getFile",
          fileName: fileName,
          path: path
      }
-    ws.send(JSON.stringify(response));*/
-    ws.send("getFile");
+    ws.send(JSON.stringify(response));
     const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
     responseMap[name + location + ip].then((val) => {
      clearTimeout(errorTimeout);
-     responseMap[name + location ] = emptyPromise();
+     responseMap[name + location + ip] = emptyPromise();
      res.json(val);
    }).catch((err) => {
      res.statusCode = 404;
@@ -326,6 +296,45 @@ app.post('/agent/file/get', async (req, res) => {
    res.json(errResp);
  }
  
+});
+
+app.post('/agent/file/put', async (req, res) => {
+  const { name, location, ip, fileName, path} = req.body;
+  let ws = clients[name + location + ip];
+  if (ws !== undefined) {
+      fs.readFile(name + location + ip + "/" + fileName, { encoding: 'base64' }, function (err, data) {
+        if (err) {
+          console.log("error: " + err)
+        }
+        else {
+          var response = {
+            type: "putFile",
+            fileName: fileName,
+            path: path,
+            base64Data: data
+          }
+          ws.send(JSON.stringify(response));
+          const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
+          responseMap[name + location + ip].then((val) => {
+            clearTimeout(errorTimeout);
+            responseMap[name + location + ip] = emptyPromise();
+            res.json(val);
+          }).catch((err) => {
+            res.statusCode = 404;
+            res.json(err);
+          });
+        }
+      }); 
+  } else {
+    var errResp = {
+      error: "Device is not connected to the server!",
+      name: name,
+      location: location,
+      ip: ip
+    }
+   res.statusCode = 404;
+   res.json(errResp);
+ } 
 });
 
 app.get('/', (req, res) => {
