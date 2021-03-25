@@ -1,4 +1,3 @@
-
 const auth = require('./auth/auth.js');
 const express = require('express');
 const app = express();
@@ -81,14 +80,12 @@ wss.on('connection', function connection(ws) {
    return;
  }else{
    var x=await validation.json();
-
    const messageResponse = //
      {
        token: x.accessToken,//
        message : ""//
      }
     messageMap[name + location + ip] = messageResponse;//
-
  }
  
  next();
@@ -297,6 +294,39 @@ app.post('/web/putFile', async (req, res) => {
     }
   });
 });
+app.post('/agent/file/get', async (req, res) => {
+  const { name, location, ip, fileName, path} = req.body;
+  let ws = clients[name + location + ip];
+  if (ws !== undefined) {
+     /*var response = {
+         type: "getFile",
+         fileName: fileName,
+         path: path
+     }
+    ws.send(JSON.stringify(response));*/
+    ws.send("getFile");
+    const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
+    responseMap[name + location + ip].then((val) => {
+     clearTimeout(errorTimeout);
+     responseMap[name + location ] = emptyPromise();
+     res.json(val);
+   }).catch((err) => {
+     res.statusCode = 404;
+     res.json(err);
+   });
+ }
+ else {
+   var errResp = {
+     error: "Device is not connected to the server!",
+     name: name,
+     location: location,
+     ip: ip
+   }
+   res.statusCode = 404;
+   res.json(errResp);
+ }
+ 
+});
 
 app.get('/', (req, res) => {
   res.send('<h1>Up and running.</h1>');
@@ -314,5 +344,5 @@ function errFunction(name, location, ip) {
 
 
 
-const PORT = process.env.PORT || 25565;
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log("Listening on port " + PORT));
