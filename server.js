@@ -135,7 +135,7 @@ app.post('/api/command', async (req, res) => {
   }
 });
 
-app.get('/api/agent/online', async (req, res) => {  //selmina
+app.get('/api/agent/online', async (req, res) => { 
   var clientArray = [];
   
   for (let c in clients) {
