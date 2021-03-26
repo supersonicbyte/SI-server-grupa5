@@ -227,7 +227,7 @@ app.post('/api/screenshot', async (req, res) => {
   }
 });
 
-app.post('/web/file/get', async (req, res) => {
+app.post('/api/web/file/get', async (req, res) => {
   const { name, location, ip, fileName } = req.body;
 
   fs.readFile(name + location + ip + "/" + fileName, { encoding: 'base64' }, function (err, data) {
@@ -246,7 +246,7 @@ app.post('/web/file/get', async (req, res) => {
   });
 });
 
-app.post('/web/file/put', async (req, res) => {
+app.post('/api/web/file/put', async (req, res) => {
   const { name, location, ip, fileName, base64Data } = req.body;
 
   let buff = new Buffer.from(base64Data, 'base64');
@@ -263,7 +263,7 @@ app.post('/web/file/put', async (req, res) => {
   });
 });
 
-app.post('/agent/file/get', async (req, res) => {
+app.post('/api/agent/file/get', async (req, res) => {
   const { name, location, ip, fileName, path} = req.body;
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
@@ -296,7 +296,7 @@ app.post('/agent/file/get', async (req, res) => {
  
 });
 
-app.post('/agent/file/put', async (req, res) => {
+app.post('/api/agent/file/put', async (req, res) => {
   const { name, location, ip, fileName, path} = req.body;
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
