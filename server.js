@@ -251,7 +251,14 @@ app.post('/api/web/file/put', async (req, res) => {
 
   let buff = new Buffer.from(base64Data, 'base64');
 
-  fs.writeFile(name + location + ip + "/" + fileName, buff, function (err) {
+  let path = name + location + ip;
+  let dir = './'+path;
+
+      if (!fs.existsSync(dir)){
+          fs.mkdirSync(dir);
+      }
+
+  fs.writeFile(path + "/" + fileName, buff, function (err) {
     if (err) {
       console.log("error: " + err)
       res.json({ error: "Error!" });
