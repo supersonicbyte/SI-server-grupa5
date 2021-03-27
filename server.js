@@ -36,7 +36,7 @@ wss.on('connection', function connection(ws) {
     if (message.type === 'sendCredentials') {
 
       const date = new Date()
-      console.log("Client connected: " + "Client: " + message.name + " " + message.ip + " " + date.toUTCString());
+      console.log("Client connected: " + "Client: " + message.name + " "+message.location+" " + message.ip + " " + date.toUTCString());
       ws.name = message.name;
       ws.location = message.location;
       ws.ip = message.ip;
@@ -53,7 +53,7 @@ wss.on('connection', function connection(ws) {
       responseMap[message.name + message.location + message.ip].resolve(messageMap[message.name + message.location + message.ip]);
     } else if (message.type === "sendFile") {
 
-      let buff = new Buffer.from(message.data, 'base64');
+      let buff = new Buffer.from(message.message, 'base64');
 
       let path = message.name + message.location + message.ip;
       let dir = './'+path;
@@ -81,7 +81,7 @@ wss.on('connection', function connection(ws) {
 
 // validator for all /api routes, checks if token is valid
 app.use('/api', async function (req, res, next) {
-  const { name, location, command } = req.body;
+  const { name, location, command,ip } = req.body;
   const authHeader = req.headers.authorization;
   const validation = await auth.validateJWT(authHeader);
   if (validation.status != 200) {
@@ -210,6 +210,7 @@ app.post('/api/screenshot', async (req, res) => {
       user:user
     }
     ws.send(JSON.stringify(response));
+    console.log("I sent it to them");
     const errorTimeout = setTimeout(errFunction, 10000, name, location);
     responseMap[name + location + ip].then((val) => {
       clearTimeout(errorTimeout);
@@ -323,7 +324,7 @@ app.post('/api/agent/file/put', async (req, res) => {
             type: "putFile",
             fileName: fileName,
             path: path,
-            base64Data: data,
+            data: data,
             user:user
           }
           ws.send(JSON.stringify(response));
@@ -366,5 +367,5 @@ function errFunction(name, location, ip) {
 
 
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 25565;
 server.listen(PORT, () => console.log("Listening on port " + PORT));
