@@ -104,7 +104,7 @@ app.use('/api', async function (req, res, next) {
 });
 
 app.post('/api/command', async (req, res) => {
-  const { name, location, ip, command ,user} = req.body;
+  const { name, location, ip, command,parameters ,user} = req.body;
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
     var response = {
