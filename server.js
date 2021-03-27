@@ -104,13 +104,15 @@ app.use('/api', async function (req, res, next) {
 });
 
 app.post('/api/command', async (req, res) => {
-  const { name, location, ip, command } = req.body;
+  const { name, location, ip, command ,user} = req.body;
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
     var response = {
       type: "command",
       command: command,
+      user:user,
       parameters: parameters
+      
     }
     ws.send(JSON.stringify(response));
     const errorTimeout = setTimeout(errFunction, 10000, name, location, ip);
@@ -148,13 +150,14 @@ app.get('/api/agent/online', async (req, res) => {
 
 app.post('/api/agent/disconnect', async (req, res) => {
 
-  const { name, location, ip } = req.body;
+  const { name, location, ip,user } = req.body;
 
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
     
     var response = {
-      type: "Disconnected"
+      type: "Disconnected",
+      user:user
     }
    ws.send(JSON.stringify(response));
    ws.status="Disconnected";
@@ -173,13 +176,14 @@ app.post('/api/agent/disconnect', async (req, res) => {
 });
 
 app.post('/api/agent/connect', async (req, res) => {
-  const { name, location, ip } = req.body;
+  const { name, location, ip,user } = req.body;
 
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
     
     var response = {
-      type: "Connected"
+      type: "Connected",
+      user:user
     }
     ws.status="Connected";
     ws.send(JSON.stringify(response));
@@ -198,11 +202,12 @@ app.post('/api/agent/connect', async (req, res) => {
 });
 
 app.post('/api/screenshot', async (req, res) => {
-  const { name, location, ip } = req.body;
+  const { name, location, ip,user } = req.body;
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
     var response = {
       type: "getScreenshot",
+      user:user
     }
     ws.send(JSON.stringify(response));
     const errorTimeout = setTimeout(errFunction, 10000, name, location);
@@ -228,7 +233,7 @@ app.post('/api/screenshot', async (req, res) => {
 });
 
 app.post('/api/web/file/get', async (req, res) => {
-  const { name, location, ip, fileName } = req.body;
+  const { name, location, ip, fileName,user } = req.body;
 
   fs.readFile(name + location + ip + "/" + fileName, { encoding: 'base64' }, function (err, data) {
     if (err) {
@@ -247,7 +252,7 @@ app.post('/api/web/file/get', async (req, res) => {
 });
 
 app.post('/api/web/file/put', async (req, res) => {
-  const { name, location, ip, fileName, base64Data } = req.body;
+  const { name, location, ip, fileName, base64Data,user } = req.body;
 
   let buff = new Buffer.from(base64Data, 'base64');
 
@@ -271,13 +276,14 @@ app.post('/api/web/file/put', async (req, res) => {
 });
 
 app.post('/api/agent/file/get', async (req, res) => {
-  const { name, location, ip, fileName, path} = req.body;
+  const { name, location, ip, fileName, path,user} = req.body;
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
      var response = {
          type: "getFile",
          fileName: fileName,
-         path: path
+         path: path,
+         user:user
      }
     ws.send(JSON.stringify(response));
     const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
@@ -304,7 +310,7 @@ app.post('/api/agent/file/get', async (req, res) => {
 });
 
 app.post('/api/agent/file/put', async (req, res) => {
-  const { name, location, ip, fileName, path} = req.body;
+  const { name, location, ip, fileName, path,user} = req.body;
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
       fs.readFile(name + location + ip + "/" + fileName, { encoding: 'base64' }, function (err, data) {
@@ -317,7 +323,8 @@ app.post('/api/agent/file/put', async (req, res) => {
             type: "putFile",
             fileName: fileName,
             path: path,
-            base64Data: data
+            base64Data: data,
+            user:user
           }
           ws.send(JSON.stringify(response));
           const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
