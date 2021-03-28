@@ -67,6 +67,12 @@
                         "in": "query",
                         "required": false,
                         "type": "string"
+                    },
+                    {
+                        "name": "user",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
                     }
                 ],
                 "responses": {
@@ -238,6 +244,12 @@
                         "in": "query",
                         "required": false,
                         "type": "string"
+                    },
+                    {
+                        "name": "user",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
                     }
                 ],
                 "responses": {
@@ -323,6 +335,12 @@
                         "in": "query",
                         "required": false,
                         "type": "string"
+                    },
+                    {
+                        "name": "user",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
                     }
                 ],
                 "responses": {
@@ -396,6 +414,12 @@
                     },
                     {
                         "name": "base64Data",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "user",
                         "in": "query",
                         "required": false,
                         "type": "string"
@@ -476,6 +500,12 @@
                         "in": "query",
                         "required": false,
                         "type": "string"
+                    },
+                    {
+                        "name": "user",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
                     }
                 ],
                 "responses": {
@@ -549,6 +579,12 @@
                     },
                     {
                         "name": "path",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "user",
                         "in": "query",
                         "required": false,
                         "type": "string"
