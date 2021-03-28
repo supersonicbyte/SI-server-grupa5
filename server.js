@@ -36,7 +36,7 @@ wss.on('connection', function connection(ws) {
     if (message.type === 'sendCredentials') {
 
       const date = new Date()
-      console.log("Client connected: " + "Client: " + message.name + " " + message.ip + " " + date.toUTCString());
+      console.log("Client connected: " + "Client: " + message.name + " "+message.location+" " + message.ip + " " + date.toUTCString());
       ws.name = message.name;
       ws.location = message.location;
       ws.ip = message.ip;
@@ -53,7 +53,7 @@ wss.on('connection', function connection(ws) {
       responseMap[message.name + message.location + message.ip].resolve(messageMap[message.name + message.location + message.ip]);
     } else if (message.type === "sendFile") {
 
-      let buff = new Buffer.from(message.data, 'base64');
+      let buff = new Buffer.from(message.message, 'base64');
 
       let path = message.name + message.location + message.ip;
       let dir = './'+path;
@@ -81,7 +81,7 @@ wss.on('connection', function connection(ws) {
 
 // validator for all /api routes, checks if token is valid
 app.use('/api', async function (req, res, next) {
-  const { name, location, command } = req.body;
+  const { name, location, command,ip } = req.body;
   const authHeader = req.headers.authorization;
   const validation = await auth.validateJWT(authHeader);
   if (validation.status != 200) {
@@ -96,7 +96,7 @@ app.use('/api', async function (req, res, next) {
         token: x.accessToken,//
         message : ""//
       }
-     messageMap[name+location] = messageResponse;//
+     messageMap[name+location+ip] = messageResponse;//
 
   }
   
@@ -104,13 +104,15 @@ app.use('/api', async function (req, res, next) {
 });
 
 app.post('/api/command', async (req, res) => {
-  const { name, location, ip, command } = req.body;
+  const { name, location, ip, command,parameters ,user} = req.body;
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
     var response = {
       type: "command",
       command: command,
+      user:user,
       parameters: parameters
+      
     }
     ws.send(JSON.stringify(response));
     const errorTimeout = setTimeout(errFunction, 10000, name, location, ip);
@@ -148,13 +150,14 @@ app.get('/api/agent/online', async (req, res) => {
 
 app.post('/api/agent/disconnect', async (req, res) => {
 
-  const { name, location, ip } = req.body;
+  const { name, location, ip,user } = req.body;
 
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
     
     var response = {
-      type: "Disconnected"
+      type: "Disconnected",
+      user:user
     }
    ws.send(JSON.stringify(response));
    ws.status="Disconnected";
@@ -173,13 +176,14 @@ app.post('/api/agent/disconnect', async (req, res) => {
 });
 
 app.post('/api/agent/connect', async (req, res) => {
-  const { name, location, ip } = req.body;
+  const { name, location, ip,user } = req.body;
 
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
     
     var response = {
-      type: "Connected"
+      type: "Connected",
+      user:user
     }
     ws.status="Connected";
     ws.send(JSON.stringify(response));
@@ -198,13 +202,15 @@ app.post('/api/agent/connect', async (req, res) => {
 });
 
 app.post('/api/screenshot', async (req, res) => {
-  const { name, location, ip } = req.body;
+  const { name, location, ip,user } = req.body;
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
     var response = {
       type: "getScreenshot",
+      user:user
     }
     ws.send(JSON.stringify(response));
+    console.log("I sent it to them");
     const errorTimeout = setTimeout(errFunction, 10000, name, location);
     responseMap[name + location + ip].then((val) => {
       clearTimeout(errorTimeout);
@@ -228,7 +234,7 @@ app.post('/api/screenshot', async (req, res) => {
 });
 
 app.post('/api/web/file/get', async (req, res) => {
-  const { name, location, ip, fileName } = req.body;
+  const { name, location, ip, fileName,user } = req.body;
 
   fs.readFile(name + location + ip + "/" + fileName, { encoding: 'base64' }, function (err, data) {
     if (err) {
@@ -247,11 +253,18 @@ app.post('/api/web/file/get', async (req, res) => {
 });
 
 app.post('/api/web/file/put', async (req, res) => {
-  const { name, location, ip, fileName, base64Data } = req.body;
+  const { name, location, ip, fileName, base64Data,user } = req.body;
 
   let buff = new Buffer.from(base64Data, 'base64');
 
-  fs.writeFile(name + location + ip + "/" + fileName, buff, function (err) {
+  let path = name + location + ip;
+  let dir = './'+path;
+
+      if (!fs.existsSync(dir)){
+          fs.mkdirSync(dir);
+      }
+
+  fs.writeFile(path + "/" + fileName, buff, function (err) {
     if (err) {
       console.log("error: " + err)
       res.json({ error: "Error!" });
@@ -264,13 +277,14 @@ app.post('/api/web/file/put', async (req, res) => {
 });
 
 app.post('/api/agent/file/get', async (req, res) => {
-  const { name, location, ip, fileName, path} = req.body;
+  const { name, location, ip, fileName, path,user} = req.body;
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
      var response = {
          type: "getFile",
          fileName: fileName,
-         path: path
+         path: path,
+         user:user
      }
     ws.send(JSON.stringify(response));
     const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
@@ -297,7 +311,7 @@ app.post('/api/agent/file/get', async (req, res) => {
 });
 
 app.post('/api/agent/file/put', async (req, res) => {
-  const { name, location, ip, fileName, path} = req.body;
+  const { name, location, ip, fileName, path,user} = req.body;
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
       fs.readFile(name + location + ip + "/" + fileName, { encoding: 'base64' }, function (err, data) {
@@ -310,7 +324,8 @@ app.post('/api/agent/file/put', async (req, res) => {
             type: "putFile",
             fileName: fileName,
             path: path,
-            base64Data: data
+            data: data,
+            user:user
           }
           ws.send(JSON.stringify(response));
           const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
@@ -352,5 +367,5 @@ function errFunction(name, location, ip) {
 
 
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 25565;
 server.listen(PORT, () => console.log("Listening on port " + PORT));
