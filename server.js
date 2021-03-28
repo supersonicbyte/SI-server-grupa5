@@ -29,7 +29,7 @@ const responseMap = [];
 // map of response messages//
 const messageMap = [];//
 
-const DELAY = 30000; // In ms
+const DELAY = 300000; // In ms
 
 const interval = setInterval(async () => {
   for(k in clients) {
@@ -47,7 +47,7 @@ wss.on('connection', function connection(ws) {
   ws.send(JSON.stringify({ type: "Connected" }));
 
   ws.send('{"type":"ping", "user":"Server"}');
-  
+
   ws.on('message', (message) => {
     message = JSON.parse(message);
     if (message.type === 'sendCredentials') {
