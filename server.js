@@ -29,8 +29,25 @@ const responseMap = [];
 // map of response messages//
 const messageMap = [];//
 
+const DELAY = 30000; // In ms
+
+const interval = setInterval(async () => {
+  for(k in clients) {
+    if(clients[k].status === "Disconnected") {
+      return clients[k].terminate();
+    }
+
+    clients[k].status = "Disconnected";
+    clients[k].send('{"type":"ping", "user":"Server"}');
+  }
+}, DELAY);
+
+
 wss.on('connection', function connection(ws) {
   ws.send(JSON.stringify({ type: "Connected" }));
+
+  ws.send('{"type":"ping", "user":"Server"}');
+  
   ws.on('message', (message) => {
     message = JSON.parse(message);
     if (message.type === 'sendCredentials') {
@@ -71,10 +88,13 @@ wss.on('connection', function connection(ws) {
           console.log("done")
         }
       });
-    } else if (message.type = "savedFile") {
+    } else if (message.type == "savedFile") {
       responseMap[message.name + message.location+message.ip].resolve(JSON.stringify({type:"Success",message:"File saved on agent!"}));
    
-    }
+    } else if(message.type == "pong") {
+      ws.status = "Online";
+      // clearInterval(interval); Clears interval for all clients
+    } 
   });
 
 });
