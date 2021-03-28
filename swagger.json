@@ -67,6 +67,12 @@
                         "in": "query",
                         "required": false,
                         "type": "string"
+                    },
+                    {
+                        "name": "user",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
                     }
                 ],
                 "responses": {
@@ -78,7 +84,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/definitions/error"
+                                    "$ref": "#/definitions/id"
                                 }
                             }
                         }
@@ -135,7 +141,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/definitions/error"
+                                    "$ref": "#/definitions/id"
                                 }
                             }
                         }
@@ -192,7 +198,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/definitions/error"
+                                    "$ref": "#/definitions/id"
                                 }
                             }
                         }
@@ -238,6 +244,12 @@
                         "in": "query",
                         "required": false,
                         "type": "string"
+                    },
+                    {
+                        "name": "user",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
                     }
                 ],
                 "responses": {
@@ -249,7 +261,29 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/definitions/error"
+                                    "$ref": "#/definitions/id"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/agent/online": {
+            "get": {
+                "tags": [
+                    "Agent"
+                ],
+                "summary": "Get all connected clients",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/definitions/agent"
                                 }
                             }
                         }
@@ -301,6 +335,12 @@
                         "in": "query",
                         "required": false,
                         "type": "string"
+                    },
+                    {
+                        "name": "user",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
                     }
                 ],
                 "responses": {
@@ -319,7 +359,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/definitions/files404"
+                                    "$ref": "#/definitions/id"
                                 }
                             }
                         }
@@ -339,7 +379,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/definitions/filesreqput"
+                                "$ref": "#/definitions/filesreqputweb"
                             }
                         }
                     }
@@ -377,6 +417,12 @@
                         "in": "query",
                         "required": false,
                         "type": "string"
+                    },
+                    {
+                        "name": "user",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
                     }
                 ],
                 "responses": {
@@ -395,7 +441,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/definitions/files404"
+                                    "$ref": "#/definitions/id"
                                 }
                             }
                         }
@@ -416,7 +462,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/definitions/filesreqget"
+                                "$ref": "#/definitions/filesreqgetagent"
                             }
                         }
                     }
@@ -454,6 +500,12 @@
                         "in": "query",
                         "required": false,
                         "type": "string"
+                    },
+                    {
+                        "name": "user",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
                     }
                 ],
                 "responses": {
@@ -472,7 +524,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/definitions/files404"
+                                    "$ref": "#/definitions/id"
                                 }
                             }
                         }
@@ -530,6 +582,12 @@
                         "in": "query",
                         "required": false,
                         "type": "string"
+                    },
+                    {
+                        "name": "user",
+                        "in": "query",
+                        "required": false,
+                        "type": "string"
                     }
                 ],
                 "responses": {
@@ -548,7 +606,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/definitions/files404"
+                                    "$ref": "#/definitions/id"
                                 }
                             }
                         }
@@ -575,20 +633,6 @@
                     "type": "string"
                 },
                 "command": {
-                    "type": "string"
-                }
-            }
-        },
-        "error": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "location": {
                     "type": "string"
                 }
             }
@@ -621,6 +665,9 @@
                 },
                 "fileName": {
                     "type": "string"
+                },
+                "user": {
+                    "type": "string"
                 }
             }
         },
@@ -631,14 +678,6 @@
                     "type": "string"
                 },
                 "base64Data": {
-                    "type": "string"
-                }
-            }
-        },
-        "files404": {
-            "type": "object",
-            "properties": {
-                "error": {
                     "type": "string"
                 }
             }
@@ -658,7 +697,56 @@
                 "fileName": {
                     "type": "string"
                 },
+                "path": {
+                    "type": "string"
+                },
+                 "user": {
+                    "type": "string"
+                }
+            }
+        },
+        "filesreqgetagent": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "fileName": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "user": {
+                    "type": "string"
+                }
+            }
+        },
+        "filesreqputweb": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "fileName": {
+                    "type": "string"
+                },
                 "base64Data": {
+                    "type": "string"
+                },
+                 "user": {
                     "type": "string"
                 }
             }
