@@ -71,7 +71,7 @@ wss.on('connection', function connection(ws) {
           console.log("done")
         }
       });
-    } else if (message.type = "savedFile") {
+    } else if (message.type === "savedFile") {
       responseMap[message.name + message.location+message.ip].resolve(JSON.stringify({type:"Success",message:"File saved on agent!"}));
    
     }
@@ -105,6 +105,11 @@ app.use('/api', async function (req, res, next) {
 
 app.post('/api/command', async (req, res) => {
   const { name, location, ip, command,parameters ,user} = req.body;
+  if(name == undefined || location == undefined ||ip == undefined ||command == undefined ||parameters == undefined ||user == undefined){
+    res.status(400);
+    res.send({message:"Erorr, got wrong json"});
+    return;
+  }
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
     var response = {
@@ -151,6 +156,11 @@ app.get('/api/agent/online', async (req, res) => {
 app.post('/api/agent/disconnect', async (req, res) => {
 
   const { name, location, ip,user } = req.body;
+  if(name == undefined || location == undefined ||ip == undefined ||user == undefined){
+    res.status(400);
+    res.send({message:"Erorr, got wrong json"});
+    return;
+  }
 
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
@@ -178,6 +188,12 @@ app.post('/api/agent/disconnect', async (req, res) => {
 app.post('/api/agent/connect', async (req, res) => {
   const { name, location, ip,user } = req.body;
 
+  if(name == undefined || location == undefined ||ip == undefined ||user == undefined){
+    res.status(400);
+    res.send({message:"Erorr, got wrong json"});
+    return;
+  }
+
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
     
@@ -203,6 +219,11 @@ app.post('/api/agent/connect', async (req, res) => {
 
 app.post('/api/screenshot', async (req, res) => {
   const { name, location, ip,user } = req.body;
+  if(name == undefined || location == undefined ||ip == undefined || user == undefined){
+    res.status(400);
+    res.send({message:"Erorr, got wrong json"});
+    return;
+  }
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
     var response = {
@@ -236,6 +257,12 @@ app.post('/api/screenshot', async (req, res) => {
 app.post('/api/web/file/get', async (req, res) => {
   const { name, location, ip, fileName,user } = req.body;
 
+  if(name == undefined || location == undefined ||ip == undefined ||fileName == undefined ||user == undefined){
+    res.status(400);
+    res.send({message:"Erorr, got wrong json"});
+    return;
+  }
+
   fs.readFile(name + location + ip + "/" + fileName, { encoding: 'base64' }, function (err, data) {
     if (err) {
       console.log("error: " + err)
@@ -254,6 +281,11 @@ app.post('/api/web/file/get', async (req, res) => {
 
 app.post('/api/web/file/put', async (req, res) => {
   const { name, location, ip, fileName, base64Data,user } = req.body;
+  if(name == undefined || location == undefined ||ip == undefined ||fileName == undefined ||base64Data == undefined ||user == undefined){
+    res.status(400);
+    res.send({message:"Erorr, got wrong json"});
+    return;
+  }
 
   let buff = new Buffer.from(base64Data, 'base64');
 
@@ -267,7 +299,8 @@ app.post('/api/web/file/put', async (req, res) => {
   fs.writeFile(path + "/" + fileName, buff, function (err) {
     if (err) {
       console.log("error: " + err)
-      res.json({ error: "Error!" });
+      res.status(404);
+      res.json({ error: err });
     }
     else {
       console.log("done");
@@ -278,6 +311,11 @@ app.post('/api/web/file/put', async (req, res) => {
 
 app.post('/api/agent/file/get', async (req, res) => {
   const { name, location, ip, fileName, path,user} = req.body;
+  if(name == undefined || location == undefined ||ip == undefined ||fileName == undefined ||path == undefined ||user == undefined){
+    res.status(400);
+    res.send({message:"Erorr, got wrong json"});
+    return;
+  }
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
      var response = {
@@ -312,6 +350,11 @@ app.post('/api/agent/file/get', async (req, res) => {
 
 app.post('/api/agent/file/put', async (req, res) => {
   const { name, location, ip, fileName, path,user} = req.body;
+  if(name == undefined || location == undefined ||ip == undefined ||fileName == undefined ||path == undefined ||user == undefined){
+    res.status(404);
+    res.send({message:"Erorr, got wrong json"});
+    return;
+  }
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
       fs.readFile(name + location + ip + "/" + fileName, { encoding: 'base64' }, function (err, data) {
@@ -356,6 +399,7 @@ app.get('/', (req, res) => {
 })
 
 function errFunction(name, location, ip) {
+  try{
   var errResp = {
     error: "Client took too long to respond",
     name: name,
@@ -363,6 +407,9 @@ function errFunction(name, location, ip) {
     ip: ip
   }
   responseMap[name + location + ip].reject(errResp);
+}catch(err){
+  console.log("errFunction error "+err);
+}
 }
 
 
