@@ -29,7 +29,7 @@ const responseMap = [];
 // map of response messages//
 const messageMap = [];//
 
-const DELAY = 300000; // In ms
+const DELAY = 3000000; // In ms
 
 const interval = setInterval(async () => {
   for(k in clients) {
