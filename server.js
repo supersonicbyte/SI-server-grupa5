@@ -71,7 +71,7 @@ wss.on('connection', function connection(ws) {
           console.log("done")
         }
       });
-    } else if (message.type = "savedFile") {
+    } else if (message.type === "savedFile") {
       responseMap[message.name + message.location+message.ip].resolve(JSON.stringify({type:"Success",message:"File saved on agent!"}));
    
     }
@@ -239,7 +239,7 @@ app.post('/api/web/file/get', async (req, res) => {
   fs.readFile(name + location + ip + "/" + fileName, { encoding: 'base64' }, function (err, data) {
     if (err) {
       console.log("error: " + err)
-      res.json({ error: "Error!" });
+      res.json({ message: "Error!" });
     }
     else {
       var response = {
@@ -267,7 +267,7 @@ app.post('/api/web/file/put', async (req, res) => {
   fs.writeFile(path + "/" + fileName, buff, function (err) {
     if (err) {
       console.log("error: " + err)
-      res.json({ error: "Error!" });
+      res.json({ message: "Error!" });
     }
     else {
       console.log("done");
