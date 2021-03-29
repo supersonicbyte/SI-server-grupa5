@@ -34,6 +34,7 @@ const DELAY = 300000; // In ms
 const interval = setInterval(async () => {
   for(k in clients) {
     if(clients[k].status === "Disconnected") {
+      clients[k].send('{"type":"Disconnected", "user":"Server"}');
       return clients[k].terminate();
     }
 
