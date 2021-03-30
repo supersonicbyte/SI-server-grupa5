@@ -29,10 +29,15 @@ const responseMap = [];
 // map of response messages//
 const messageMap = [];//
 
-const DELAY = 3000000; // In ms
+const DELAY = 300000; // In ms
+
+const date = new Date();
 
 const interval = setInterval(async () => {
   for(k in clients) {
+
+    if(clients[k]==undefined)continue;
+    
     if(clients[k].status === "Disconnected") {
       clients[k].send('{"type":"Disconnected", "user":"Server"}');
       return clients[k].terminate();
@@ -45,15 +50,20 @@ const interval = setInterval(async () => {
 
 
 wss.on('connection', function connection(ws) {
-  ws.send(JSON.stringify({ type: "Connected" }));
-
-  ws.send('{"type":"ping", "user":"Server"}');
 
   ws.on('message', (message) => {
     message = JSON.parse(message);
     if (message.type === 'sendCredentials') {
 
-      const date = new Date()
+      if(clients[message.name+message.location+message.ip]!=undefined){
+
+        ws.send('{"type":"Error", "message":"Already connected"}');
+        ws.close();
+        return;
+
+      }
+
+      
       console.log("Client connected: " + "Client: " + message.name + " "+message.location+" " + message.ip + " " + date.toUTCString());
       ws.name = message.name;
       ws.location = message.location;
@@ -62,6 +72,7 @@ wss.on('connection', function connection(ws) {
       ws.status = "Online";
       clients[message.name + message.location + message.ip] = ws;
       responseMap[message.name + message.location + message.ip] = emptyPromise();
+      ws.send(JSON.stringify({ type: "Connected" }));
     }
     else if (message.type === "command_result") {
       messageMap[message.name + message.location + message.ip].message = message.message;//
@@ -93,8 +104,32 @@ wss.on('connection', function connection(ws) {
       responseMap[message.name + message.location+message.ip].resolve(JSON.stringify({type:"Success",message:"File saved on agent!"}));
    
     } else if (message.type === "pong") {
+      console.log(ws.name+" ponged");
       ws.status = "Online";
     }
+  });
+
+  ws.on('close',() =>{
+
+    
+    let id = ws.name+ws.location+ws.ip;
+
+    let socket = clients[id];
+
+    if(socket == undefined)return;
+
+    console.log(socket.name+socket.location+socket.ip+" has gone offline");
+
+    var errResp = {
+      error: "Device couldnt respond!",
+      name: ws.name,
+      location: ws.location,
+      ip: ws.ip
+    }
+    responseMap[id].status=400;
+    responseMap[id].resolve(errResp);
+    clients[id]=undefined;
+
   });
 
 });
