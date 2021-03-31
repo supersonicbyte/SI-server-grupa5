@@ -1,4 +1,5 @@
 const auth = require('./auth/auth.js');
+const unique = require('./unique/unique.js');
 const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
@@ -8,6 +9,7 @@ const emptyPromise = require('empty-promise')
 const env = require('dotenv');
 const WebSocket = require('ws');
 const fs = require("fs")
+var dateFormat = require("dateformat");
 // web socket server
 const wss = new WebSocket.Server({ server: server });
 // cross origin
@@ -62,17 +64,39 @@ wss.on('connection', function connection(ws) {
         return;
 
       }
-
-      
+ 
       console.log("Client connected: " + "Client: " + message.name + " "+message.location+" " + message.ip + " " + date.toUTCString());
+
+     /* const uniqueCode =  unique.validateInstallationCode(message.code);
+      if (uniqueCode.status != 200) {
+        ws.send('{"type":"Error", "message":"Installation code not valid"}');
+        ws.close();
+        return;
+      } else {
+
+         ws.name = message.name;
+         ws.location = message.location;
+         ws.ip = message.ip;
+         ws.path = message.path;
+         ws.unique=uniqueCode;
+         ws.status = "Online";
+        
+         clients[message.name + message.location + message.ip] = ws;
+         responseMap[message.name + message.location + message.ip] = emptyPromise();
+         ws.send(JSON.stringify({ type: "Connected" , 
+                                  unique: unique
+                                }));
+      }  */
       ws.name = message.name;
       ws.location = message.location;
       ws.ip = message.ip;
       ws.path = message.path;
+     // ws.unique=uniqueCode;
       ws.status = "Online";
+      ws.send("Connected");
       clients[message.name + message.location + message.ip] = ws;
       responseMap[message.name + message.location + message.ip] = emptyPromise();
-      ws.send(JSON.stringify({ type: "Connected" }));
+      
     }
     else if (message.type === "command_result") {
       messageMap[message.name + message.location + message.ip].message = message.message;//
@@ -82,14 +106,27 @@ wss.on('connection', function connection(ws) {
       responseMap[message.name + message.location + message.ip].resolve(messageMap[message.name + message.location + message.ip]);
     } else if (message.type === "sendFile") {
 
-      let buff = new Buffer.from(message.message, 'base64');
+      let buff = new Buffer.from(message.config, 'base64');
 
       let path = message.name + message.location + message.ip;
       let dir = './'+path;
 
-          if (!fs.existsSync(dir)){
-              fs.mkdirSync(dir);
-          }
+      if (!fs.existsSync(dir)){
+        fs.mkdirSync(dir);
+      }
+ 
+     // let fileName=message.fileName; ako trebao datum
+      if(message.fileName==="config.json"){  
+
+        dir = dir+"/config";
+        if (!fs.existsSync(dir)){
+          fs.mkdirSync(dir);
+        }
+       // fileName="/config"+"31.3.2021"+".json"; //  ako bude datum trebao
+        path= path + "/config";
+       
+      } 
+
       fs.writeFile(path+"/"+message.fileName, buff, function (err) {
         if (err) {
           responseMap[message.name + message.location+message.ip].resolve(JSON.stringify({type:"Error",message:"Error writing file"}));
@@ -318,7 +355,12 @@ app.post('/api/web/file/get', async (req, res) => {
     return;
   }
 
-  fs.readFile(name + location + ip + "/" + fileName, { encoding: 'base64' }, function (err, data) {
+  let putanja=name + location + ip + "/";
+      if(fileName==="config.json"){
+       putanja=putanja + "/config/"
+      }
+
+  fs.readFile(putanja+ "/" + fileName, { encoding: 'base64' }, function (err, data) {
     if (err) {
       console.log("error: " + err)
       res.json({ error: "Error!" });
@@ -412,7 +454,13 @@ app.post('/api/agent/file/put', async (req, res) => {
   }
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
-      fs.readFile(name + location + ip + "/" + fileName, { encoding: 'base64' }, function (err, data) {
+
+      let putanja=name + location + ip + "/";
+      if(fileName==="config.json"){
+       putanja=putanja + "/config/"
+      }
+
+      fs.readFile(putanja + fileName, { encoding: 'base64' }, function (err, data) {
         if (err) {
           console.log("error: " + err)
           res.json({ error: "Error!" });
