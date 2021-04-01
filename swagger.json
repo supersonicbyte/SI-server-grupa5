@@ -11,7 +11,7 @@
     },
     "servers": [
         {
-            "description": "Heroku"
+            "url": "https://si-grupa5.herokuapp.com"
         }
     ],
     "tags": [
@@ -34,20 +34,20 @@
     "produces": [
         "application/json"
     ],
+    "schemes": ["https"],
     "paths": {
         "/api/screenshot": {
             "post": {
                 "tags": [
                     "Screenshot"
                 ],
-                "summary": "Create a new screenshot in system",
+                "summary": "Screenshot from agent",
                 "requestBody": {
-                    "description": "Comand Object",
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/definitions/id"
+                                "$ref": "#/components/schemas/screenshot"
                             }
                         }
                     }
@@ -55,36 +55,36 @@
                 "produces": [
                     "application/json"
                 ],
-                "parameters": [
-                    {
-                        "name": "name",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "location",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "user",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    }
-                ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "Successful"
                     },
                     "404": {
-                        "description": "Failed",
+                        "description": "Agent is not connected to the server",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/definitions/id"
+                                    "$ref": "#/components/schemas/error404"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error400"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error403"
                                 }
                             }
                         }
@@ -97,14 +97,13 @@
                 "tags": [
                     "Command"
                 ],
-                "summary": "Execute a command",
+                "summary": "Execute a command on the agent",
                 "requestBody": {
-                    "description": "JSON Object",
-                    "required": false,
+                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/definitions/Command"
+                                "$ref": "#/components/schemas/command"
                             }
                         }
                     }
@@ -112,36 +111,36 @@
                 "produces": [
                     "application/json"
                 ],
-                "parameters": [
-                    {
-                        "name": "name",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "location",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "command",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    }
-                ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "Successful"
                     },
                     "404": {
-                        "description": "Device is not connected to the server!",
+                        "description": "Agent is not connected to the server",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/definitions/id"
+                                    "$ref": "#/components/schemas/error404"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error400"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error403"
                                 }
                             }
                         }
@@ -156,12 +155,11 @@
                 ],
                 "summary": "Disconnect a client",
                 "requestBody": {
-                    "description": "JSON Object",
-                    "required": false,
+                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/definitions/agent"
+                                "$ref": "#/components/schemas/agent"
                             }
                         }
                     }
@@ -169,36 +167,57 @@
                 "produces": [
                     "application/json"
                 ],
-                "parameters": [
-                    {
-                        "name": "name",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "location",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "ip",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    }
-                ],
                 "responses": {
                     "200": {
-                        "description": "disconnected"
-                    },
-                    "404": {
-                        "description": "Device is not connected to the server!",
+                        "description": "Successful",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/definitions/id"
+                                    "$ref": "#/components/schemas/disconnected"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Agent can't be disconnected",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Device is not found!"
+                                        },
+                                        "name": {
+                                            "type":"string",
+                                            "example": "Agent"
+                                        },
+                                        "location": {
+                                            "type":"string",
+                                            "example": "City"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error400"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error403"
                                 }
                             }
                         }
@@ -213,12 +232,11 @@
                 ],
                 "summary": "Connect a client",
                 "requestBody": {
-                    "description": "JSON Object",
-                    "required": false,
+                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/definitions/agent"
+                                "$ref": "#/components/schemas/agent"
                             }
                         }
                     }
@@ -226,42 +244,57 @@
                 "produces": [
                     "application/json"
                 ],
-                "parameters": [
-                    {
-                        "name": "name",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "location",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "ip",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "user",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    }
-                ],
                 "responses": {
                     "200": {
-                        "description": "connected"
+                        "description": "Successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/connected"
+                                }
+                            }
+                        }
                     },
                     "404": {
-                        "description": "Device is not found!",
+                        "description": "Agent can't be connected",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/definitions/id"
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Device is not found!"
+                                        },
+                                        "name": {
+                                            "type":"string",
+                                            "example": "Agent"
+                                        },
+                                        "location": {
+                                            "type":"string",
+                                            "example": "City"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error400"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error403"
                                 }
                             }
                         }
@@ -280,32 +313,24 @@
                 ],
                 "responses": {
                     "200": {
+                        "description":"Successful",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/definitions/agent"
+                                    "type":"array",
+                                    "items": {
+                                        "$ref":"#/components/schemas/clients"
+                                    }
                                 }
                             }
                         }
-                    }
-                }
-            }
-        },
-        "/api/agent/online": {
-            "get": {
-                "tags": [
-                    "Agent"
-                ],
-                "summary": "Get all connected clients",
-                "produces": [
-                    "application/json"
-                ],
-                "responses": {
-                    "200": {
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
                         "content": {
-                            "application/json": {
+                            "text/plain": {
                                 "schema": {
-                                    "$ref": "#/definitions/agent"
+                                    "$ref":"#/components/schemas/error403"
                                 }
                             }
                         }
@@ -318,14 +343,13 @@
                 "tags": [
                     "Files"
                 ],
-                "summary": "Get file from server",
+                "summary": "Get a file from the server",
                 "requestBody": {
-                    "description": "JSON Object",
-                    "required": false,
+                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/definitions/filesreqget"
+                                "$ref": "#/components/schemas/webGet"
                             }
                         }
                     }
@@ -333,55 +357,49 @@
                 "produces": [
                     "application/json"
                 ],
-                "parameters": [
-                    {
-                        "name": "name",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "location",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "ip",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "fileName",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "user",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    }
-                ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Successful",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/definitions/files200"
+                                    "$ref": "#/components/schemas/files200"
                                 }
                             }
                         }
                     },
                     "404": {
-                        "description": "Error: message",
+                        "description": "File could not be read",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/definitions/id"
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type":"string",
+                                            "example": "Error!"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error400"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error403"
                                 }
                             }
                         }
@@ -394,14 +412,13 @@
                 "tags": [
                     "Files"
                 ],
-                "summary": "Put file to the server",
+                "summary": "Put a file on the server",
                 "requestBody": {
-                    "description": "JSON Object",
-                    "required": false,
+                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/definitions/filesreqputweb"
+                                "$ref": "#/components/schemas/webPutB64"
                             }
                         }
                     }
@@ -409,61 +426,55 @@
                 "produces": [
                     "application/json"
                 ],
-                "parameters": [
-                    {
-                        "name": "name",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "location",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "ip",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "fileName",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "base64Data",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "user",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    }
-                ],
                 "responses": {
                     "200": {
-                        "description": "Done!",
+                        "description": "Successful",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/definitions/id"
+                                    "type":"object",
+                                    "properties": {
+                                        "message": {
+                                            "type":"string",
+                                            "example":"Done!"
+                                        }
+                                    }
                                 }
                             }
                         }
                     },
                     "404": {
-                        "description": "Error",
+                        "description": "File could not be found",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/definitions/id"
+                                    "type":"object",
+                                    "properties": {
+                                        "error": {
+                                            "type":"string",
+                                            "example":"Error!"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error400"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error403"
                                 }
                             }
                         }
@@ -471,20 +482,18 @@
                 }
             }
         },
-        
         "/api/agent/file/get": {
             "post": {
                 "tags": [
                     "Files"
                 ],
-                "summary": "Get file from agent to server",
+                "summary": "Get file from an agent to the server",
                 "requestBody": {
-                    "description": "JSON Object",
-                    "required": false,
+                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/definitions/filesreqgetagent"
+                                "$ref": "#/components/schemas/file"
                             }
                         }
                     }
@@ -492,61 +501,36 @@
                 "produces": [
                     "application/json"
                 ],
-                "parameters": [
-                    {
-                        "name": "name",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "location",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "ip",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "fileName",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "path",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "user",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    }
-                ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Successful"
+                    },
+                    "404": {
+                        "description": "Could not find file",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/definitions/id"
+                                    "$ref":"#/components/schemas/error404"
                                 }
                             }
                         }
                     },
-                    "404": {
-                        "description": "Error: message",
+                    "400": {
+                        "description": "Bad request body",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/definitions/id"
+                                    "$ref": "#/components/schemas/error400"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error403"
                                 }
                             }
                         }
@@ -559,14 +543,13 @@
                 "tags": [
                     "Files"
                 ],
-                "summary": "Put file from server to agent",
+                "summary": "Put file from server to an agent",
                 "requestBody": {
-                    "description": "JSON Object",
-                    "required": false,
+                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/definitions/filesreqput"
+                                "$ref": "#/components/schemas/file"
                             }
                         }
                     }
@@ -574,61 +557,36 @@
                 "produces": [
                     "application/json"
                 ],
-                "parameters": [
-                    {
-                        "name": "name",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "location",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "ip",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "fileName",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "path",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "user",
-                        "in": "query",
-                        "required": false,
-                        "type": "string"
-                    }
-                ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Successful"
+                    },
+                    "404": {
+                        "description": "Could not find file",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/definitions/id"
+                                    "$ref":"#/components/schemas/error404"
                                 }
                             }
                         }
                     },
-                    "404": {
-                        "description": "Error: message",
+                    "400": {
+                        "description": "Bad request body",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/definitions/id"
+                                    "$ref": "#/components/schemas/error400"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error403"
                                 }
                             }
                         }
@@ -637,142 +595,270 @@
             }
         }
     },
-    "definitions": {
-        "id": {
-            "properties": {
-                "message": {
-                    "type": "string"
+    "components": {
+        "schemas": {
+            "screenshot": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Agent"
+                    },
+                    "location": {
+                        "type":"string",
+                        "example":"City"
+                    },
+                    "ip": {
+                        "type":"string",
+                        "example":"0.0.0.0"
+                    },
+                    "user": {
+                        "type":"string",
+                        "example":"User"
+                    }
+                }
+            },
+            "command": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example":"Agent"
+                    },
+                    "location": {
+                        "type": "string",
+                        "example":"City"
+                    },
+                    "ip": {
+                        "type": "string",
+                        "example":"0.0.0.0"
+                    },
+                    "command": {
+                        "type":"string",
+                        "example":"dir"
+                    },
+                    "parameters":{
+                        "type":"string",
+                        "example":"Parameters"
+                    },
+                    "user": {
+                        "type":"string",
+                        "example":"User"
+                    }
+                }
+            },
+            "agent": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example":"Agent"
+                    },
+                    "location": {
+                        "type": "string",
+                        "example":"City"
+                    },
+                    "ip": {
+                        "type": "string",
+                        "example":"0.0.0.0"
+                    },
+                    "user": {
+                        "type":"string",
+                        "example":"User"
+                    }
+                }
+            },
+            "webGet": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example":"Agent"
+                    },
+                    "location": {
+                        "type": "string",
+                        "example":"City"
+                    },
+                    "ip": {
+                        "type": "string",
+                        "example":"0.0.0.0"
+                    },
+                    "fileName": {
+                        "type": "string",
+                        "example":"File"
+                    },
+                    "user": {
+                        "type": "string",
+                        "example":"User"
+                    }
+                }
+            },
+            "webPutB64": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example":"Agent"
+                    },
+                    "location": {
+                        "type": "string",
+                        "example":"City"
+                    },
+                    "ip": {
+                        "type": "string",
+                        "example":"0.0.0.0"
+                    },
+                    "fileName": {
+                        "type": "string",
+                        "example":"File"
+                    },
+                    "path": {
+                        "type": "string",
+                        "example":"/"
+                    },
+                    "user": {
+                        "type": "string",
+                        "example":"User"
+                    },
+                    "base64Data": {
+                        "type":"string"
+                    }
+                }
+            },
+            "file": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example":"Agent"
+                    },
+                    "location": {
+                        "type": "string",
+                        "example":"City"
+                    },
+                    "ip": {
+                        "type": "string",
+                        "example":"0.0.0.0"
+                    },
+                    "fileName": {
+                        "type": "string",
+                        "example":"File"
+                    },
+                    "path": {
+                        "type":"string",
+                        "example":"/"
+                    },
+                    "user": {
+                        "type": "string",
+                        "example":"User"
+                    }
+                }
+            },
+            "disconnected": {
+                "type":"object",
+                "properties": {
+                    "type": {
+                        "type":"string",
+                        "example":"Disconnected"
+                    },
+                    "user": {
+                        "type":"string",
+                        "example":"User"
+                    }
+                }
+            },
+            "connected": {
+                "type":"object",
+                "properties": {
+                    "type": {
+                        "type":"string",
+                        "example":"Connected"
+                    },
+                    "user": {
+                        "type":"string",
+                        "example":"User"
+                    }
+                }
+            },
+            "clients": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example":"Agent"
+                    },
+                    "location": {
+                        "type": "string",
+                        "example":"City"
+                    },
+                    "ip": {
+                        "type": "string",
+                        "example":"0.0.0.0"
+                    },
+                    "path": {
+                        "type":"string",
+                        "example":"/"
+                    },
+                    "status": {
+                        "type":"string",
+                        "example":"Connected"
+                    }
+                }
+            },
+            "error400": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Erorr, got wrong json"
+                    }
+                }
+            },
+            "error403": {
+                "type":"string",
+                "example":"Token not valid"
+            },
+            "files200": {
+                "type": "object",
+                "properties": {
+                    "fileName": {
+                        "type": "string",
+                        "example":"File"
+                    },
+                    "base64Data": {
+                        "type": "string"
+                    }
+                }
+            },
+            "error404": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "string",
+                        "example": "Device is not connected to the server!"
+                    },
+                    "name": {
+                        "type":"string",
+                        "example": "Agent"
+                    },
+                    "location": {
+                        "type":"string",
+                        "example": "City"
+                    }
                 }
             }
         },
-        "Command": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "location": {
-                    "type": "string"
-                },
-                "command": {
-                    "type": "string"
-                }
-            }
-        },
-        "agent": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "location": {
-                    "type": "string"
-                },
-                "ip": {
-                    "type": "string"
-                }
-            }
-        },
-        "filesreqget": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "location": {
-                    "type": "string"
-                },
-                "ip": {
-                    "type": "string"
-                },
-                "fileName": {
-                    "type": "string"
-                },
-                "user": {
-                    "type": "string"
-                }
-            }
-        },
-        "files200": {
-            "type": "object",
-            "properties": {
-                "fileName": {
-                    "type": "string"
-                },
-                "base64Data": {
-                    "type": "string"
-                }
-            }
-        },
-        "filesreqput": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "location": {
-                    "type": "string"
-                },
-                "ip": {
-                    "type": "string"
-                },
-                "fileName": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                 "user": {
-                    "type": "string"
-                }
-            }
-        },
-        "filesreqgetagent": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "location": {
-                    "type": "string"
-                },
-                "ip": {
-                    "type": "string"
-                },
-                "fileName": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "user": {
-                    "type": "string"
-                }
-            }
-        },
-        "filesreqputweb": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "location": {
-                    "type": "string"
-                },
-                "ip": {
-                    "type": "string"
-                },
-                "fileName": {
-                    "type": "string"
-                },
-                "base64Data": {
-                    "type": "string"
-                },
-                 "user": {
-                    "type": "string"
-                }
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
             }
         }
-
-    }
+    },
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ]
 }
