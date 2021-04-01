@@ -1,4 +1,5 @@
 const auth = require('./auth/auth.js');
+const unique = require('./unique/unique.js');
 const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
@@ -8,6 +9,7 @@ const emptyPromise = require('empty-promise')
 const env = require('dotenv');
 const WebSocket = require('ws');
 const fs = require("fs")
+var dateFormat = require("dateformat");
 // web socket server
 const wss = new WebSocket.Server({ server: server });
 // cross origin
@@ -63,16 +65,17 @@ wss.on('connection', function connection(ws) {
 
       }
 
-      
       console.log("Client connected: " + "Client: " + message.name + " "+message.location+" " + message.ip + " " + date.toUTCString());
       ws.name = message.name;
       ws.location = message.location;
       ws.ip = message.ip;
       ws.path = message.path;
+     // ws.unique=uniqueCode;
       ws.status = "Online";
+      ws.send("Connected"); //mozda treba json
       clients[message.name + message.location + message.ip] = ws;
       responseMap[message.name + message.location + message.ip] = emptyPromise();
-      ws.send(JSON.stringify({ type: "Connected" }));
+      
     }
     else if (message.type === "command_result") {
       messageMap[message.name + message.location + message.ip].message = message.message;//
@@ -81,16 +84,33 @@ wss.on('connection', function connection(ws) {
       messageMap[message.name + message.location + message.ip].message = message.message;//
       responseMap[message.name + message.location + message.ip].resolve(messageMap[message.name + message.location + message.ip]);
     } else if (message.type === "sendFile") {
-
-      let buff = new Buffer.from(message.message, 'base64');
+      
+      
+      let buff = new Buffer.from(message.config, 'base64');
 
       let path = message.name + message.location + message.ip;
-      let dir = './'+path;
+      let dir = './allFiles';
+      if (!fs.existsSync(dir)){
+        fs.mkdirSync(dir);
+      }
+       dir = dir+"/"+path;
+      if (!fs.existsSync(dir)){
+        fs.mkdirSync(dir);
+      }
+ 
+      // let fileName=message.fileName; ako trebao datum
+      if(message.fileName==="config.json"){  
 
-          if (!fs.existsSync(dir)){
-              fs.mkdirSync(dir);
-          }
-      fs.writeFile(path+"/"+message.fileName, buff, function (err) {
+        dir = dir+"/config";
+        if (!fs.existsSync(dir)){
+          fs.mkdirSync(dir);
+        }
+       // fileName="/config"+"31.3.2021"+".json"; //  ako bude datum trebao
+        path= path + "/config";
+       
+      } 
+
+      fs.writeFile("allFiles/"+path+"/"+message.fileName, buff, function (err) {
         if (err) {
           responseMap[message.name + message.location+message.ip].resolve(JSON.stringify({type:"Error",message:"Error writing file"}));
           console.log("error: " + err)
@@ -154,7 +174,6 @@ app.use('/api', async function (req, res, next) {
      messageMap[name+location+ip] = messageResponse;//
 
   }
-  
   next();
 });
 
@@ -309,19 +328,20 @@ app.post('/api/screenshot', async (req, res) => {
   }
 });
 
-app.post('/api/web/file/get', async (req, res) => {
-  const { name, location, ip, fileName,user } = req.body;
+app.post('/api/web/user/file/get', async (req, res) => { //user uzima svoj file sa servera
+  const { fileName,user } = req.body;
 
-  if(name == undefined || location == undefined ||ip == undefined ||fileName == undefined ||user == undefined){
+  if(fileName == undefined ||user == undefined){
     res.status(400);
     res.send({message:"Erorr, got wrong json"});
     return;
   }
+  let putanja="allFiles/" +user;
 
-  fs.readFile(name + location + ip + "/" + fileName, { encoding: 'base64' }, function (err, data) {
+  fs.readFile(putanja+ "/" + fileName, { encoding: 'base64' }, function (err, data) {
     if (err) {
       console.log("error: " + err)
-      res.json({ error: "Error!" });
+      res.json({ error: "Error, no such file!" });
     }
     else {
       var response = {
@@ -334,24 +354,59 @@ app.post('/api/web/file/get', async (req, res) => {
   });
 });
 
-app.post('/api/web/file/put', async (req, res) => {
-  const { name, location, ip, fileName, base64Data,user } = req.body;
-  if(name == undefined || location == undefined ||ip == undefined ||fileName == undefined ||base64Data == undefined ||user == undefined){
+app.post('/api/web/agent/file/get', async (req, res) => { //user trazi file sa servera koji pripada nekoj masini(agentu)
+  const { name, location, ip, fileName,user } = req.body;
+
+  if(name == undefined || location == undefined || ip == undefined || fileName == undefined || user == undefined ){
     res.status(400);
     res.send({message:"Erorr, got wrong json"});
     return;
   }
+  let path="allFiles/" + name + location + ip;
+
+  if(fileName === "config.json"  )
+    path= path + "/config";
+
+  fs.readFile(path + "/" + fileName, { encoding: 'base64' }, function (err, data) {
+    if (err) {
+      console.log("error: " + err)
+      res.json({ error: "Error, no such file!" });
+    }
+    else {
+      var response = {
+        fileName: fileName,
+        base64Data: data
+      }
+      res.status = 200;
+      res.send(response);
+    }
+  });
+});
+
+app.post('/api/web/user/file/put', async (req, res) => {  //spasavanje user file-ova na server od strane web-a(samo njima primadaju)
+  
+  const {fileName, base64Data,user } = req.body;
+  
+  if(fileName == undefined ||base64Data == undefined ||user == undefined){
+    res.status(400);
+    res.send({message:"Erorr, got wrong json"});
+    console.log("tu sam");
+    return;
+  }
 
   let buff = new Buffer.from(base64Data, 'base64');
-
-  let path = name + location + ip;
-  let dir = './'+path;
-
+  let path =user;
+      let dir = './allFiles';
       if (!fs.existsSync(dir)){
-          fs.mkdirSync(dir);
+        fs.mkdirSync(dir);
       }
-
-  fs.writeFile(path + "/" + fileName, buff, function (err) {
+       dir = dir+"/"+path;
+      if (!fs.existsSync(dir)){
+        fs.mkdirSync(dir);
+      }
+ 
+ fs.writeFile("allFiles/"+path+"/"+fileName, buff, function (err) {
+ 
     if (err) {
       console.log("error: " + err)
       res.status(404);
@@ -362,6 +417,90 @@ app.post('/api/web/file/put', async (req, res) => {
       res.json({ message: "Done!" });
     }
   });
+});
+
+app.post('/api/web/agent/file/put', async (req, res) => {  //slanje agent file-ova na server od strane web-a
+   
+  const { name, location, ip, fileName, base64Data,user } = req.body;
+  
+  if(name == undefined || location == undefined ||ip == undefined ||fileName == undefined ||base64Data == undefined ||user == undefined){
+    res.status(400);
+    res.send({message:"Erorr, got wrong json"});
+    return;
+  }
+ 
+  //create path
+  let buff = new Buffer.from(base64Data, 'base64');
+  let path = name + location + ip;
+      let dir = './allFiles';
+      if (!fs.existsSync(dir)){
+        fs.mkdirSync(dir);
+      }
+       dir = dir+"/"+path;
+      if (!fs.existsSync(dir)){
+        fs.mkdirSync(dir);
+      }
+ 
+      if(fileName === "config.json") {  
+
+        dir = dir+"/config";
+        if (!fs.existsSync(dir)){
+          fs.mkdirSync(dir);
+        }
+       // fileName="/config"+"31.3.2021"+".json"; //  ako bude datum trebao
+        path= path + "/config";
+       
+      } 
+
+ fs.writeFile("allFiles/"+path+"/"+fileName, buff, function (err) {
+ 
+  if (err) {
+      console.log("error: " + err)
+      res.status(404);
+      res.json({ error: err });
+  } else {
+      //send config file to agent
+      let ws = clients[name + location + ip];
+      if (ws !== undefined) {
+        if(fileName==="config.json"){
+          
+          var response = {
+            type: "putFile",
+            fileName: fileName,
+            path: path,
+            data: base64Data,
+            user:user
+          }
+
+          ws.send(JSON.stringify(response));
+          //ws.send("config");
+          const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
+          responseMap[name + location + ip].then((val) => {
+            clearTimeout(errorTimeout);
+            responseMap[name + location + ip] = emptyPromise();
+            res.json(val);
+          }).catch((err) => {
+            res.statusCode = 404;
+            res.json(err);
+          });
+        
+        }
+      } else {
+         var errResp = {
+            error: "Device is not connected to the server!",
+            name: name,
+            location: location,
+            ip: ip
+          }
+          
+        res.statusCode = 404;
+        res.json(errResp);
+      }
+      
+    res.json({ message: "Done!" });
+    
+  }
+});
 });
 
 app.post('/api/agent/file/get', async (req, res) => {
@@ -412,7 +551,13 @@ app.post('/api/agent/file/put', async (req, res) => {
   }
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
-      fs.readFile(name + location + ip + "/" + fileName, { encoding: 'base64' }, function (err, data) {
+
+      let putanja=name + location + ip + "/";
+      if(fileName==="config.json"){
+       putanja=putanja + "/config/"
+      }
+
+      fs.readFile(putanja + fileName, { encoding: 'base64' }, function (err, data) {
         if (err) {
           console.log("error: " + err)
           res.json({ error: "Error!" });
@@ -469,5 +614,5 @@ function errFunction(name, location, ip) {
 
 
 
-const PORT = process.env.PORT || 25565;
+const PORT = process.env.PORT || 3030;
 server.listen(PORT, () => console.log("Listening on port " + PORT));
