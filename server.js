@@ -71,8 +71,8 @@ wss.on('connection', function connection(ws) {
       ws.ip = message.ip;
       ws.path = message.path;
      // ws.unique=uniqueCode;
-      ws.status = "Online";
-      ws.send("Connected"); //mozda treba json
+      ws.status = "Waiting";
+      ws.send(JSON.stringify({ type: "Connected" })); 
       clients[message.name + message.location + message.ip] = ws;
       responseMap[message.name + message.location + message.ip] = emptyPromise();
       
@@ -181,11 +181,22 @@ app.post('/api/command', async (req, res) => {
   const { name, location, ip, command,parameters ,user} = req.body;
   if(name == undefined || location == undefined ||ip == undefined ||command == undefined ||parameters == undefined ||user == undefined){
     res.status(400);
-    res.send({message:"Erorr, got wrong json"});
+    res.send({message:"Error, got wrong json"});
     return;
   }
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
+    if( (clients[name + location + ip].status == "In use" && clients[name + location + ip].user != user) ||clients[name+location+ip].status == "Waiting") {
+      var errResp = {
+        error: "Agent in use by another user!",
+        name: name,
+        location: location
+      }
+      if(clients[name+location+ip].status=="Waiting")errResp.error="You are not connected to that Agent!";
+      res.statusCode = 404;
+      res.json(errResp);
+      return;
+    }
     var response = {
       type: "command",
       command: command,
@@ -232,19 +243,33 @@ app.post('/api/agent/disconnect', async (req, res) => {
   const { name, location, ip,user } = req.body;
   if(name == undefined || location == undefined ||ip == undefined ||user == undefined){
     res.status(400);
-    res.send({message:"Erorr, got wrong json"});
+    res.send({message:"Error, got wrong json"});
     return;
   }
 
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
     
+    if(clients[name+location+ip].status=="In use" && clients[name+location+ip].user != user){
+
+      var errResp = {
+        error: "You are not connected to that user!"
+      }
+      res.statusCode = 404;
+      res.json(errResp);
+      return;
+
+    }
+
+
     var response = {
-      type: "Disconnected",
-      user:user
+      type: "Waiting",
+      user:user,
+      message:"User successfully disconnected!"
     }
    ws.send(JSON.stringify(response));
-   ws.status="Disconnected";
+   ws.status="Waiting";
+   ws.user = "";
     res.statusCode = 200;
     res.json(response);
   }
@@ -264,21 +289,35 @@ app.post('/api/agent/connect', async (req, res) => {
 
   if(name == undefined || location == undefined ||ip == undefined ||user == undefined){
     res.status(400);
-    res.send({message:"Erorr, got wrong json"});
+    res.send({message:"Error, got wrong json"});
     return;
   }
 
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
-    
-    var response = {
-      type: "Connected",
-      user:user
+    if(ws.status === "In use") {
+      var errResp = {
+        error: "Device is already in use!",
+        name: name,
+        location: location
+      }
+      if(ws.user == user )errResp.error = "You are already connected to this user!";
+      res.statusCode = 404;
+      res.json(errResp);
+      return;
     }
-    ws.status="Connected";
-    ws.send(JSON.stringify(response));
-    res.statusCode = 200;
-    res.json(response);
+    else {
+        var response = {
+        type: "In use",
+        user:user,
+        message: "Connection successful!"
+      }
+      ws.status="In use";
+      ws.user = user;
+      ws.send(JSON.stringify(response));
+      res.statusCode = 200;
+      res.json(response);
+    }
   }
   else {
     var errResp = {
@@ -507,27 +546,40 @@ app.post('/api/agent/file/get', async (req, res) => {
   const { name, location, ip, fileName, path,user} = req.body;
   if(name == undefined || location == undefined ||ip == undefined ||fileName == undefined ||path == undefined ||user == undefined){
     res.status(400);
-    res.send({message:"Erorr, got wrong json"});
+    res.send({message:"Error, got wrong json"});
     return;
   }
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
-     var response = {
-         type: "getFile",
-         fileName: fileName,
-         path: path,
-         user:user
-     }
-    ws.send(JSON.stringify(response));
-    const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
-    responseMap[name + location + ip].then((val) => {
-     clearTimeout(errorTimeout);
-     responseMap[name + location + ip] = emptyPromise();
-     res.json(val);
-   }).catch((err) => {
-     res.statusCode = 404;
-     res.json(err);
-   });
+    if( (clients[name + location + ip].status == "In use" && clients[name + location + ip].user != user) ||clients[name+location+ip].status == "Waiting") {
+      var errResp = {
+        error: "Agent in use by another user!",
+        name: name,
+        location: location
+      }
+      if(clients[name+location+ip].status=="Waiting")errResp.error="You are not connected to that Agent!";
+      res.statusCode = 404;
+      res.json(errResp);
+      return;
+    }
+    else {
+      var response = {
+          type: "getFile",
+          fileName: fileName,
+          path: path,
+          user:user
+      }
+      ws.send(JSON.stringify(response));
+      const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
+      responseMap[name + location + ip].then((val) => {
+      clearTimeout(errorTimeout);
+      responseMap[name + location + ip] = emptyPromise();
+      res.json(val);
+    }).catch((err) => {
+      res.statusCode = 404;
+      res.json(err);
+    });
+  }
  }
  else {
    var errResp = {
@@ -614,5 +666,5 @@ function errFunction(name, location, ip) {
 
 
 
-const PORT = process.env.PORT || 3030;
+const PORT = process.env.PORT || 25565;
 server.listen(PORT, () => console.log("Listening on port " + PORT));
