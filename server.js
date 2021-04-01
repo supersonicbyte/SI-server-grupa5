@@ -72,7 +72,7 @@ wss.on('connection', function connection(ws) {
       ws.path = message.path;
      // ws.unique=uniqueCode;
       ws.status = "Online";
-      ws.send("Connected");
+      ws.send("Connected"); //mozda treba json
       clients[message.name + message.location + message.ip] = ws;
       responseMap[message.name + message.location + message.ip] = emptyPromise();
       
@@ -431,7 +431,7 @@ app.post('/api/web/agent/file/put', async (req, res) => {  //slanje agent file-o
  
   //create path
   let buff = new Buffer.from(base64Data, 'base64');
-  let path =name + location + ip;
+  let path = name + location + ip;
       let dir = './allFiles';
       if (!fs.existsSync(dir)){
         fs.mkdirSync(dir);
@@ -441,6 +441,16 @@ app.post('/api/web/agent/file/put', async (req, res) => {  //slanje agent file-o
         fs.mkdirSync(dir);
       }
  
+      if(fileName === "config.json") {  
+
+        dir = dir+"/config";
+        if (!fs.existsSync(dir)){
+          fs.mkdirSync(dir);
+        }
+       // fileName="/config"+"31.3.2021"+".json"; //  ako bude datum trebao
+        path= path + "/config";
+       
+      } 
 
  fs.writeFile("allFiles/"+path+"/"+fileName, buff, function (err) {
  
@@ -458,11 +468,12 @@ app.post('/api/web/agent/file/put', async (req, res) => {  //slanje agent file-o
             type: "putFile",
             fileName: fileName,
             path: path,
-            data: data,
+            data: base64Data,
             user:user
           }
 
           ws.send(JSON.stringify(response));
+          //ws.send("config");
           const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
           responseMap[name + location + ip].then((val) => {
             clearTimeout(errorTimeout);
