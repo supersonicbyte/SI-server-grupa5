@@ -9,11 +9,14 @@ const emptyPromise = require('empty-promise')
 const env = require('dotenv');
 const WebSocket = require('ws');
 const fs = require("fs")
+const uuid = require('uuid');
+const session = require('express-session');
 var dateFormat = require("dateformat");
 // web socket server
-const wss = new WebSocket.Server({ server: server });
+const wss = new WebSocket.Server({ clientTracking: false, noServer: true });
 // cross origin
 app.use(cors());
+app.use(express.static('public'));
 // setup env
 env.config()
 const fetch = require('node-fetch');
@@ -53,9 +56,54 @@ const interval = setInterval(async () => {
   }
 }, DELAY);
 
+const sessionParser = session({
+  saveUninitialized: false,
+  secret: '$eCuRiTy',
+  resave: false
+});
 
-wss.on('connection', function connection(ws) {
+app.use(sessionParser);
+const map = new Map();
 
+app.post('/login', async function (req, res, next) {
+  const uniqueId = req.body.id;
+  const validation = await unique.validateUniqueCode(uniqueId);
+  if (validation.status != 200) {
+    res.status(validation.status);
+    res.send({error: "Id not valid!"});
+    return;
+  } else {
+    const id = await uuid.v4();
+    console.log(`Updating session for user ${id}`);
+    req.session.userId = id;
+    res.status(validation.status);
+    res.send({message: 'Session updated' });
+  }
+  next();
+});
+
+server.on('upgrade', function (request, socket, head) {
+  console.log('Parsing session from request...');
+
+  sessionParser(request, {}, () => {
+    if (!request.session.userId) {
+      socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+      socket.destroy();
+      return;
+    }
+
+    console.log('Session is parsed!');
+
+    wss.handleUpgrade(request, socket, head, function (ws) {
+      wss.emit('connection', ws, request);
+    });
+  });
+});
+
+wss.on('connection', function connection(ws, request) {
+  const userId = request.session.userId;
+
+  map.set(userId, ws);
   ws.on('message', (message) => {
     message = JSON.parse(message);
     if (message.type === 'sendCredentials') {
