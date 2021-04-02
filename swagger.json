@@ -967,6 +967,10 @@
             "webUserGet": {
                 "type": "object",
                 "properties": {
+                    "fileName": {
+                        "type": "string",
+                        "example":"File"
+                    },
                     "user": {
                         "type": "string",
                         "example":"user@mail.com"
