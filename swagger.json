@@ -338,18 +338,18 @@
                 }
             }
         },
-        "/api/web/file/get": {
+        "/api/web/agent/file/get": {
             "post": {
                 "tags": [
                     "Files"
                 ],
-                "summary": "Get a file from the server",
+                "summary": "Get an agent file that is saved on the server",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/webGet"
+                                "$ref": "#/components/schemas/webAgentGet"
                             }
                         }
                     }
@@ -407,18 +407,18 @@
                 }
             }
         },
-        "/api/web/file/put": {
+        "/api/web/agent/file/put": {
             "post": {
                 "tags": [
                     "Files"
                 ],
-                "summary": "Put a file on the server",
+                "summary": "Put a file for an agent on the server.",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/webPutB64"
+                                "$ref": "#/components/schemas/webAgentPut"
                             }
                         }
                     }
@@ -482,6 +482,152 @@
                 }
             }
         },
+
+        "/api/web/user/file/get": {
+            "post": {
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Get a user file from the server.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/webUserGet"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/files200"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "File could not be read",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type":"string",
+                                            "example": "Error!"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error400"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error403"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/web/user/file/put": {
+            "post": {
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Put a user file on the server.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/webUserPut"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "message": {
+                                            "type":"string",
+                                            "example":"Done!"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "File could not be found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "error": {
+                                            "type":"string",
+                                            "example":"Error!"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error400"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error403"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+
         "/api/agent/file/get": {
             "post": {
                 "tags": [
@@ -593,6 +739,98 @@
                     }
                 }
             }
+        },
+        "/api/web/user/fileList": {
+            "post": {
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Get a hierarchy of files for the user.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/userFileList"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful"
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error400"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error403"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/web/agent/fileList": {
+            "post": {
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Get a hierarchy of files for the specified agent.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/agentFileList"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful"
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error400"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error403"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -614,7 +852,7 @@
                     },
                     "user": {
                         "type":"string",
-                        "example":"User"
+                        "example":"user@mail.com"
                     }
                 }
             },
@@ -643,7 +881,7 @@
                     },
                     "user": {
                         "type":"string",
-                        "example":"User"
+                        "example":"user@mail.com"
                     }
                 }
             },
@@ -664,11 +902,11 @@
                     },
                     "user": {
                         "type":"string",
-                        "example":"User"
+                        "example":"user@mail.com"
                     }
                 }
             },
-            "webGet": {
+            "webAgentGet": {
                 "type": "object",
                 "properties": {
                     "name": {
@@ -689,11 +927,11 @@
                     },
                     "user": {
                         "type": "string",
-                        "example":"User"
+                        "example":"user@mail.com"
                     }
                 }
             },
-            "webPutB64": {
+            "webAgentPut": {
                 "type": "object",
                 "properties": {
                     "name": {
@@ -718,10 +956,71 @@
                     },
                     "user": {
                         "type": "string",
-                        "example":"User"
+                        "example":"user@mail.com"
                     },
                     "base64Data": {
                         "type":"string"
+                    }
+                }
+            },
+
+            "webUserGet": {
+                "type": "object",
+                "properties": {
+                    "user": {
+                        "type": "string",
+                        "example":"user@mail.com"
+                    }
+                }
+            },
+            "webUserPut": {
+                "type": "object",
+                "properties": {
+                    "fileName": {
+                        "type": "string",
+                        "example":"File"
+                    },
+                    "path": {
+                        "type": "string",
+                        "example":"/"
+                    },
+                    "user": {
+                        "type": "string",
+                        "example":"user@mail.com"
+                    },
+                    "base64Data": {
+                        "type":"string"
+                    }
+                }
+            },
+
+            "userFileList": {
+                "type": "object",
+                "properties": {
+                    "user": {
+                        "type": "string",
+                        "example":"user@mail.com"
+                    }
+                }
+            },
+            "agentFileList": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example":"Agent"
+                    },
+                    "location": {
+                        "type": "string",
+                        "example":"City"
+                    },
+                    "ip": {
+                        "type": "string",
+                        "example":"0.0.0.0"
+                    },
+                    "user": {
+                        "type": "string",
+                        "example":"user@mail.com"
                     }
                 }
             },
@@ -750,7 +1049,7 @@
                     },
                     "user": {
                         "type": "string",
-                        "example":"User"
+                        "example":"user@mail.com"
                     }
                 }
             },
@@ -763,7 +1062,7 @@
                     },
                     "user": {
                         "type":"string",
-                        "example":"User"
+                        "example":"user@mail.com"
                     }
                 }
             },
@@ -776,7 +1075,7 @@
                     },
                     "user": {
                         "type":"string",
-                        "example":"User"
+                        "example":"user@mail.com"
                     }
                 }
             },

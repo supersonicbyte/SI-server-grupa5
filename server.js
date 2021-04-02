@@ -17,6 +17,7 @@ app.use(cors());
 // setup env
 env.config()
 const fetch = require('node-fetch');
+const dirTree = require("directory-tree");
 
 const swaggerUi = require('swagger-ui-express'),
   swaggerDocument = require('./swagger.json');
@@ -34,6 +35,8 @@ const messageMap = [];//
 const DELAY = 300000; // In ms
 
 const date = new Date();
+
+const mainFolder = "allFiles";
 
 const interval = setInterval(async () => {
   for(k in clients) {
@@ -89,11 +92,7 @@ wss.on('connection', function connection(ws) {
       let buff = new Buffer.from(message.config, 'base64');
 
       let path = message.name + message.location + message.ip;
-      let dir = './allFiles';
-      if (!fs.existsSync(dir)){
-        fs.mkdirSync(dir);
-      }
-       dir = dir+"/"+path;
+      let dir = mainFolder+ "/" +path;
       if (!fs.existsSync(dir)){
         fs.mkdirSync(dir);
       }
@@ -646,6 +645,48 @@ app.post('/api/agent/file/put', async (req, res) => {
  } 
 });
 
+app.post('/api/web/agent/fileList', async (req, res) => { //dobije hierarhiju fileova od agenta
+
+  const { name, location, ip,user } = req.body;
+
+  if(name == undefined || location == undefined || ip == undefined || user == undefined ){
+    res.status(400);
+    res.send({message:"Erorr, got wrong json"});
+    return;
+  }
+  let path=mainFolder+ "/" + name + location + ip;
+
+  if (!fs.existsSync(path)){
+    fs.mkdirSync(path);
+  }
+
+  const tree = dirTree(path);
+  res.status(200);
+  res.send(tree);
+
+});
+
+app.post('/api/web/user/fileList', async (req, res) => { //dobije hierarhiju fileova od agenta
+
+  const { user } = req.body;
+
+  if(user == undefined ){
+    res.status(400);
+    res.send({message:"Erorr, got wrong json"});
+    return;
+  }
+  let path=mainFolder+ "/" + user;
+
+  if (!fs.existsSync(path)){
+    fs.mkdirSync(path);
+  }
+
+  const tree = dirTree(path);
+  res.status(200);
+  res.send(tree);
+
+});
+
 app.get('/', (req, res) => {
   res.send('<h1>Up and running.</h1>');
 })
@@ -664,7 +705,9 @@ function errFunction(name, location, ip) {
 }
 }
 
-
+if (!fs.existsSync(mainFolder)){
+  fs.mkdirSync(mainFolder);
+}
 
 const PORT = process.env.PORT || 25565;
 server.listen(PORT, () => console.log("Listening on port " + PORT));
