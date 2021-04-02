@@ -76,6 +76,7 @@ app.post('/login', async function (req, res, next) {
     const id = await uuid.v4();
     console.log(`Updating session for user ${id}`);
     req.session.userId = id;
+    console.log(req.session.userId);
     res.status(validation.status);
     res.send({message: 'Session updated' });
   }
@@ -84,9 +85,10 @@ app.post('/login', async function (req, res, next) {
 
 server.on('upgrade', function (request, socket, head) {
   console.log('Parsing session from request...');
-
   sessionParser(request, {}, () => {
+    console.log(request);
     if (!request.session.userId) {
+      console.log("tu sam");
       socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
       socket.destroy();
       return;
@@ -223,6 +225,8 @@ app.use('/api', async function (req, res, next) {
   }
   next();
 });
+ 
+
 
 app.post('/api/command', async (req, res) => {
   const { name, location, ip, command,parameters ,user} = req.body;
