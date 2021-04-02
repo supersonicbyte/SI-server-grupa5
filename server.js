@@ -231,6 +231,7 @@ app.get('/api/agent/online', async (req, res) => {
   
   for (let c in clients) {
     let client = clients[c];
+    if(client==undefined)continue;
     clientArray.push({ name: client.name, location: client.location, ip: client.ip, path:client.path,status:client.status })
   }
 
