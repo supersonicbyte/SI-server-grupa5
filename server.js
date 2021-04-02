@@ -59,7 +59,8 @@ const interval = setInterval(async () => {
 const sessionParser = session({
   saveUninitialized: false,
   secret: '$eCuRiTy',
-  resave: false
+  resave: false,
+  cookie: {secure: true, maxAge: null, httpOnly: false}
 });
 
 app.use(sessionParser);
@@ -74,9 +75,11 @@ app.post('/login', async function (req, res, next) {
     return;
   } else {
     const id = await uuid.v4();
+    //const id = "test";
     console.log(`Updating session for user ${id}`);
     req.session.userId = id;
-    console.log(req.session.userId);
+    res.cookie("uid",id);
+    //console.log(req.session.userId);
     res.status(validation.status);
     res.send({message: 'Session updated' });
   }
@@ -86,8 +89,9 @@ app.post('/login', async function (req, res, next) {
 server.on('upgrade', function (request, socket, head) {
   console.log('Parsing session from request...');
   sessionParser(request, {}, () => {
-    console.log(request);
-    if (!request.session.userId) {
+    //console.log(request);
+    console.log(head);
+    if (!request.cookie.userId) {
       console.log("tu sam");
       socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
       socket.destroy();
