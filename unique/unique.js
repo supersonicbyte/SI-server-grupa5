@@ -7,11 +7,11 @@ async function validateUniqueCode(id) {
     const uniqueResponse = fetch(process.env.UNIQUE_URL+id, {
         headers: { "Authorization": ayatoken }
     }).then(res => {
-        console.log("uniqueResponse");
+       // console.log("uniqueResponse");
         return res;    
     });
     
-    console.log(uniqueResponse);
+    //console.log(uniqueResponse);
     return uniqueResponse;
 }
 

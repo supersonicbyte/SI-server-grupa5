@@ -36,7 +36,7 @@
     ],
     "schemes": ["https"],
     "paths": {
-        "/api/screenshot": {
+        "/api/agent/screenshot": {
             "post": {
                 "tags": [
                     "Screenshot"
@@ -92,7 +92,7 @@
                 }
             }
         },
-        "/api/command": {
+        "/api/agent/command": {
             "post": {
                 "tags": [
                     "Command"

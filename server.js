@@ -58,32 +58,16 @@ const interval = setInterval(async () => {
   }
 }, DELAY);
 
-/*const sessionParser = session({
-  saveUninitialized: false,
-  secret: '$eCuRiTy',
-  resave: false,
- 
-});*/
-
-//app.use(sessionParser);
-//const map = new Map();
 
 app.post('/login', async function (req, res, next) {
   const uniqueId = req.body.id;
-  ///console.log(req)
   const validation = await unique.validateUniqueCode(uniqueId);
 
-  console.log(validation)
   if (validation.status != 200) {
     res.status(validation.status);
     res.send({error: "Id not valid!"});
     return;
   } else {
-    /*const id = await uuid.v4();
-
-   console.log(`Updating session for user ${id}`);
-    req.session.userId = id;*/
-    //res.cookie("cookie",uniqueId);
     uniqueValid.push(uniqueId)
     res.status(validation.status);
     res.send({message: 'Session updated' });
@@ -92,8 +76,6 @@ app.post('/login', async function (req, res, next) {
 });
 
 server.on('upgrade', function (request, socket, head) {
-  console.log('Parsing session from request...');
-  console.log(request.headers);
    if (!uniqueValid.includes(request.headers.cookie.split('=')[1])) {
       console.log(request.headers);
       socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
@@ -101,17 +83,13 @@ server.on('upgrade', function (request, socket, head) {
       return;
     }
 
-    console.log('Unique is valid!');
-
     wss.handleUpgrade(request, socket, head, function (ws) {
       wss.emit('connection', ws, request);
-      console.log("1");
     });
  
 });
 
 wss.on('connection', function connection(ws, request) {
-  console.log("2");
  // const userId = request.session.userId;
 
  // map.set(userId, ws);
@@ -171,18 +149,18 @@ wss.on('connection', function connection(ws, request) {
       fs.writeFile("allFiles/"+path+"/"+message.fileName, buff, function (err) {
         if (err) {
           responseMap[message.name + message.location+message.ip].resolve({type:"Error",message:"Error writing file"});
-          console.log("error: " + err)
+         // console.log("error: " + err)
         }
         else {
           responseMap[message.name + message.location+message.ip].resolve({type:"Success",message:"File successfully written."});
-          console.log("done")
+         // console.log("done")
         }
       });
     } else if (message.type === "savedFile") {
       responseMap[message.name + message.location+message.ip].resolve({type:"Success",message:"File saved on agent!"});
    
     } else if (message.type === "pong") {
-      console.log(ws.name+" ponged");
+     // console.log(ws.name+" ponged");
     }
   });
 
@@ -235,9 +213,21 @@ app.use('/api', async function (req, res, next) {
   next();
 });
  
+app.use('/api/*/agent', async function (req, res, next) {
 
+  const { user,deviceUid } = req.body;
+  
+  const authHeader = req.headers.authorization;
+  const validation = await auth.accessToken(authHeader,deviceUid);
+  if (validation.status != 200) {
+    res.status(validation.status);
+    res.send("");
+    return;
+  }
+  next();
+});
 
-app.post('/api/command', async (req, res) => {
+app.post('/api/agent/command', async (req, res) => {
   const { name, location, ip, command,parameters ,path, user} = req.body;
   if(name == undefined || location == undefined ||ip == undefined ||command == undefined || path == undefined || parameters == undefined ||user == undefined){
     res.status(400);
@@ -286,12 +276,27 @@ app.post('/api/command', async (req, res) => {
     res.statusCode = 404;
     res.json(errResp);
   }
-});
+});//
 
 app.get('/api/agent/online', async (req, res) => { 
   var clientArray = [];
-  
-  for (let c in clients) {
+  const authHeader = req.headers.authorization;
+
+  /*const tokenResponse =await fetch("https://si-2021.167.99.244.168.nip.io/api/device/AllDevices", {
+    headers: { "Authorization": authHeader }
+    }).then(res => {
+    return res;    
+    });
+
+    let x = await tokenResponse.json();
+
+  for(let d of x.data){
+    let client = clients[d.deviceUid];
+    if(client==undefined)continue;
+    clientArray.push({ name: client.name, location: client.location, ip: client.ip, path:client.path,status:client.status })
+  }*/
+
+  for(let c in clients){
     let client = clients[c];
     if(client==undefined)continue;
     clientArray.push({ name: client.name, location: client.location, ip: client.ip, path:client.path,status:client.status })
@@ -344,7 +349,7 @@ app.post('/api/agent/disconnect', async (req, res) => {
     res.statusCode = 404;
     res.json(errResp);
   }
-});
+});//
 
 app.post('/api/agent/connect', async (req, res) => {
   const { name, location, ip,user } = req.body;
@@ -390,15 +395,16 @@ app.post('/api/agent/connect', async (req, res) => {
     res.statusCode = 404;
     res.json(errResp);
   }
-});
+});//
 
-app.post('/api/screenshot', async (req, res) => {
+app.post('/api/agent/screenshot', async (req, res) => {
   const { name, location, ip,user } = req.body;
   if(name == undefined || location == undefined ||ip == undefined || user == undefined){
     res.status(400);
     res.send({message:"Erorr, got wrong json"});
     return;
   }
+  console.log("Sent them screenshot request");
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
     var response = {
@@ -406,7 +412,6 @@ app.post('/api/screenshot', async (req, res) => {
       user:user
     }
     ws.send(JSON.stringify(response));
-    console.log("I sent it to them");
     const errorTimeout = setTimeout(errFunction, 10000, name, location);
     responseMap[name + location + ip].then((val) => {
       clearTimeout(errorTimeout);
@@ -427,7 +432,7 @@ app.post('/api/screenshot', async (req, res) => {
     res.statusCode = 404;
     res.json(errResp);
   }
-});
+});//
 
 app.post('/api/web/user/file/get', async (req, res) => { //user uzima svoj file sa servera
   const { fileName,user } = req.body;
@@ -441,7 +446,7 @@ app.post('/api/web/user/file/get', async (req, res) => { //user uzima svoj file 
 
   fs.readFile(putanja+ "/" + fileName, { encoding: 'base64' }, function (err, data) {
     if (err) {
-      console.log("error: " + err)
+      console.log("/api/web/user/file/get error: " + err)
       res.json({ error: "Error, no such file!" });
     }
     else {
@@ -470,7 +475,7 @@ app.post('/api/web/agent/file/get', async (req, res) => { //user trazi file sa s
 
   fs.readFile(path + "/" + fileName, { encoding: 'base64' }, function (err, data) {
     if (err) {
-      console.log("error: " + err)
+      console.log("/api/web/agent/file/get error: " + err)
       res.json({ error: "Error, no such file!" });
     }
     else {
@@ -482,7 +487,7 @@ app.post('/api/web/agent/file/get', async (req, res) => { //user trazi file sa s
       res.send(response);
     }
   });
-});
+});//
 
 app.post('/api/web/user/file/put', async (req, res) => {  //spasavanje user file-ova na server od strane web-a(samo njima primadaju)
   
@@ -491,7 +496,6 @@ app.post('/api/web/user/file/put', async (req, res) => {  //spasavanje user file
   if(fileName == undefined ||base64Data == undefined ||user == undefined){
     res.status(400);
     res.send({message:"Erorr, got wrong json"});
-    console.log("tu sam");
     return;
   }
 
@@ -509,7 +513,7 @@ app.post('/api/web/user/file/put', async (req, res) => {  //spasavanje user file
  fs.writeFile("allFiles/"+path+"/"+fileName, buff, function (err) {
  
     if (err) {
-      console.log("error: " + err)
+      console.log("/api/web/user/file/put error: " + err)
       res.status(404);
       res.json({ error: err });
     }
@@ -556,7 +560,7 @@ app.post('/api/web/agent/file/put', async (req, res) => {  //slanje agent file-o
  fs.writeFile("allFiles/"+path+"/"+fileName, buff, function (err) {
  
   if (err) {
-      console.log("error: " + err)
+      console.log("/api/web/agent/file/put error: " + err)
       res.status(404);
       res.json({ error: err });
   } else {
@@ -602,7 +606,7 @@ app.post('/api/web/agent/file/put', async (req, res) => {  //slanje agent file-o
     
   }
 });
-});
+});//
 
 app.post('/api/agent/file/get', async (req, res) => {
   const { name, location, ip, fileName, path,user} = req.body;
@@ -654,7 +658,7 @@ app.post('/api/agent/file/get', async (req, res) => {
    res.json(errResp);
  }
  
-});
+});//
 
 app.post('/api/agent/file/put', async (req, res) => {
   const { name, location, ip, fileName, path,user} = req.body;
@@ -706,7 +710,7 @@ app.post('/api/agent/file/put', async (req, res) => {
    res.statusCode = 404;
    res.json(errResp);
  } 
-});
+});//
 
 app.post('/api/web/agent/fileList', async (req, res) => { //dobije hierarhiju fileova od agenta
 
@@ -727,7 +731,7 @@ app.post('/api/web/agent/fileList', async (req, res) => { //dobije hierarhiju fi
   res.status(200);
   res.send(tree);
 
-});
+});//
 
 app.post('/api/web/user/fileList', async (req, res) => { //dobije hierarhiju fileova od agenta
 
