@@ -81,7 +81,7 @@ app.post('/login', async function (req, res, next) {
 
    console.log(`Updating session for user ${id}`);
     req.session.userId = id;*/
-    res.cookie("cookie",uniqueId);
+    //res.cookie("cookie",uniqueId);
     uniqueValid.push(uniqueId)
     res.status(validation.status);
     res.send({message: 'Session updated' });
@@ -205,7 +205,7 @@ wss.on('connection', function connection(ws, request) {
     responseMap[id].status=400;
     responseMap[id].resolve(errResp);
     clients[id]=undefined;
-    delete uniqueValid[uniqueValid.indexOf(socket.uniqueId)];
+    //delete uniqueValid[uniqueValid.indexOf(socket.uniqueId)];
 
   });
 
