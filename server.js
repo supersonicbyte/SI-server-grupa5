@@ -70,8 +70,10 @@ const interval = setInterval(async () => {
 
 app.post('/login', async function (req, res, next) {
   const uniqueId = req.body.id;
-  console.log(req)
+  ///console.log(req)
   const validation = await unique.validateUniqueCode(uniqueId);
+
+  console.log(validation)
   if (validation.status != 200) {
     res.status(validation.status);
     res.send({error: "Id not valid!"});
