@@ -134,7 +134,7 @@ wss.on('connection', function connection(ws, request) {
       ws.path = message.path;
      // ws.unique=uniqueCode;
       ws.status = "Waiting";
-      ws.send( "Connected" ); 
+      ws.send( JSON.stringify({type:"Connected"})); 
       clients[message.name + message.location + message.ip] = ws;
       responseMap[message.name + message.location + message.ip] = emptyPromise();
       
@@ -170,20 +170,19 @@ wss.on('connection', function connection(ws, request) {
 
       fs.writeFile("allFiles/"+path+"/"+message.fileName, buff, function (err) {
         if (err) {
-          responseMap[message.name + message.location+message.ip].resolve(JSON.stringify({type:"Error",message:"Error writing file"}));
+          responseMap[message.name + message.location+message.ip].resolve({type:"Error",message:"Error writing file"});
           console.log("error: " + err)
         }
         else {
-          responseMap[message.name + message.location+message.ip].resolve(JSON.stringify({type:"Success",message:"File successfully written."}));
+          responseMap[message.name + message.location+message.ip].resolve({type:"Success",message:"File successfully written."});
           console.log("done")
         }
       });
     } else if (message.type === "savedFile") {
-      responseMap[message.name + message.location+message.ip].resolve(JSON.stringify({type:"Success",message:"File saved on agent!"}));
+      responseMap[message.name + message.location+message.ip].resolve({type:"Success",message:"File saved on agent!"});
    
     } else if (message.type === "pong") {
       console.log(ws.name+" ponged");
-      ws.status = "Online";
     }
   });
 
