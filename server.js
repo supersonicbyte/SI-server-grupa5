@@ -205,7 +205,7 @@ wss.on('connection', function connection(ws, request) {
     responseMap[id].status=400;
     responseMap[id].resolve(errResp);
     clients[id]=undefined;
-    //delete uniqueValid[uniqueValid.indexOf(socket.uniqueId)];
+    delete uniqueValid[uniqueValid.indexOf(socket.uniqueId)];
 
   });
 
