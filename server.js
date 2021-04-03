@@ -34,6 +34,8 @@ const clients = [];
 const responseMap = [];
 // map of response messages//
 const messageMap = [];//
+//array of valid unique
+const uniqueValid = [];
 
 const DELAY = 300000; // In ms
 
@@ -56,30 +58,31 @@ const interval = setInterval(async () => {
   }
 }, DELAY);
 
-const sessionParser = session({
+/*const sessionParser = session({
   saveUninitialized: false,
   secret: '$eCuRiTy',
   resave: false,
-  cookie: {secure: true, maxAge: null, httpOnly: false}
-});
+ 
+});*/
 
-app.use(sessionParser);
-const map = new Map();
+//app.use(sessionParser);
+//const map = new Map();
 
 app.post('/login', async function (req, res, next) {
   const uniqueId = req.body.id;
+  console.log(req)
   const validation = await unique.validateUniqueCode(uniqueId);
   if (validation.status != 200) {
     res.status(validation.status);
     res.send({error: "Id not valid!"});
     return;
   } else {
-    const id = await uuid.v4();
-    //const id = "test";
-    console.log(`Updating session for user ${id}`);
-    req.session.userId = id;
-    res.cookie("uid",id);
-    //console.log(req.session.userId);
+    /*const id = await uuid.v4();
+
+   console.log(`Updating session for user ${id}`);
+    req.session.userId = id;*/
+    res.cookie("cookie",uniqueId);
+    uniqueValid.push(uniqueId)
     res.status(validation.status);
     res.send({message: 'Session updated' });
   }
@@ -88,28 +91,28 @@ app.post('/login', async function (req, res, next) {
 
 server.on('upgrade', function (request, socket, head) {
   console.log('Parsing session from request...');
-  sessionParser(request, {}, () => {
-    //console.log(request);
-    console.log(head);
-    if (!request.cookie.userId) {
-      console.log("tu sam");
+  console.log(request.headers);
+   if (!uniqueValid.includes(request.headers.cookie.split('=')[1])) {
+      console.log(request.headers);
       socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
       socket.destroy();
       return;
     }
 
-    console.log('Session is parsed!');
+    console.log('Unique is valid!');
 
     wss.handleUpgrade(request, socket, head, function (ws) {
       wss.emit('connection', ws, request);
+      console.log("1");
     });
-  });
+ 
 });
 
 wss.on('connection', function connection(ws, request) {
-  const userId = request.session.userId;
+  console.log("2");
+ // const userId = request.session.userId;
 
-  map.set(userId, ws);
+ // map.set(userId, ws);
   ws.on('message', (message) => {
     message = JSON.parse(message);
     if (message.type === 'sendCredentials') {
@@ -129,7 +132,7 @@ wss.on('connection', function connection(ws, request) {
       ws.path = message.path;
      // ws.unique=uniqueCode;
       ws.status = "Waiting";
-      ws.send(JSON.stringify({ type: "Connected" })); 
+      ws.send( "Connected" ); 
       clients[message.name + message.location + message.ip] = ws;
       responseMap[message.name + message.location + message.ip] = emptyPromise();
       
@@ -202,6 +205,7 @@ wss.on('connection', function connection(ws, request) {
     responseMap[id].status=400;
     responseMap[id].resolve(errResp);
     clients[id]=undefined;
+    delete uniqueValid[uniqueValid.indexOf(socket.uniqueId)];
 
   });
 
@@ -233,8 +237,8 @@ app.use('/api', async function (req, res, next) {
 
 
 app.post('/api/command', async (req, res) => {
-  const { name, location, ip, command,parameters ,user} = req.body;
-  if(name == undefined || location == undefined ||ip == undefined ||command == undefined ||parameters == undefined ||user == undefined){
+  const { name, location, ip, command,parameters ,path, user} = req.body;
+  if(name == undefined || location == undefined ||ip == undefined ||command == undefined || path == undefined || parameters == undefined ||user == undefined){
     res.status(400);
     res.send({message:"Error, got wrong json"});
     return;
@@ -256,7 +260,8 @@ app.post('/api/command', async (req, res) => {
       type: "command",
       command: command,
       user:user,
-      parameters: parameters
+      parameters: parameters,
+      path:path
       
     }
     ws.send(JSON.stringify(response));

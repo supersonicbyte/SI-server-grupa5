@@ -11,6 +11,8 @@
     }
   
     function handleResponse(response) {
+      showMessage(response);
+      console.log(response);
       return response.ok
         ? response.json().then((data) => JSON.stringify(data, null, 2))
         : Promise.reject(new Error('Unexpected response'));
