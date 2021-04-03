@@ -43,6 +43,7 @@ const date = new Date();
 
 const mainFolder = "allFiles";
 
+/*
 const interval = setInterval(async () => {
   for(k in clients) {
 
@@ -57,7 +58,7 @@ const interval = setInterval(async () => {
     clients[k].send('{"type":"ping", "user":"Server"}');
   }
 }, DELAY);
-
+*/
 
 app.post('/login', async function (req, res, next) {
   const uniqueId = req.body.id;
@@ -66,20 +67,24 @@ app.post('/login', async function (req, res, next) {
   if (validation.status != 200) {
     res.status(validation.status);
     res.send({error: "Id not valid!"});
+    console.log("Id not valid for "+uniqueId);
     return;
   } else {
     uniqueValid.push(uniqueId)
     res.status(validation.status);
     res.send({message: 'Session updated' });
+    console.log("Session updated ");
   }
   next();
 });
 
 server.on('upgrade', function (request, socket, head) {
+
    if (!uniqueValid.includes(request.headers.cookie.split('=')[1])) {
       console.log(request.headers);
       socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
       socket.destroy();
+      console.log("Destroyan");
       return;
     }
 
@@ -90,9 +95,6 @@ server.on('upgrade', function (request, socket, head) {
 });
 
 wss.on('connection', function connection(ws, request) {
- // const userId = request.session.userId;
-
- // map.set(userId, ws);
   ws.on('message', (message) => {
     message = JSON.parse(message);
     if (message.type === 'sendCredentials') {
@@ -109,8 +111,7 @@ wss.on('connection', function connection(ws, request) {
       ws.name = message.name;
       ws.location = message.location;
       ws.ip = message.ip;
-      ws.path = message.path;
-     // ws.unique=uniqueCode;
+      ws.path = "";
       ws.status = "Waiting";
       ws.send( JSON.stringify({type:"Connected"})); 
       clients[message.name + message.location + message.ip] = ws;
@@ -125,8 +126,7 @@ wss.on('connection', function connection(ws, request) {
       responseMap[message.name + message.location + message.ip].resolve(messageMap[message.name + message.location + message.ip]);
     } else if (message.type === "sendFile") {
       
-      
-      let buff = new Buffer.from(message.config, 'base64');
+      let buff = new Buffer.from(message.message, 'base64');
 
       let path = message.name + message.location + message.ip;
       let dir = mainFolder+ "/" +path;
@@ -134,14 +134,12 @@ wss.on('connection', function connection(ws, request) {
         fs.mkdirSync(dir);
       }
  
-      // let fileName=message.fileName; ako trebao datum
       if(message.fileName==="config.json"){  
 
         dir = dir+"/config";
         if (!fs.existsSync(dir)){
           fs.mkdirSync(dir);
         }
-       // fileName="/config"+"31.3.2021"+".json"; //  ako bude datum trebao
         path= path + "/config";
        
       } 
@@ -156,11 +154,21 @@ wss.on('connection', function connection(ws, request) {
          // console.log("done")
         }
       });
-    } else if (message.type === "savedFile") {
+
+    }else if (message.type === "sendFileDirect") {
+
+      var response = {
+        fileName: message.fileName,
+        base64Data: message.message
+      }
+ 
+      responseMap[message.name + message.location+message.ip].resolve(response);
+    }
+     else if (message.type === "savedFile") {
       responseMap[message.name + message.location+message.ip].resolve({type:"Success",message:"File saved on agent!"});
    
     } else if (message.type === "pong") {
-     // console.log(ws.name+" ponged");
+      console.log(ws.name+" ponged");
     }
   });
 
@@ -168,12 +176,10 @@ wss.on('connection', function connection(ws, request) {
 
     
     let id = ws.name+ws.location+ws.ip;
-
+    console.log(id+" has disconnected");
     let socket = clients[id];
 
     if(socket == undefined)return;
-
-    console.log(socket.name+socket.location+socket.ip+" has gone offline");
 
     var errResp = {
       error: "Device couldnt respond!",
@@ -398,13 +404,14 @@ app.post('/api/agent/connect', async (req, res) => {
 });//
 
 app.post('/api/agent/screenshot', async (req, res) => {
+
   const { name, location, ip,user } = req.body;
   if(name == undefined || location == undefined ||ip == undefined || user == undefined){
     res.status(400);
     res.send({message:"Erorr, got wrong json"});
     return;
   }
-  console.log("Sent them screenshot request");
+  
   let ws = clients[name + location + ip];
   if (ws !== undefined) {
     var response = {
@@ -446,7 +453,6 @@ app.post('/api/web/user/file/get', async (req, res) => { //user uzima svoj file 
 
   fs.readFile(putanja+ "/" + fileName, { encoding: 'base64' }, function (err, data) {
     if (err) {
-      console.log("/api/web/user/file/get error: " + err)
       res.json({ error: "Error, no such file!" });
     }
     else {
@@ -609,6 +615,7 @@ app.post('/api/web/agent/file/put', async (req, res) => {  //slanje agent file-o
 });//
 
 app.post('/api/agent/file/get', async (req, res) => {
+
   const { name, location, ip, fileName, path,user} = req.body;
   if(name == undefined || location == undefined ||ip == undefined ||fileName == undefined ||path == undefined ||user == undefined){
     res.status(400);
@@ -712,6 +719,100 @@ app.post('/api/agent/file/put', async (req, res) => {
  } 
 });//
 
+app.post('/api/agent/file/directPut', async (req, res) => {
+
+  const { name, location, ip, fileName, path,base64,user} = req.body;
+
+  if(name == undefined || location == undefined ||ip == undefined ||fileName == undefined ||path == undefined ||user == undefined || base64 == undefined){
+    res.status(404);
+    res.send({message:"Erorr, got wrong json"});
+    return;
+  }
+  let ws = clients[name + location + ip];
+  if (ws !== undefined) {
+
+          var response = {
+            type: "putFile",
+            fileName: fileName,
+            path: path,
+            data: base64,
+            user:user
+          }
+          ws.send(JSON.stringify(response));
+          const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
+          responseMap[name + location + ip].then((val) => {
+            clearTimeout(errorTimeout);
+            responseMap[name + location + ip] = emptyPromise();
+            res.json(val);
+          }).catch((err) => {
+            res.statusCode = 404;
+            res.json(err);
+          });
+  } else {
+    var errResp = {
+      error: "Device is not connected to the server!",
+      name: name,
+      location: location,
+      ip: ip
+    }
+   res.statusCode = 404;
+   res.json(errResp);
+ } 
+});//
+
+app.post('/api/agent/file/directGet', async (req, res) => {
+
+  const { name, location, ip, fileName, path,user} = req.body;
+  if(name == undefined || location == undefined ||ip == undefined ||fileName == undefined ||path == undefined ||user == undefined){
+    res.status(400);
+    res.send({message:"Error, got wrong json"});
+    return;
+  }
+  let ws = clients[name + location + ip];
+  if (ws !== undefined) {
+    if( (clients[name + location + ip].status == "In use" && clients[name + location + ip].user != user) ||clients[name+location+ip].status == "Waiting") {
+      var errResp = {
+        error: "Agent in use by another user!",
+        name: name,
+        location: location
+      }
+      if(clients[name+location+ip].status=="Waiting")errResp.error="You are not connected to that Agent!";
+      res.statusCode = 404;
+      res.json(errResp);
+      return;
+    }
+    else {
+      var response = {
+          type: "getFileDirect",
+          fileName: fileName,
+          path: path,
+          user:user
+      }
+      ws.send(JSON.stringify(response));
+      const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
+      responseMap[name + location + ip].then((val) => {
+      clearTimeout(errorTimeout);
+      responseMap[name + location + ip] = emptyPromise();
+      res.json(val);
+    }).catch((err) => {
+      res.statusCode = 404;
+      res.json(err);
+    });
+  }
+ }
+ else {
+   var errResp = {
+     error: "Device is not connected to the server!",
+     name: name,
+     location: location,
+     ip: ip
+   }
+   res.statusCode = 404;
+   res.json(errResp);
+ }
+ 
+});//
+
 app.post('/api/web/agent/fileList', async (req, res) => { //dobije hierarhiju fileova od agenta
 
   const { name, location, ip,user } = req.body;
@@ -753,6 +854,36 @@ app.post('/api/web/user/fileList', async (req, res) => { //dobije hierarhiju fil
   res.send(tree);
 
 });
+
+app.post('/api/web/user/file/getText', async (req, res) => { //user uzima svoj file sa servera
+  const { fileName,user } = req.body;
+
+  if(fileName == undefined ||user == undefined){
+    res.status(400);
+    res.send({message:"Erorr, got wrong json"});
+    return;
+  }
+  let putanja="allFiles/" +user;
+
+  fs.readFile(putanja+ "/" + fileName,{encoding: 'utf-8'}, function (err, fileText) {
+    if (err) {
+      console.log("error: " + err)
+      res.json({ error: "Error, no such file!" });
+    }
+    else {
+      var response = {
+        fileName: fileName,
+        text: fileText
+      }
+      res.status = 200;
+      res.send(response);
+    }
+  });
+});
+
+
+
+//todo add api/web/agent/file/getText
 
 app.get('/', (req, res) => {
   res.send('<h1>Up and running.</h1>');

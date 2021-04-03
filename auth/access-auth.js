@@ -3,8 +3,8 @@ const fetch = require('node-fetch');
 /**
  * Validates token
  */
-async function validateJWT(token) {
-    const tokenResponse = fetch(process.env.AUTH_URL, {
+async function validateUserAccess(token,deviceUid) {
+    const tokenResponse = fetch(process.env.AUTH_URL+deviceUid, {
         headers: { "Authorization": token }
     }).then(res => {
         return res;    
@@ -14,4 +14,4 @@ async function validateJWT(token) {
 }
 
 
-module.exports.validateJWT = validateJWT;
+module.exports.validateUserAccess = validateUserAccess;
