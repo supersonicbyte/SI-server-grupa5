@@ -307,7 +307,7 @@ app.get('/api/agent/online', async (req, res) => {
   for(let c in clients){
     let client = clients[c];
     if(client==undefined)continue;
-    clientArray.push({ deviceUid:client.deviceUid, path:client.path,status:client.status })
+    clientArray.push({name: client.name, location: client.location, deviceUid:client.deviceUid, path:client.path,status:client.status })
   }
 
   res.send(clientArray)
