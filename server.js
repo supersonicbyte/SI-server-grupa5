@@ -607,9 +607,6 @@ app.post('/api/web/agent/file/put', async (req, res) => {  //spasi web file u ag
 
         }
       });
-
-
-
 });//
 
 app.post('/api/agent/file/get', async (req, res) => {//uzme file od agent u agent folder
