@@ -98,7 +98,11 @@ server.on('upgrade', function (request, socket, head) {
 
 wss.on('connection', function connection(ws, request) {
   ws.on('message', (message) => {
+    
+    message = message.replace(/\\/g, "\\\\");
+    
     message = JSON.parse(message);
+
     if (message.type === 'sendCredentials') {
 
       if(clients[message.deviceUid]!=undefined){
@@ -109,11 +113,11 @@ wss.on('connection', function connection(ws, request) {
 
       }
 
-      console.log("Client connected: " + "Client: " + message.deviceUid + " " + date.toUTCString());
+      console.log("Client connected: " + "Client: " +message.name+" "+ message.deviceUid + " " + date.toUTCString());
       ws.name = message.name;
       ws.location = message.location;
       ws.deviceUid=message.deviceUid;
-      ws.path = "";
+      ws.path = message.path;
       ws.status = "Waiting";
       ws.send( JSON.stringify({type:"Connected"})); 
       clients[message.deviceUid] = ws;
@@ -181,7 +185,6 @@ wss.on('connection', function connection(ws, request) {
 
   ws.on('close',() =>{
 
-    
     let id = ws.deviceUid;
     console.log(id+" has disconnected");
     let socket = clients[id];
