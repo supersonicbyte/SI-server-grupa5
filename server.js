@@ -549,7 +549,8 @@ app.post('/api/web/agent/file/put', async (req, res) => {  //spasi web file u ag
        
       fs.mkdir(dir, { recursive: true }, (err) => {
         if (err){
-          res.send({type:"Error making directories"});
+          res.status(404);
+          res.send({error:"Error making directories"});
           return;
         }else{
  
@@ -589,11 +590,11 @@ app.post('/api/web/agent/file/put', async (req, res) => {  //spasi web file u ag
                   }
                   else {
                     var errResp = {
-                       error: "Device is not connected to the server!",
+                       error: "Config saved but agent is not online!",
                        deviceUid:deviceUid
                      }
                      
-                   res.statusCode = 404;
+                   res.statusCode = 210;
                    res.json(errResp);
                    return;
                  }
