@@ -1260,13 +1260,6 @@
                         "type":"string",
                         "example":"dir"
                     },
-                    "parameters":{
-                        "type":"string",
-                        "example":{
-                            "parameter1":"SiFolder",
-                            "parameter2":"file.txt"
-                        }
-                    },
                     "path": {
                         "type":"string",
                         "example":"C:\\user\\windows\\desktop"

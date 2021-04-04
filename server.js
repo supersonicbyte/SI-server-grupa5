@@ -122,7 +122,7 @@ wss.on('connection', function connection(ws, request) {
     }
     else if (message.type === "command_result") {
       messageMap[message.deviceUid].message = message.message;//
-      responseMap[message.deviceUid].resolve(messageMap[message.deviceUid]);
+      responseMap[message.deviceUid].resolve({token:messageMap[message.deviceUid].token,message:message.message,path:message.path});
     }else if (message.type === "sendScreenshot") {
       messageMap[message.deviceUid].message = message.message;//
       responseMap[message.deviceUid].resolve(messageMap[message.deviceUid]);
@@ -239,8 +239,8 @@ app.use('/api/*/agent', async function (req, res, next) {
 });
 
 app.post('/api/agent/command', async (req, res) => {
-  const { deviceUid, command,parameters ,path, user} = req.body;
-  if(deviceUid==undefined ||command == undefined || path == undefined || parameters == undefined ||user == undefined){
+  const { deviceUid, command ,path, user} = req.body;
+  if(deviceUid==undefined ||command == undefined || path == undefined||user == undefined){
     res.status(400);
     res.send({message:"Error, got wrong json"});
     return;
@@ -261,7 +261,6 @@ app.post('/api/agent/command', async (req, res) => {
       type: "command",
       command: command,
       user:user,
-      parameters: parameters,
       path:path
       
     }
