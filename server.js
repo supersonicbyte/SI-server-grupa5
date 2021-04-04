@@ -597,9 +597,9 @@ app.post('/api/web/agent/file/put', async (req, res) => {  //spasi web file u ag
                    res.json(errResp);
                    return;
                  }
-                } 
+                } else res.json({ message: "Done!" });
                 
-              res.json({ message: "Done!" });
+              
               
             }
           });
