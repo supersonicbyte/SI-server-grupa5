@@ -9,7 +9,6 @@ async function validateJWT(token) {
     }).then(res => {
         return res;    
     });
-    
     return tokenResponse;
 }
 
