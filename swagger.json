@@ -25,7 +25,13 @@
             "name": "Agent"
         },
         {
-            "name": "Files"
+            "name": "UserFiles"
+        },
+        {
+            "name": "AgentFiles"
+        },
+        {
+            "name": "Socket"
         }
     ],
     "consumes": [
@@ -36,6 +42,67 @@
     ],
     "schemes": ["https"],
     "paths": {
+        "/login": {
+            "post": {
+                "tags": [
+                    "Socket"
+                ],
+                "summary": "Check if agent is allowed to open socket connection",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type":"object",
+                                "properties": {
+                                    "id": {
+                                        "type":"string",
+                                        "example": "Unique id"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "message": {
+                                            "type":"string",
+                                            "example":"Session updated"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Unauthorized attempt",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "error": {
+                                            "type":"string",
+                                            "example":"Id not valid!"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/agent/screenshot": {
             "post": {
                 "tags": [
@@ -165,6 +232,7 @@
                 }
             }
         },
+
         "/api/agent/disconnect": {
             "post": {
                 "tags": [
@@ -204,7 +272,7 @@
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "Device is not found!"
+                                            "example": "Device is not connected to the server!"
                                         },
                                         "deviceUid": {
                                             "type": "string",
@@ -379,10 +447,11 @@
                 }
             }
         },
+
         "/api/web/agent/file/get": {
             "post": {
                 "tags": [
-                    "Files"
+                    "AgentFiles"
                 ],
                 "summary": "Get an agent file that is saved on the server",
                 "requestBody": {
@@ -451,7 +520,7 @@
         "/api/web/agent/file/put": {
             "post": {
                 "tags": [
-                    "Files"
+                    "AgentFiles"
                 ],
                 "summary": "Put a file for an agent on the server.",
                 "requestBody": {
@@ -527,7 +596,7 @@
         "/api/web/user/file/get": {
             "post": {
                 "tags": [
-                    "Files"
+                    "UserFiles"
                 ],
                 "summary": "Get a user file from the server.",
                 "requestBody": {
@@ -596,9 +665,9 @@
         "/api/web/user/file/put": {
             "post": {
                 "tags": [
-                    "Files"
+                    "UserFiles"
                 ],
-                "summary": "Put a user file on the server.",
+                "summary": "Put a user file on the server",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -672,9 +741,9 @@
         "/api/agent/file/get": {
             "post": {
                 "tags": [
-                    "Files"
+                    "AgentFiles"
                 ],
-                "summary": "Get file from an agent to the server",
+                "summary": "Get file from an agent to the agents folder on the server",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -738,9 +807,9 @@
         "/api/agent/file/put": {
             "post": {
                 "tags": [
-                    "Files"
+                    "AgentFiles"
                 ],
-                "summary": "Put file from server to an agent",
+                "summary": "Put file from the agents folder on the server to an agent",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -794,7 +863,7 @@
         "/api/web/user/fileList": {
             "post": {
                 "tags": [
-                    "Files"
+                    "UserFiles"
                 ],
                 "summary": "Get a hierarchy of files for the user.",
                 "requestBody": {
@@ -840,7 +909,7 @@
         "/api/web/agent/fileList": {
             "post": {
                 "tags": [
-                    "Files"
+                    "AgentFiles"
                 ],
                 "summary": "Get a hierarchy of files for the specified agent.",
                 "requestBody": {
@@ -886,9 +955,9 @@
         "/api/agent/file/directPut": {
             "post": {
                 "tags": [
-                    "Files"
+                    "AgentFiles"
                 ],
-                "summary": "Directli get file from agent to server",
+                "summary": "Directly put file from user to agent",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -953,9 +1022,9 @@
         "/api/agent/file/directGet": {
             "post": {
                 "tags": [
-                    "Files"
+                    "AgentFiles"
                 ],
-                "summary": "Directli get file from server to user",
+                "summary": "Directly get file from agent to user",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -1009,7 +1078,7 @@
         "/api/web/user/file/getText": {
             "post": {
                 "tags": [
-                    "Files"
+                    "UserFiles"
                 ],
                 "summary": "Get data of an user file from server in text format",
                 "requestBody": {
@@ -1088,7 +1157,7 @@
         "/api/web/agent/file/getText": {
             "post": {
                 "tags": [
-                    "Files"
+                    "AgentFiles"
                 ],
                 "summary": "Get data of an agent file from server in text format",
                 "requestBody": {
@@ -1261,7 +1330,7 @@
                         "type": "string",
                         "example":"user@mail.com"
                     },
-                    "base64Data": {
+                    "base64": {
                         "type":"string"
                     }
                 }
@@ -1270,6 +1339,10 @@
             "webUserGet": {
                 "type": "object",
                 "properties": {
+                    "path": {
+                        "type":"string",
+                        "example":"C:\\user\\windows\\desktop"
+                    },
                     "fileName": {
                         "type": "string",
                         "example":"File"
@@ -1333,7 +1406,7 @@
                         "type": "string",
                         "example":"user@mail.com"
                     },
-                    "base64Data": {
+                    "base64": {
                         "type":"string"
                     }
                 }
@@ -1404,7 +1477,7 @@
                 "properties": {
                     "type": {
                         "type":"string",
-                        "example":"In user"
+                        "example":"In use"
                     },
                     "user": {
                         "type":"string",
@@ -1453,7 +1526,7 @@
                         "type": "string",
                         "example":"File"
                     },
-                    "base64Data": {
+                    "base64": {
                         "type": "string"
                     }
                 }
