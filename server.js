@@ -123,10 +123,10 @@ wss.on('connection', function connection(ws, request) {
     else if (message.type === "command_result") {
       messageMap[message.deviceUid].message = message.message;//
       responseMap[message.deviceUid].resolve(messageMap[message.deviceUid]);
-    } else if (message.type === "sendScreenshot") {
+    }else if (message.type === "sendScreenshot") {
       messageMap[message.deviceUid].message = message.message;//
       responseMap[message.deviceUid].resolve(messageMap[message.deviceUid]);
-    } else if (message.type === "sendFile") {
+    }else if (message.type === "sendFile") {
       
       let buff = new Buffer.from(message.message, 'base64');
 
@@ -148,7 +148,7 @@ wss.on('connection', function connection(ws, request) {
 
       fs.writeFile(dir+"/"+message.fileName, buff, function (err) {
         if (err) {
-          responseMap[message.deviceUid].resolve({type:"Error",message:"Error writing file"});
+          responseMap[message.deviceUid].reject({type:"Error",message:"Error writing file"});
         }
         else {
           responseMap[message.deviceUid].resolve({type:"Success",message:"File successfully written."});
@@ -164,12 +164,18 @@ wss.on('connection', function connection(ws, request) {
       }
  
       responseMap[message.deviceUid].resolve(response);
-    }
-     else if (message.type === "savedFile") {
+    }else if (message.type === "savedFile") {
       responseMap[message.deviceUid].resolve({type:"Success",message:"File saved on agent!"});
    
-    } else if (message.type === "pong") {
+    }else if (message.type === "pong") {
       console.log(ws.name+" ponged");
+    }else if(message.type === "error"){
+      if(responseMap[message.deviceUid]!=undefined){
+
+        responseMap[message.deviceUid].status=405;
+        responseMap[message.deviceUid].reject({type:"Error",message:message.message});
+
+      }
     }
   });
 
