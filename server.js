@@ -1,4 +1,5 @@
 const auth = require('./auth/auth.js');
+const accessAuth = require('./auth/access_auth.js');
 const unique = require('./unique/unique.js');
 const express = require('express');
 const app = express();
@@ -80,6 +81,7 @@ app.post('/login', async function (req, res, next) {
 
 server.on('upgrade', function (request, socket, head) {
 
+  console.log(request.headers.cookie);
    if (!uniqueValid.includes(request.headers.cookie.split('=')[1])) {
       console.log(request.headers);
       socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
@@ -99,7 +101,7 @@ wss.on('connection', function connection(ws, request) {
     message = JSON.parse(message);
     if (message.type === 'sendCredentials') {
 
-      if(clients[message.name+message.location+message.ip]!=undefined){
+      if(clients[message.deviceUid]!=undefined){
 
         ws.send('{"type":"Error", "message":"Already connected"}');
         ws.close();
@@ -107,32 +109,33 @@ wss.on('connection', function connection(ws, request) {
 
       }
 
-      console.log("Client connected: " + "Client: " + message.name + " "+message.location+" " + message.ip + " " + date.toUTCString());
+      console.log("Client connected: " + "Client: " + message.deviceUid + " " + date.toUTCString());
       ws.name = message.name;
       ws.location = message.location;
-      ws.ip = message.ip;
+      ws.deviceUid=message.deviceUid;
       ws.path = "";
       ws.status = "Waiting";
       ws.send( JSON.stringify({type:"Connected"})); 
-      clients[message.name + message.location + message.ip] = ws;
-      responseMap[message.name + message.location + message.ip] = emptyPromise();
+      clients[message.deviceUid] = ws;
+      responseMap[message.deviceUid] = emptyPromise();
       
     }
     else if (message.type === "command_result") {
-      messageMap[message.name + message.location + message.ip].message = message.message;//
-      responseMap[message.name + message.location + message.ip].resolve(messageMap[message.name + message.location + message.ip]);
+      messageMap[message.deviceUid].message = message.message;//
+      responseMap[message.deviceUid].resolve(messageMap[message.deviceUid]);
     } else if (message.type === "sendScreenshot") {
-      messageMap[message.name + message.location + message.ip].message = message.message;//
-      responseMap[message.name + message.location + message.ip].resolve(messageMap[message.name + message.location + message.ip]);
+      messageMap[message.deviceUid].message = message.message;//
+      responseMap[message.deviceUid].resolve(messageMap[message.deviceUid]);
     } else if (message.type === "sendFile") {
       
       let buff = new Buffer.from(message.message, 'base64');
 
-      let path = message.name + message.location + message.ip;
+      let path = message.deviceUid;
       let dir = mainFolder+ "/" +path;
       if (!fs.existsSync(dir)){
         fs.mkdirSync(dir);
       }
+      
  
       if(message.fileName==="config.json"){  
 
@@ -140,18 +143,16 @@ wss.on('connection', function connection(ws, request) {
         if (!fs.existsSync(dir)){
           fs.mkdirSync(dir);
         }
-        path= path + "/config";
        
       } 
 
-      fs.writeFile("allFiles/"+path+"/"+message.fileName, buff, function (err) {
+      fs.writeFile(dir+"/"+message.fileName, buff, function (err) {
         if (err) {
-          responseMap[message.name + message.location+message.ip].resolve({type:"Error",message:"Error writing file"});
-         // console.log("error: " + err)
+          responseMap[message.deviceUid].resolve({type:"Error",message:"Error writing file"});
         }
         else {
-          responseMap[message.name + message.location+message.ip].resolve({type:"Success",message:"File successfully written."});
-         // console.log("done")
+          responseMap[message.deviceUid].resolve({type:"Success",message:"File successfully written."});
+          console.log("File written to "+dir+"/"+message.fileName);
         }
       });
 
@@ -159,13 +160,13 @@ wss.on('connection', function connection(ws, request) {
 
       var response = {
         fileName: message.fileName,
-        base64Data: message.message
+        base64: message.message
       }
  
-      responseMap[message.name + message.location+message.ip].resolve(response);
+      responseMap[message.deviceUid].resolve(response);
     }
      else if (message.type === "savedFile") {
-      responseMap[message.name + message.location+message.ip].resolve({type:"Success",message:"File saved on agent!"});
+      responseMap[message.deviceUid].resolve({type:"Success",message:"File saved on agent!"});
    
     } else if (message.type === "pong") {
       console.log(ws.name+" ponged");
@@ -175,7 +176,7 @@ wss.on('connection', function connection(ws, request) {
   ws.on('close',() =>{
 
     
-    let id = ws.name+ws.location+ws.ip;
+    let id = ws.deviceUid;
     console.log(id+" has disconnected");
     let socket = clients[id];
 
@@ -183,9 +184,7 @@ wss.on('connection', function connection(ws, request) {
 
     var errResp = {
       error: "Device couldnt respond!",
-      name: ws.name,
-      location: ws.location,
-      ip: ws.ip
+      deviceUid:ws.deviceUid
     }
     responseMap[id].status=400;
     responseMap[id].resolve(errResp);
@@ -198,7 +197,7 @@ wss.on('connection', function connection(ws, request) {
 
 // validator for all /api routes, checks if token is valid
 app.use('/api', async function (req, res, next) {
-  const { name, location, command,ip } = req.body;
+  const { deviceUid, command } = req.body;
   const authHeader = req.headers.authorization;
   const validation = await auth.validateJWT(authHeader);
   if (validation.status != 200) {
@@ -213,7 +212,7 @@ app.use('/api', async function (req, res, next) {
         token: x.accessToken,//
         message : ""//
       }
-     messageMap[name+location+ip] = messageResponse;//
+     messageMap[deviceUid] = messageResponse;//
 
   }
   next();
@@ -224,7 +223,7 @@ app.use('/api/*/agent', async function (req, res, next) {
   const { user,deviceUid } = req.body;
   
   const authHeader = req.headers.authorization;
-  const validation = await auth.accessToken(authHeader,deviceUid);
+  const validation = await accessAuth.validateUserAccess(authHeader,deviceUid);
   if (validation.status != 200) {
     res.status(validation.status);
     res.send("");
@@ -234,21 +233,20 @@ app.use('/api/*/agent', async function (req, res, next) {
 });
 
 app.post('/api/agent/command', async (req, res) => {
-  const { name, location, ip, command,parameters ,path, user} = req.body;
-  if(name == undefined || location == undefined ||ip == undefined ||command == undefined || path == undefined || parameters == undefined ||user == undefined){
+  const { deviceUid, command,parameters ,path, user} = req.body;
+  if(deviceUid==undefined ||command == undefined || path == undefined || parameters == undefined ||user == undefined){
     res.status(400);
     res.send({message:"Error, got wrong json"});
     return;
   }
-  let ws = clients[name + location + ip];
+  let ws = clients[deviceUid];
   if (ws !== undefined) {
-    if( (clients[name + location + ip].status == "In use" && clients[name + location + ip].user != user) ||clients[name+location+ip].status == "Waiting") {
+    if( (clients[deviceUid].status == "In use" && clients[deviceUid].user != user) ||clients[deviceUid].status == "Waiting") {
       var errResp = {
         error: "Agent in use by another user!",
-        name: name,
-        location: location
+        deviceUid:deviceUid
       }
-      if(clients[name+location+ip].status=="Waiting")errResp.error="You are not connected to that Agent!";
+      if(clients[deviceUid].status=="Waiting")errResp.error="You are not connected to that Agent!";
       res.statusCode = 404;
       res.json(errResp);
       return;
@@ -262,10 +260,10 @@ app.post('/api/agent/command', async (req, res) => {
       
     }
     ws.send(JSON.stringify(response));
-    const errorTimeout = setTimeout(errFunction, 10000, name, location, ip);
-    responseMap[name + location + ip].then((val) => {
+    const errorTimeout = setTimeout(errFunction, 10000, deviceUid);
+    responseMap[deviceUid].then((val) => {
       clearTimeout(errorTimeout);
-      responseMap[name + location + ip] = emptyPromise();
+      responseMap[deviceUid] = emptyPromise();
 
       res.json(val);
     }).catch((err) => {
@@ -276,8 +274,7 @@ app.post('/api/agent/command', async (req, res) => {
   else {
     var errResp = {
       error: "Device is not connected to the server!",
-      name: name,
-      location: location
+      deviceUid:deviceUid
     }
     res.statusCode = 404;
     res.json(errResp);
@@ -299,13 +296,13 @@ app.get('/api/agent/online', async (req, res) => {
   for(let d of x.data){
     let client = clients[d.deviceUid];
     if(client==undefined)continue;
-    clientArray.push({ name: client.name, location: client.location, ip: client.ip, path:client.path,status:client.status })
+    clientArray.push({ name: client.name, location: client.location, ip: client.ip,deviceUid:client.deviceUid, path:client.path,status:client.status })
   }*/
 
   for(let c in clients){
     let client = clients[c];
     if(client==undefined)continue;
-    clientArray.push({ name: client.name, location: client.location, ip: client.ip, path:client.path,status:client.status })
+    clientArray.push({ name: client.name, location: client.location, ip: client.ip,deviceUid:client.deviceUid, path:client.path,status:client.status })
   }
 
   res.send(clientArray)
@@ -313,17 +310,17 @@ app.get('/api/agent/online', async (req, res) => {
 
 app.post('/api/agent/disconnect', async (req, res) => {
 
-  const { name, location, ip,user } = req.body;
-  if(name == undefined || location == undefined ||ip == undefined ||user == undefined){
+  const { deviceUid ,user } = req.body;
+  if(deviceUid==undefined ||user == undefined){
     res.status(400);
     res.send({message:"Error, got wrong json"});
     return;
   }
 
-  let ws = clients[name + location + ip];
+  let ws = clients[deviceUid];
   if (ws !== undefined) {
     
-    if(clients[name+location+ip].status=="In use" && clients[name+location+ip].user != user){
+    if(clients[deviceUid].status=="In use" && clients[deviceUid].user != user){
 
       var errResp = {
         error: "You are not connected to that user!"
@@ -349,8 +346,7 @@ app.post('/api/agent/disconnect', async (req, res) => {
   else {
     var errResp = {
       error: "Device is not connected to the server!",
-      name: name,
-      location: location
+      deviceUid:deviceUid
     }
     res.statusCode = 404;
     res.json(errResp);
@@ -358,21 +354,20 @@ app.post('/api/agent/disconnect', async (req, res) => {
 });//
 
 app.post('/api/agent/connect', async (req, res) => {
-  const { name, location, ip,user } = req.body;
+  const { deviceUid,user } = req.body;
 
-  if(name == undefined || location == undefined ||ip == undefined ||user == undefined){
+  if(deviceUid == undefined ||user == undefined){
     res.status(400);
     res.send({message:"Error, got wrong json"});
     return;
   }
 
-  let ws = clients[name + location + ip];
+  let ws = clients[deviceUid];
   if (ws !== undefined) {
     if(ws.status === "In use") {
       var errResp = {
         error: "Device is already in use!",
-        name: name,
-        location: location
+        deviceUid:deviceUid
       }
       if(ws.user == user )errResp.error = "You are already connected to this user!";
       res.statusCode = 404;
@@ -395,8 +390,7 @@ app.post('/api/agent/connect', async (req, res) => {
   else {
     var errResp = {
       error: "Device is not found!",
-      name: name,
-      location: location
+      deviceUid:deviceUid
     }
     res.statusCode = 404;
     res.json(errResp);
@@ -405,24 +399,24 @@ app.post('/api/agent/connect', async (req, res) => {
 
 app.post('/api/agent/screenshot', async (req, res) => {
 
-  const { name, location, ip,user } = req.body;
-  if(name == undefined || location == undefined ||ip == undefined || user == undefined){
+  const {deviceUid,user } = req.body;
+  if(deviceUid == undefined || user == undefined){
     res.status(400);
     res.send({message:"Erorr, got wrong json"});
     return;
   }
   
-  let ws = clients[name + location + ip];
+  let ws = clients[deviceUid];
   if (ws !== undefined) {
     var response = {
       type: "getScreenshot",
       user:user
     }
     ws.send(JSON.stringify(response));
-    const errorTimeout = setTimeout(errFunction, 10000, name, location);
-    responseMap[name + location + ip].then((val) => {
+    const errorTimeout = setTimeout(errFunction, 10000, deviceUid);
+    responseMap[deviceUid].then((val) => {
       clearTimeout(errorTimeout);
-      responseMap[name + location + ip] = emptyPromise();
+      responseMap[deviceUid] = emptyPromise();
       res.json(val);
     }).catch((err) => {
       res.statusCode = 404;
@@ -432,9 +426,7 @@ app.post('/api/agent/screenshot', async (req, res) => {
   else {
     var errResp = {
       error: "Device is not connected to the server!",
-      name: name,
-      location: location,
-      ip: ip
+      deviceUid:deviceUid
     }
     res.statusCode = 404;
     res.json(errResp);
@@ -442,14 +434,14 @@ app.post('/api/agent/screenshot', async (req, res) => {
 });//
 
 app.post('/api/web/user/file/get', async (req, res) => { //user uzima svoj file sa servera
-  const { fileName,user } = req.body;
+  const { path,fileName,user } = req.body;
 
-  if(fileName == undefined ||user == undefined){
+  if(fileName == undefined ||user == undefined || path == undefined){
     res.status(400);
     res.send({message:"Erorr, got wrong json"});
     return;
   }
-  let putanja="allFiles/" +user;
+  let putanja="allFiles/" +user+"/"+path;
 
   fs.readFile(putanja+ "/" + fileName, { encoding: 'base64' }, function (err, data) {
     if (err) {
@@ -458,7 +450,7 @@ app.post('/api/web/user/file/get', async (req, res) => { //user uzima svoj file 
     else {
       var response = {
         fileName: fileName,
-        base64Data: data
+        base64: data
       }
       res.status = 200;
       res.send(response);
@@ -467,19 +459,20 @@ app.post('/api/web/user/file/get', async (req, res) => { //user uzima svoj file 
 });
 
 app.post('/api/web/agent/file/get', async (req, res) => { //user trazi file sa servera koji pripada nekoj masini(agentu)
-  const { name, location, ip, fileName,user } = req.body;
+  const {deviceUid, path,fileName,user } = req.body;
 
-  if(name == undefined || location == undefined || ip == undefined || fileName == undefined || user == undefined ){
+  if(deviceUid == undefined || fileName == undefined || user == undefined ){
     res.status(400);
     res.send({message:"Erorr, got wrong json"});
     return;
   }
-  let path="allFiles/" + name + location + ip;
 
+  let dir = mainFolder+"/"+deviceUid;
   if(fileName === "config.json"  )
-    path= path + "/config";
+    path= "/config";
+    dir =dir +"/"+path
 
-  fs.readFile(path + "/" + fileName, { encoding: 'base64' }, function (err, data) {
+  fs.readFile(dir + "/" + fileName, { encoding: 'base64' }, function (err, data) {
     if (err) {
       console.log("/api/web/agent/file/get error: " + err)
       res.json({ error: "Error, no such file!" });
@@ -487,7 +480,7 @@ app.post('/api/web/agent/file/get', async (req, res) => { //user trazi file sa s
     else {
       var response = {
         fileName: fileName,
-        base64Data: data
+        base64: data
       }
       res.status = 200;
       res.send(response);
@@ -495,142 +488,145 @@ app.post('/api/web/agent/file/get', async (req, res) => { //user trazi file sa s
   });
 });//
 
-app.post('/api/web/user/file/put', async (req, res) => {  //spasavanje user file-ova na server od strane web-a(samo njima primadaju)
+app.post('/api/web/user/file/put', async (req, res) => {  //spasavanje user file-ova na server od strane web-a(samo njima pripadaju)
   
-  const {fileName, base64Data,user } = req.body;
+  const {path,fileName, base64,user } = req.body;
   
-  if(fileName == undefined ||base64Data == undefined ||user == undefined){
+  if(fileName == undefined ||base64 == undefined ||user == undefined){
     res.status(400);
     res.send({message:"Erorr, got wrong json"});
     return;
   }
 
-  let buff = new Buffer.from(base64Data, 'base64');
-  let path =user;
-      let dir = './allFiles';
-      if (!fs.existsSync(dir)){
-        fs.mkdirSync(dir);
-      }
-       dir = dir+"/"+path;
-      if (!fs.existsSync(dir)){
-        fs.mkdirSync(dir);
-      }
+  let buff = new Buffer.from(base64, 'base64');
+
+      let dir = mainFolder+"/"+user+"/"+path;
+
+      fs.mkdir(dir, { recursive: true }, (err) => {
+        if (err){
+          res.send({type:"Error making directories"});
+          return;
+        }else{
  
- fs.writeFile("allFiles/"+path+"/"+fileName, buff, function (err) {
+          fs.writeFile(dir+"/"+fileName, buff, function (err) {
  
-    if (err) {
-      console.log("/api/web/user/file/put error: " + err)
-      res.status(404);
-      res.json({ error: err });
-    }
-    else {
-      console.log("done");
-      res.json({ message: "Done!" });
-    }
-  });
+            if (err) {
+              console.log("/api/web/user/file/put error: " + err)
+              res.status(404);
+              res.json({ error: err });
+            }
+            else {
+              console.log("done");
+              res.json({ message: "Done!" });
+            }
+          });
+
+        }
+      });
+
 });
 
-app.post('/api/web/agent/file/put', async (req, res) => {  //slanje agent file-ova na server od strane web-a
+app.post('/api/web/agent/file/put', async (req, res) => {  //spasi web file u agent folder i posalje desktopu ako je config file
    
-  const { name, location, ip, fileName, base64Data,user } = req.body;
+  const { deviceUid,path ,fileName, base64,user } = req.body;
   
-  if(name == undefined || location == undefined ||ip == undefined ||fileName == undefined ||base64Data == undefined ||user == undefined){
+  if(deviceUid == undefined ||fileName == undefined ||base64 == undefined ||user == undefined){
     res.status(400);
     res.send({message:"Erorr, got wrong json"});
     return;
   }
  
   //create path
-  let buff = new Buffer.from(base64Data, 'base64');
-  let path = name + location + ip;
-      let dir = './allFiles';
-      if (!fs.existsSync(dir)){
-        fs.mkdirSync(dir);
-      }
-       dir = dir+"/"+path;
-      if (!fs.existsSync(dir)){
-        fs.mkdirSync(dir);
-      }
+  let buff = new Buffer.from(base64, 'base64');
+  let dir = mainFolder+"/"+deviceUid;
  
-      if(fileName === "config.json") {  
-
+      if(fileName === "config.json")
         dir = dir+"/config";
-        if (!fs.existsSync(dir)){
-          fs.mkdirSync(dir);
-        }
+      else dir=dir+"/"+path;
        // fileName="/config"+"31.3.2021"+".json"; //  ako bude datum trebao
-        path= path + "/config";
        
-      } 
-
- fs.writeFile("allFiles/"+path+"/"+fileName, buff, function (err) {
+      fs.mkdir(dir, { recursive: true }, (err) => {
+        if (err){
+          res.send({type:"Error making directories"});
+          return;
+        }else{
  
-  if (err) {
-      console.log("/api/web/agent/file/put error: " + err)
-      res.status(404);
-      res.json({ error: err });
-  } else {
-      //send config file to agent
-      let ws = clients[name + location + ip];
-      if (ws !== undefined) {
-        if(fileName==="config.json"){
-          
-          var response = {
-            type: "putFile",
-            fileName: fileName,
-            path: path,
-            data: base64Data,
-            user:user
-          }
+          fs.writeFile(dir+"/"+fileName, buff, function (err) {
+ 
+            if (err) {
+                console.log("/api/web/agent/file/put error: " + err)
+                res.status(404);
+                res.json({ error: err });
+            } else {
+                //send config file to agent
+               
+               
+                  if(fileName==="config.json"){
+                    
+                    let ws = clients[deviceUid];
+                    if (ws !== undefined) {
 
-          ws.send(JSON.stringify(response));
-          //ws.send("config");
-          const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
-          responseMap[name + location + ip].then((val) => {
-            clearTimeout(errorTimeout);
-            responseMap[name + location + ip] = emptyPromise();
-            res.json(val);
-          }).catch((err) => {
-            res.statusCode = 404;
-            res.json(err);
-          });
-        
-        }
-      } else {
-         var errResp = {
-            error: "Device is not connected to the server!",
-            name: name,
-            location: location,
-            ip: ip
-          }
+                    var response = {
+                      type: "putFile",
+                      fileName: fileName,
+                      path: path,
+                      data: base64,
+                      user:user
+                    }
           
-        res.statusCode = 404;
-        res.json(errResp);
-      }
-      
-    res.json({ message: "Done!" });
-    
-  }
-});
+                    ws.send(JSON.stringify(response));
+                    //ws.send("config");
+                    const errorTimeout = setTimeout(errFunction, 10000, deviceUid); 
+                    responseMap[deviceUid].then((val) => {
+                      clearTimeout(errorTimeout);
+                      responseMap[deviceUid] = emptyPromise();
+                      res.json(val);
+                    }).catch((err) => {
+                      res.statusCode = 404;
+                      res.json(err);
+                    });
+                  
+                  }
+                  else {
+                    var errResp = {
+                       error: "Device is not connected to the server!",
+                       deviceUid:deviceUid
+                     }
+                     
+                   res.statusCode = 404;
+                   res.json(errResp);
+                 }
+                } 
+                
+              res.json({ message: "Done!" });
+              
+            }
+          });
+          
+
+        }
+      });
+
+
+
 });//
 
-app.post('/api/agent/file/get', async (req, res) => {
+app.post('/api/agent/file/get', async (req, res) => {//uzme file od agent u agent folder
 
-  const { name, location, ip, fileName, path,user} = req.body;
-  if(name == undefined || location == undefined ||ip == undefined ||fileName == undefined ||path == undefined ||user == undefined){
+  const { deviceUid, fileName, path,user} = req.body;
+  if(deviceUid == undefined ||fileName == undefined ||path == undefined ||user == undefined){
     res.status(400);
     res.send({message:"Error, got wrong json"});
     return;
   }
-  let ws = clients[name + location + ip];
+  let ws = clients[deviceUid];
   if (ws !== undefined) {
-    if( (clients[name + location + ip].status == "In use" && clients[name + location + ip].user != user) ||clients[name+location+ip].status == "Waiting") {
+    if( (clients[deviceUid].status == "In use" && clients[deviceUid].user != user) ||clients[deviceUid].status == "Waiting") {
       var errResp = {
         error: "Agent in use by another user!",
-        name: name,
-        location: location
+        deviceUid:deviceUid
       }
-      if(clients[name+location+ip].status=="Waiting")errResp.error="You are not connected to that Agent!";
+      if(clients[deviceUid].status=="Waiting")errResp.error="You are not connected to that Agent!";
       res.statusCode = 404;
       res.json(errResp);
       return;
@@ -643,10 +639,10 @@ app.post('/api/agent/file/get', async (req, res) => {
           user:user
       }
       ws.send(JSON.stringify(response));
-      const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
-      responseMap[name + location + ip].then((val) => {
+      const errorTimeout = setTimeout(errFunction, 10000, deviceUid); 
+      responseMap[deviceUid].then((val) => {
       clearTimeout(errorTimeout);
-      responseMap[name + location + ip] = emptyPromise();
+      responseMap[deviceUid] = emptyPromise();
       res.json(val);
     }).catch((err) => {
       res.statusCode = 404;
@@ -657,9 +653,7 @@ app.post('/api/agent/file/get', async (req, res) => {
  else {
    var errResp = {
      error: "Device is not connected to the server!",
-     name: name,
-     location: location,
-     ip: ip
+     deviceUid:deviceUid
    }
    res.statusCode = 404;
    res.json(errResp);
@@ -667,24 +661,26 @@ app.post('/api/agent/file/get', async (req, res) => {
  
 });//
 
-app.post('/api/agent/file/put', async (req, res) => {
-  const { name, location, ip, fileName, path,user} = req.body;
-  if(name == undefined || location == undefined ||ip == undefined ||fileName == undefined ||path == undefined ||user == undefined){
+app.post('/api/agent/file/put', async (req, res) => {//posalje file iz agent foldera na agenta
+  const { deviceUid, fileName, path,user} = req.body;
+  if(deviceUid == undefined ||fileName == undefined ||path == undefined ||user == undefined){
     res.status(404);
     res.send({message:"Erorr, got wrong json"});
     return;
   }
-  let ws = clients[name + location + ip];
+  let ws = clients[deviceUid];
   if (ws !== undefined) {
 
-      let putanja=name + location + ip + "/";
+      
       if(fileName==="config.json"){
-       putanja=putanja + "/config/"
+       path="config"
       }
 
-      fs.readFile(putanja + fileName, { encoding: 'base64' }, function (err, data) {
+      let dir=mainFolder+"/"+deviceUid + "/"+path;
+
+      fs.readFile(dir+"/"+ fileName, { encoding: 'base64' }, function (err, data) {
         if (err) {
-          console.log("error: " + err)
+          console.log("error: " + err+" \n"+dir+"/"+fileName)
           res.json({ error: "Error!" });
         }
         else {
@@ -696,10 +692,10 @@ app.post('/api/agent/file/put', async (req, res) => {
             user:user
           }
           ws.send(JSON.stringify(response));
-          const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
-          responseMap[name + location + ip].then((val) => {
+          const errorTimeout = setTimeout(errFunction, 10000, deviceUid); 
+          responseMap[deviceUid].then((val) => {
             clearTimeout(errorTimeout);
-            responseMap[name + location + ip] = emptyPromise();
+            responseMap[deviceUid] = emptyPromise();
             res.json(val);
           }).catch((err) => {
             res.statusCode = 404;
@@ -710,25 +706,23 @@ app.post('/api/agent/file/put', async (req, res) => {
   } else {
     var errResp = {
       error: "Device is not connected to the server!",
-      name: name,
-      location: location,
-      ip: ip
+      deviceUid:deviceUid
     }
    res.statusCode = 404;
    res.json(errResp);
  } 
 });//
 
-app.post('/api/agent/file/directPut', async (req, res) => {
+app.post('/api/agent/file/directPut', async (req, res) => {//stavi file direktno na agenta
 
-  const { name, location, ip, fileName, path,base64,user} = req.body;
+  const {deviceUid, fileName, path,base64,user} = req.body;
 
-  if(name == undefined || location == undefined ||ip == undefined ||fileName == undefined ||path == undefined ||user == undefined || base64 == undefined){
+  if(deviceUid == undefined ||fileName == undefined ||path == undefined ||user == undefined || base64 == undefined){
     res.status(404);
     res.send({message:"Erorr, got wrong json"});
     return;
   }
-  let ws = clients[name + location + ip];
+  let ws = clients[deviceUid];
   if (ws !== undefined) {
 
           var response = {
@@ -739,10 +733,10 @@ app.post('/api/agent/file/directPut', async (req, res) => {
             user:user
           }
           ws.send(JSON.stringify(response));
-          const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
-          responseMap[name + location + ip].then((val) => {
+          const errorTimeout = setTimeout(errFunction, 10000, deviceUid); 
+          responseMap[deviceUid].then((val) => {
             clearTimeout(errorTimeout);
-            responseMap[name + location + ip] = emptyPromise();
+            responseMap[deviceUid] = emptyPromise();
             res.json(val);
           }).catch((err) => {
             res.statusCode = 404;
@@ -751,32 +745,29 @@ app.post('/api/agent/file/directPut', async (req, res) => {
   } else {
     var errResp = {
       error: "Device is not connected to the server!",
-      name: name,
-      location: location,
-      ip: ip
+      deviceUid:deviceUid
     }
    res.statusCode = 404;
    res.json(errResp);
  } 
 });//
 
-app.post('/api/agent/file/directGet', async (req, res) => {
+app.post('/api/agent/file/directGet', async (req, res) => {// uzme file direktno sa agenta
 
-  const { name, location, ip, fileName, path,user} = req.body;
-  if(name == undefined || location == undefined ||ip == undefined ||fileName == undefined ||path == undefined ||user == undefined){
+  const {deviceUid, fileName, path,user} = req.body;
+  if(deviceUid == undefined ||fileName == undefined ||path == undefined ||user == undefined){
     res.status(400);
     res.send({message:"Error, got wrong json"});
     return;
   }
-  let ws = clients[name + location + ip];
+  let ws = clients[deviceUid];
   if (ws !== undefined) {
-    if( (clients[name + location + ip].status == "In use" && clients[name + location + ip].user != user) ||clients[name+location+ip].status == "Waiting") {
+    if( (clients[deviceUid].status == "In use" && clients[deviceUid].user != user) ||clients[deviceUid].status == "Waiting") {
       var errResp = {
         error: "Agent in use by another user!",
-        name: name,
-        location: location
+        deviceUid:deviceUid
       }
-      if(clients[name+location+ip].status=="Waiting")errResp.error="You are not connected to that Agent!";
+      if(clients[deviceUid].status=="Waiting")errResp.error="You are not connected to that Agent!";
       res.statusCode = 404;
       res.json(errResp);
       return;
@@ -789,10 +780,10 @@ app.post('/api/agent/file/directGet', async (req, res) => {
           user:user
       }
       ws.send(JSON.stringify(response));
-      const errorTimeout = setTimeout(errFunction, 10000, name, location, ip); 
-      responseMap[name + location + ip].then((val) => {
+      const errorTimeout = setTimeout(errFunction, 10000, deviceUid); 
+      responseMap[deviceUid].then((val) => {
       clearTimeout(errorTimeout);
-      responseMap[name + location + ip] = emptyPromise();
+      responseMap[deviceUid] = emptyPromise();
       res.json(val);
     }).catch((err) => {
       res.statusCode = 404;
@@ -803,9 +794,7 @@ app.post('/api/agent/file/directGet', async (req, res) => {
  else {
    var errResp = {
      error: "Device is not connected to the server!",
-     name: name,
-     location: location,
-     ip: ip
+     deviceUid:deviceUid
    }
    res.statusCode = 404;
    res.json(errResp);
@@ -815,14 +804,14 @@ app.post('/api/agent/file/directGet', async (req, res) => {
 
 app.post('/api/web/agent/fileList', async (req, res) => { //dobije hierarhiju fileova od agenta
 
-  const { name, location, ip,user } = req.body;
+  const {deviceUid,user } = req.body;
 
-  if(name == undefined || location == undefined || ip == undefined || user == undefined ){
+  if(deviceUid == undefined || user == undefined ){
     res.status(400);
     res.send({message:"Erorr, got wrong json"});
     return;
   }
-  let path=mainFolder+ "/" + name + location + ip;
+  let path=mainFolder+ "/" + deviceUid;
 
   if (!fs.existsSync(path)){
     fs.mkdirSync(path);
@@ -838,6 +827,7 @@ app.post('/api/web/user/fileList', async (req, res) => { //dobije hierarhiju fil
 
   const { user } = req.body;
 
+  
   if(user == undefined ){
     res.status(400);
     res.send({message:"Erorr, got wrong json"});
@@ -856,16 +846,16 @@ app.post('/api/web/user/fileList', async (req, res) => { //dobije hierarhiju fil
 });
 
 app.post('/api/web/user/file/getText', async (req, res) => { //user uzima svoj file sa servera
-  const { fileName,user } = req.body;
+  const { path,fileName,user } = req.body;
 
   if(fileName == undefined ||user == undefined){
     res.status(400);
     res.send({message:"Erorr, got wrong json"});
     return;
   }
-  let putanja="allFiles/" +user;
+  let dir="allFiles/" +user+"/"+path;
 
-  fs.readFile(putanja+ "/" + fileName,{encoding: 'utf-8'}, function (err, fileText) {
+  fs.readFile(dir+ "/" + fileName,{encoding: 'utf-8'}, function (err, fileText) {
     if (err) {
       console.log("error: " + err)
       res.json({ error: "Error, no such file!" });
@@ -881,23 +871,43 @@ app.post('/api/web/user/file/getText', async (req, res) => { //user uzima svoj f
   });
 });
 
+app.post('/api/web/agent/file/getText', async (req, res) => { //user uzima svoj file sa servera
+  const { deviceUid,path,fileName,user } = req.body;
 
+  if(fileName == undefined ||user == undefined){
+    res.status(400);
+    res.send({message:"Erorr, got wrong json"});
+    return;
+  }
+  let dir="allFiles/" +deviceUid+"/"+path;
 
-//todo add api/web/agent/file/getText
+  fs.readFile(dir+ "/" + fileName,{encoding: 'utf-8'}, function (err, fileText) {
+    if (err) {
+      console.log("error: " + err)
+      res.json({ error: "Error, no such file!" });
+    }
+    else {
+      var response = {
+        fileName: fileName,
+        text: fileText
+      }
+      res.status = 200;
+      res.send(response);
+    }
+  });
+});
 
 app.get('/', (req, res) => {
   res.send('<h1>Up and running.</h1>');
 })
 
-function errFunction(name, location, ip) {
+function errFunction(deviceUid) {
   try{
   var errResp = {
     error: "Client took too long to respond",
-    name: name,
-    location: location,
-    ip: ip
+    deviceUid:deviceUid
   }
-  responseMap[name + location + ip].reject(errResp);
+  responseMap[deviceUid].reject(errResp);
 }catch(err){
   console.log("errFunction error "+err);
 }
