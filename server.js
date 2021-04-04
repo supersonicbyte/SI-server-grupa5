@@ -468,9 +468,9 @@ app.post('/api/web/agent/file/get', async (req, res) => { //user trazi file sa s
   }
 
   let dir = mainFolder+"/"+deviceUid;
-  if(fileName === "config.json"  )
-    path= "/config";
-    dir =dir +"/"+path
+  if(fileName === "config.json" )
+  dir =dir +"/config";
+  else dir =dir +"/"+path
 
   fs.readFile(dir + "/" + fileName, { encoding: 'base64' }, function (err, data) {
     if (err) {
@@ -542,6 +542,8 @@ app.post('/api/web/agent/file/put', async (req, res) => {  //spasi web file u ag
  
       if(fileName === "config.json")
         dir = dir+"/config";
+      
+        
       else dir=dir+"/"+path;
        // fileName="/config"+"31.3.2021"+".json"; //  ako bude datum trebao
        
@@ -557,10 +559,9 @@ app.post('/api/web/agent/file/put', async (req, res) => {  //spasi web file u ag
                 console.log("/api/web/agent/file/put error: " + err)
                 res.status(404);
                 res.json({ error: err });
+                return;
             } else {
-                //send config file to agent
-               
-               
+                //send config file to agent        
                   if(fileName==="config.json"){
                     
                     let ws = clients[deviceUid];
@@ -569,13 +570,12 @@ app.post('/api/web/agent/file/put', async (req, res) => {  //spasi web file u ag
                     var response = {
                       type: "putFile",
                       fileName: fileName,
-                      path: path,
+                      path: "",
                       data: base64,
                       user:user
                     }
           
                     ws.send(JSON.stringify(response));
-                    //ws.send("config");
                     const errorTimeout = setTimeout(errFunction, 10000, deviceUid); 
                     responseMap[deviceUid].then((val) => {
                       clearTimeout(errorTimeout);
@@ -585,7 +585,7 @@ app.post('/api/web/agent/file/put', async (req, res) => {  //spasi web file u ag
                       res.statusCode = 404;
                       res.json(err);
                     });
-                  
+                  return;
                   }
                   else {
                     var errResp = {
@@ -595,6 +595,7 @@ app.post('/api/web/agent/file/put', async (req, res) => {  //spasi web file u ag
                      
                    res.statusCode = 404;
                    res.json(errResp);
+                   return;
                  }
                 } 
                 
@@ -671,12 +672,12 @@ app.post('/api/agent/file/put', async (req, res) => {//posalje file iz agent fol
   let ws = clients[deviceUid];
   if (ws !== undefined) {
 
-      
+    let dir=mainFolder+"/"+deviceUid + "/";
       if(fileName==="config.json"){
-       path="config"
+       dir+="config"
       }
-
-      let dir=mainFolder+"/"+deviceUid + "/"+path;
+      dir+=path;
+      
 
       fs.readFile(dir+"/"+ fileName, { encoding: 'base64' }, function (err, data) {
         if (err) {
