@@ -902,7 +902,36 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/webAgentPut"
+                                "type":"object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example":"Agent"
+                                    },
+                                    "location": {
+                                        "type": "string",
+                                        "example":"City"
+                                    },
+                                    "ip": {
+                                        "type": "string",
+                                        "example":"0.0.0.0"
+                                    },
+                                    "fileName": {
+                                        "type": "string",
+                                        "example":"File"
+                                    },
+                                    "path": {
+                                        "type": "string",
+                                        "example":"/"
+                                    },
+                                    "user": {
+                                        "type": "string",
+                                        "example":"user@mail.com"
+                                    },
+                                    "base64": {
+                                        "type":"string"
+                                    }
+                                }
                             }
                         }
                     }
