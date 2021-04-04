@@ -57,14 +57,21 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successful"
+                        "description": "Successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/200"
+                                }
+                            }
+                        }
                     },
                     "404": {
                         "description": "Agent is not connected to the server",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/error404"
+                                    "$ref": "#/components/schemas/error404NotFound"
                                 }
                             }
                         }
@@ -115,12 +122,22 @@
                     "200": {
                         "description": "Successful"
                     },
-                    "404": {
+                    "404NotFound": {
                         "description": "Agent is not connected to the server",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/error404"
+                                    "$ref": "#/components/schemas/error404NotFound"
+                                }
+                            }
+                        }
+                    },
+                    "404InUse": {
+                        "description": "Agent is already in use",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error404InUse"
                                 }
                             }
                         }
@@ -178,7 +195,7 @@
                             }
                         }
                     },
-                    "404": {
+                    "404NotFound": {
                         "description": "Agent can't be disconnected",
                         "content": {
                             "application/json": {
@@ -196,6 +213,22 @@
                                         "location": {
                                             "type":"string",
                                             "example": "City"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404InUse": {
+                        "description":"Agent is already in use",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "error": {
+                                            "type":"string",
+                                            "example":"You are not connected to that user!"
                                         }
                                     }
                                 }
@@ -255,7 +288,7 @@
                             }
                         }
                     },
-                    "404": {
+                    "404NotFound": {
                         "description": "Agent can't be connected",
                         "content": {
                             "application/json": {
@@ -273,6 +306,22 @@
                                         "location": {
                                             "type":"string",
                                             "example": "City"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404InUse": {
+                        "description":"Agent is already in use",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "error": {
+                                            "type":"string",
+                                            "example":"Device is already in use! || You are already connected to this user!"
                                         }
                                     }
                                 }
@@ -377,7 +426,7 @@
                                     "properties": {
                                         "error": {
                                             "type":"string",
-                                            "example": "Error!"
+                                            "example": "Error, no such file!"
                                         }
                                     }
                                 }
@@ -522,7 +571,7 @@
                                     "properties": {
                                         "error": {
                                             "type":"string",
-                                            "example": "Error!"
+                                            "example": "Error, no such file!"
                                         }
                                     }
                                 }
@@ -651,12 +700,22 @@
                     "200": {
                         "description": "Successful"
                     },
-                    "404": {
+                    "404NotFound": {
                         "description": "Could not find file",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref":"#/components/schemas/error404"
+                                    "$ref":"#/components/schemas/error404NotFound"
+                                }
+                            }
+                        }
+                    },
+                    "404InUse": {
+                        "description": "Agent is already in use",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error404InUse"
                                 }
                             }
                         }
@@ -712,7 +771,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref":"#/components/schemas/error404"
+                                    "$ref":"#/components/schemas/error404NotFound"
                                 }
                             }
                         }
@@ -831,6 +890,187 @@
                     }
                 }
             }
+        },
+        "/api/agent/file/directPut": {
+            "post": {
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Directli get file from agent to server",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/webAgentPut"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful"
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error400"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error403"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/agent/file/directGet": {
+            "post": {
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Directli get file from server to user",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/file"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful"
+                    },
+                    "404InUse": {
+                        "description":"Agent is already in use",
+                        "content":{
+                            "application/json": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error404InUse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error400"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error403"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/web/user/file/getText": {
+            "post": {
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Get data of file from server in text format",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/webUserGet"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "fileName": {
+                                            "type":"string",
+                                            "example":"File"
+                                        },
+                                        "text": {
+                                            "type": "string",
+                                            "example": "File contents"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"There is no such file",
+                        "content":{
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "error": {
+                                            "type":"string",
+                                            "example": "Error, no such file!"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error400"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error403"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -878,6 +1118,10 @@
                     "parameters":{
                         "type":"string",
                         "example":"Parameters"
+                    },
+                    "path": {
+                        "type":"string",
+                        "example":"/"
                     },
                     "user": {
                         "type":"string",
@@ -984,10 +1228,6 @@
                         "type": "string",
                         "example":"File"
                     },
-                    "path": {
-                        "type": "string",
-                        "example":"/"
-                    },
                     "user": {
                         "type": "string",
                         "example":"user@mail.com"
@@ -1062,11 +1302,15 @@
                 "properties": {
                     "type": {
                         "type":"string",
-                        "example":"Disconnected"
+                        "example":"Waiting"
                     },
                     "user": {
                         "type":"string",
                         "example":"user@mail.com"
+                    },
+                    "message": {
+                        "type":"string",
+                        "example":"User successfully disconnected!"
                     }
                 }
             },
@@ -1075,11 +1319,15 @@
                 "properties": {
                     "type": {
                         "type":"string",
-                        "example":"Connected"
+                        "example":"In user"
                     },
                     "user": {
                         "type":"string",
                         "example":"user@mail.com"
+                    },
+                    "message": {
+                        "type":"string",
+                        "example":"Connection successful!"
                     }
                 }
             },
@@ -1133,7 +1381,7 @@
                     }
                 }
             },
-            "error404": {
+            "error404NotFound": {
                 "type": "object",
                 "properties": {
                     "error": {
@@ -1147,6 +1395,36 @@
                     "location": {
                         "type":"string",
                         "example": "City"
+                    }
+                }
+            },
+            "error404InUse": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "string",
+                        "example": "Agent in use by another user! || You are not connected to that Agent!"
+                    },
+                    "name": {
+                        "type":"string",
+                        "example": "Agent"
+                    },
+                    "location": {
+                        "type":"string",
+                        "example": "City"
+                    }
+                }
+            },
+            "200": {
+                "type":"object",
+                "properties": {
+                    "token": {
+                        "type": "string",
+                        "example": "Your token"
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Message"
                     }
                 }
             }
