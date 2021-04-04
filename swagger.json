@@ -206,13 +206,9 @@
                                             "type": "string",
                                             "example": "Device is not found!"
                                         },
-                                        "name": {
-                                            "type":"string",
-                                            "example": "Agent"
-                                        },
-                                        "location": {
-                                            "type":"string",
-                                            "example": "City"
+                                        "deviceUid": {
+                                            "type": "string",
+                                            "example":"54323-6dsag-674-dag"
                                         }
                                     }
                                 }
@@ -299,13 +295,9 @@
                                             "type": "string",
                                             "example": "Device is not found!"
                                         },
-                                        "name": {
-                                            "type":"string",
-                                            "example": "Agent"
-                                        },
-                                        "location": {
-                                            "type":"string",
-                                            "example": "City"
+                                        "deviceUid": {
+                                            "type": "string",
+                                            "example":"54323-6dsag-674-dag"
                                         }
                                     }
                                 }
@@ -904,17 +896,9 @@
                             "schema": {
                                 "type":"object",
                                 "properties": {
-                                    "name": {
+                                    "deviceUid": {
                                         "type": "string",
-                                        "example":"Agent"
-                                    },
-                                    "location": {
-                                        "type": "string",
-                                        "example":"City"
-                                    },
-                                    "ip": {
-                                        "type": "string",
-                                        "example":"0.0.0.0"
+                                        "example":"54323-6dsag-674-dag"
                                     },
                                     "fileName": {
                                         "type": "string",
@@ -1027,13 +1011,92 @@
                 "tags": [
                     "Files"
                 ],
-                "summary": "Get data of file from server in text format",
+                "summary": "Get data of an user file from server in text format",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/webUserGet"
+                                "$ref": "#/components/schemas/webUserGetText"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "fileName": {
+                                            "type":"string",
+                                            "example":"File"
+                                        },
+                                        "text": {
+                                            "type": "string",
+                                            "example": "File contents"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"There is no such file",
+                        "content":{
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "error": {
+                                            "type":"string",
+                                            "example": "Error, no such file!"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error400"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error403"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/web/agent/file/getText": {
+            "post": {
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Get data of an agent file from server in text format",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/webAgentGetText"
                             }
                         }
                     }
@@ -1107,17 +1170,9 @@
             "screenshot": {
                 "type": "object",
                 "properties": {
-                    "name": {
+                    "deviceUid": {
                         "type": "string",
-                        "example": "Agent"
-                    },
-                    "location": {
-                        "type":"string",
-                        "example":"City"
-                    },
-                    "ip": {
-                        "type":"string",
-                        "example":"0.0.0.0"
+                        "example":"54323-6dsag-674-dag"
                     },
                     "user": {
                         "type":"string",
@@ -1128,17 +1183,9 @@
             "command": {
                 "type": "object",
                 "properties": {
-                    "name": {
+                    "deviceUid": {
                         "type": "string",
-                        "example":"Agent"
-                    },
-                    "location": {
-                        "type": "string",
-                        "example":"City"
-                    },
-                    "ip": {
-                        "type": "string",
-                        "example":"0.0.0.0"
+                        "example":"54323-6dsag-674-dag"
                     },
                     "command": {
                         "type":"string",
@@ -1146,11 +1193,14 @@
                     },
                     "parameters":{
                         "type":"string",
-                        "example":"Parameters"
+                        "example":{
+                            "parameter1":"SiFolder",
+                            "parameter2":"file.txt"
+                        }
                     },
                     "path": {
                         "type":"string",
-                        "example":"/"
+                        "example":"C:\\user\\windows\\desktop"
                     },
                     "user": {
                         "type":"string",
@@ -1161,17 +1211,9 @@
             "agent": {
                 "type": "object",
                 "properties": {
-                    "name": {
+                    "deviceUid": {
                         "type": "string",
-                        "example":"Agent"
-                    },
-                    "location": {
-                        "type": "string",
-                        "example":"City"
-                    },
-                    "ip": {
-                        "type": "string",
-                        "example":"0.0.0.0"
+                        "example":"54323-6dsag-674-dag"
                     },
                     "user": {
                         "type":"string",
@@ -1182,17 +1224,13 @@
             "webAgentGet": {
                 "type": "object",
                 "properties": {
-                    "name": {
+                    "deviceUid": {
                         "type": "string",
-                        "example":"Agent"
+                        "example":"54323-6dsag-674-dag"
                     },
-                    "location": {
-                        "type": "string",
-                        "example":"City"
-                    },
-                    "ip": {
-                        "type": "string",
-                        "example":"0.0.0.0"
+                    "path": {
+                        "type":"string",
+                        "example":"C:\\user\\windows\\desktop"
                     },
                     "fileName": {
                         "type": "string",
@@ -1207,25 +1245,17 @@
             "webAgentPut": {
                 "type": "object",
                 "properties": {
-                    "name": {
+                    "deviceUid": {
                         "type": "string",
-                        "example":"Agent"
-                    },
-                    "location": {
-                        "type": "string",
-                        "example":"City"
-                    },
-                    "ip": {
-                        "type": "string",
-                        "example":"0.0.0.0"
+                        "example":"54323-6dsag-674-dag"
                     },
                     "fileName": {
                         "type": "string",
                         "example":"File"
                     },
                     "path": {
-                        "type": "string",
-                        "example":"/"
+                        "type":"string",
+                        "example":"C:\\user\\windows\\desktop"
                     },
                     "user": {
                         "type": "string",
@@ -1250,12 +1280,54 @@
                     }
                 }
             },
+            "webUserGetText": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type":"string",
+                        "example":"C:\\user\\windows\\desktop"
+                    },
+                    "fileName": {
+                        "type": "string",
+                        "example":"File"
+                    },
+                    "user": {
+                        "type": "string",
+                        "example":"user@mail.com"
+                    }
+                }
+            },
+            "webAgentGetText": {
+                "type": "object",
+                "properties": {
+                    "deviceUid": {
+                        "type": "string",
+                        "example":"54323-6dsag-674-dag"
+                    },
+                    "path": {
+                        "type":"string",
+                        "example":"C:\\user\\windows\\desktop"
+                    },
+                    "fileName": {
+                        "type": "string",
+                        "example":"File"
+                    },
+                    "user": {
+                        "type": "string",
+                        "example":"user@mail.com"
+                    }
+                }
+            },
             "webUserPut": {
                 "type": "object",
                 "properties": {
                     "fileName": {
                         "type": "string",
                         "example":"File"
+                    },
+                    "path": {
+                        "type":"string",
+                        "example":"C:\\user\\windows\\desktop"
                     },
                     "user": {
                         "type": "string",
@@ -1279,17 +1351,9 @@
             "agentFileList": {
                 "type": "object",
                 "properties": {
-                    "name": {
+                    "deviceUid": {
                         "type": "string",
-                        "example":"Agent"
-                    },
-                    "location": {
-                        "type": "string",
-                        "example":"City"
-                    },
-                    "ip": {
-                        "type": "string",
-                        "example":"0.0.0.0"
+                        "example":"54323-6dsag-674-dag"
                     },
                     "user": {
                         "type": "string",
@@ -1300,17 +1364,9 @@
             "file": {
                 "type": "object",
                 "properties": {
-                    "name": {
+                    "deviceUid": {
                         "type": "string",
-                        "example":"Agent"
-                    },
-                    "location": {
-                        "type": "string",
-                        "example":"City"
-                    },
-                    "ip": {
-                        "type": "string",
-                        "example":"0.0.0.0"
+                        "example":"54323-6dsag-674-dag"
                     },
                     "fileName": {
                         "type": "string",
@@ -1318,7 +1374,7 @@
                     },
                     "path": {
                         "type":"string",
-                        "example":"/"
+                        "example":"C:\\user\\windows\\desktop"
                     },
                     "user": {
                         "type": "string",
@@ -1363,21 +1419,13 @@
             "clients": {
                 "type": "object",
                 "properties": {
-                    "name": {
+                    "deviceUid": {
                         "type": "string",
-                        "example":"Agent"
-                    },
-                    "location": {
-                        "type": "string",
-                        "example":"City"
-                    },
-                    "ip": {
-                        "type": "string",
-                        "example":"0.0.0.0"
+                        "example":"54323-6dsag-674-dag"
                     },
                     "path": {
                         "type":"string",
-                        "example":"/"
+                        "example":"C:\\user\\windows\\desktop"
                     },
                     "status": {
                         "type":"string",
@@ -1417,13 +1465,9 @@
                         "type": "string",
                         "example": "Device is not connected to the server!"
                     },
-                    "name": {
-                        "type":"string",
-                        "example": "Agent"
-                    },
-                    "location": {
-                        "type":"string",
-                        "example": "City"
+                    "deviceUid": {
+                        "type": "string",
+                        "example":"54323-6dsag-674-dag"
                     }
                 }
             },
@@ -1434,13 +1478,9 @@
                         "type": "string",
                         "example": "Agent in use by another user! || You are not connected to that Agent!"
                     },
-                    "name": {
-                        "type":"string",
-                        "example": "Agent"
-                    },
-                    "location": {
-                        "type":"string",
-                        "example": "City"
+                    "deviceUid": {
+                        "type": "string",
+                        "example":"54323-6dsag-674-dag"
                     }
                 }
             },
