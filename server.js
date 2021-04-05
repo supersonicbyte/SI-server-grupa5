@@ -98,7 +98,11 @@ server.on('upgrade', function (request, socket, head) {
 
 wss.on('connection', function connection(ws, request) {
   ws.on('message', (message) => {
+    
+    message = message.replace(/\\/g, "\\\\");
+    
     message = JSON.parse(message);
+
     if (message.type === 'sendCredentials') {
 
       if(clients[message.deviceUid]!=undefined){
@@ -109,11 +113,11 @@ wss.on('connection', function connection(ws, request) {
 
       }
 
-      console.log("Client connected: " + "Client: " + message.deviceUid + " " + date.toUTCString());
+      console.log("Client connected: " + "Client: " +message.name+" "+ message.deviceUid + " " + date.toUTCString());
       ws.name = message.name;
       ws.location = message.location;
       ws.deviceUid=message.deviceUid;
-      ws.path = "";
+      ws.path = message.path;
       ws.status = "Waiting";
       ws.send( JSON.stringify({type:"Connected"})); 
       clients[message.deviceUid] = ws;
@@ -122,11 +126,11 @@ wss.on('connection', function connection(ws, request) {
     }
     else if (message.type === "command_result") {
       messageMap[message.deviceUid].message = message.message;//
-      responseMap[message.deviceUid].resolve(messageMap[message.deviceUid]);
-    } else if (message.type === "sendScreenshot") {
+      responseMap[message.deviceUid].resolve({token:messageMap[message.deviceUid].token,message:message.message,path:message.path});
+    }else if (message.type === "sendScreenshot") {
       messageMap[message.deviceUid].message = message.message;//
       responseMap[message.deviceUid].resolve(messageMap[message.deviceUid]);
-    } else if (message.type === "sendFile") {
+    }else if (message.type === "sendFile") {
       
       let buff = new Buffer.from(message.message, 'base64');
 
@@ -148,7 +152,7 @@ wss.on('connection', function connection(ws, request) {
 
       fs.writeFile(dir+"/"+message.fileName, buff, function (err) {
         if (err) {
-          responseMap[message.deviceUid].resolve({type:"Error",message:"Error writing file"});
+          responseMap[message.deviceUid].reject({type:"Error",message:"Error writing file"});
         }
         else {
           responseMap[message.deviceUid].resolve({type:"Success",message:"File successfully written."});
@@ -164,18 +168,23 @@ wss.on('connection', function connection(ws, request) {
       }
  
       responseMap[message.deviceUid].resolve(response);
-    }
-     else if (message.type === "savedFile") {
+    }else if (message.type === "savedFile") {
       responseMap[message.deviceUid].resolve({type:"Success",message:"File saved on agent!"});
    
-    } else if (message.type === "pong") {
+    }else if (message.type === "pong") {
       console.log(ws.name+" ponged");
+    }else if(message.type === "error"){
+      if(responseMap[message.deviceUid]!=undefined){
+
+        responseMap[message.deviceUid].status=405;
+        responseMap[message.deviceUid].reject({type:"Error",message:message.message});
+
+      }
     }
   });
 
   ws.on('close',() =>{
 
-    
     let id = ws.deviceUid;
     console.log(id+" has disconnected");
     let socket = clients[id];
@@ -233,8 +242,8 @@ app.use('/api/*/agent', async function (req, res, next) {
 });
 
 app.post('/api/agent/command', async (req, res) => {
-  const { deviceUid, command,parameters ,path, user} = req.body;
-  if(deviceUid==undefined ||command == undefined || path == undefined || parameters == undefined ||user == undefined){
+  const { deviceUid, command ,path, user} = req.body;
+  if(deviceUid==undefined ||command == undefined || path == undefined||user == undefined){
     res.status(400);
     res.send({message:"Error, got wrong json"});
     return;
@@ -255,7 +264,6 @@ app.post('/api/agent/command', async (req, res) => {
       type: "command",
       command: command,
       user:user,
-      parameters: parameters,
       path:path
       
     }
@@ -302,7 +310,7 @@ app.get('/api/agent/online', async (req, res) => {
   for(let c in clients){
     let client = clients[c];
     if(client==undefined)continue;
-    clientArray.push({ deviceUid:client.deviceUid, path:client.path,status:client.status })
+    clientArray.push({name: client.name, location: client.location, deviceUid:client.deviceUid, path:client.path,status:client.status })
   }
 
   res.send(clientArray)
@@ -549,7 +557,8 @@ app.post('/api/web/agent/file/put', async (req, res) => {  //spasi web file u ag
        
       fs.mkdir(dir, { recursive: true }, (err) => {
         if (err){
-          res.send({type:"Error making directories"});
+          res.status(404);
+          res.send({error:"Error making directories"});
           return;
         }else{
  
@@ -589,11 +598,11 @@ app.post('/api/web/agent/file/put', async (req, res) => {  //spasi web file u ag
                   }
                   else {
                     var errResp = {
-                       error: "Device is not connected to the server!",
+                       error: "Config saved but agent is not online!",
                        deviceUid:deviceUid
                      }
                      
-                   res.statusCode = 404;
+                   res.statusCode = 210;
                    res.json(errResp);
                    return;
                  }
