@@ -98,8 +98,12 @@ server.on('upgrade', function (request, socket, head) {
 
 wss.on('connection', function connection(ws, request) {
   ws.on('message', (message) => {
-    
+
+    message = message.replace(/\n/g, "\\n");
+    message = message.replace(/\r/g, "\\r");
     message = message.replace(/\\/g, "\\\\");
+    //message = message.replace(/\\n/g, "\\\\n");
+    //console.log("I got "+message);
     
     message = JSON.parse(message);
 
@@ -108,6 +112,7 @@ wss.on('connection', function connection(ws, request) {
       if(clients[message.deviceUid]!=undefined){
 
         ws.send('{"type":"Error", "message":"Already connected"}');
+        console.log("Client already connected: " + "Client: " +message.name+" "+ message.deviceUid + " " + date.toUTCString());
         ws.close();
         return;
 
@@ -126,12 +131,14 @@ wss.on('connection', function connection(ws, request) {
     }
     else if (message.type === "command_result") {
       messageMap[message.deviceUid].message = message.message;//
+     // console.log("saljem asimu "+JSON.stringify({token:messageMap[message.deviceUid].token,message:message.message,path:message.path}));
       responseMap[message.deviceUid].resolve({token:messageMap[message.deviceUid].token,message:message.message,path:message.path});
     }else if (message.type === "sendScreenshot") {
       messageMap[message.deviceUid].message = message.message;//
       responseMap[message.deviceUid].resolve(messageMap[message.deviceUid]);
     }else if (message.type === "sendFile") {
       
+      console.log("I got a file ");
       let buff = new Buffer.from(message.message, 'base64');
 
       let path = message.deviceUid;
@@ -173,13 +180,17 @@ wss.on('connection', function connection(ws, request) {
    
     }else if (message.type === "pong") {
       console.log(ws.name+" ponged");
+      ws.send(JSON.stringify({type:"ping"}));
     }else if(message.type === "error"){
       if(responseMap[message.deviceUid]!=undefined){
 
+        console.log("Agent error");
         responseMap[message.deviceUid].status=405;
         responseMap[message.deviceUid].reject({type:"Error",message:message.message});
 
       }
+    }else{
+     // console.log("I got "+message);
     }
   });
 
@@ -682,7 +693,6 @@ app.post('/api/agent/file/put', async (req, res) => {//posalje file iz agent fol
       if(fileName==="config.json"){
        dir+="config"
       }
-      dir+=path;
       
 
       fs.readFile(dir+"/"+ fileName, { encoding: 'base64' }, function (err, data) {
