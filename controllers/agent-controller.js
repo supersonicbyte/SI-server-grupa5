@@ -273,9 +273,6 @@ async function putFileInAgentFolderDirectly(req, res) {
 }
 
 async function getFileFromAgentFolderDirectly(req, res)  { 
-
-
-    console.log("AM here");
     const { deviceUid, fileName, path, user } = req.body;
     if (deviceUid == undefined || fileName == undefined || path == undefined || user == undefined) {
         res.status(400);
