@@ -7,7 +7,7 @@ const fs = require("fs")
 const clients = new Map();
 const responseMap = new Map();
 const messageMap = new Map();
-const uniqueIds = new Map();
+const uniqueIds = [];
 const mainFolder = "allFiles";
 /**
  * Configure websocket and server callbacks
