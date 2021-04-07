@@ -268,6 +268,54 @@ function deleteFileFromUserFolder (req, res) {
     });
 }
 
+function deleteFolderFromUserFolder (req, res) {
+    const { path, folderName, user } = req.body;
+    if (path == undefined || folderName == undefined || user == undefined) {
+        res.status(400);
+        const error = new Error.Error(5,"Invalid body.");
+        res.send(error);
+        return;
+    }
+    let dir = `allFiles/${user}/${path}/${folderName}`;
+    let returnValue = removeDir(dir)
+    if(returnValue){
+        var response = {
+            success: true,
+            message: "Folder deleted sucessfully."
+        }
+        res.status = 200;
+        res.send(response);
+    }else{
+        
+        const error = new Error.Error(8,"Folder does not exist.");
+        res.send(error);
+    }
+}
+
+const removeDir = function(path1) {
+    if (fs.existsSync(path1)) {
+      const files = fs.readdirSync(path1)
+  
+      if (files.length > 0) {
+        files.forEach(function(filename) {
+          if (fs.statSync(path1 + "/" + filename).isDirectory()) {
+            removeDir(path1 + "/" + filename)
+          } else {
+            fs.unlinkSync(path1 + "/" + filename)
+          }
+        })
+        fs.rmdirSync(path1)
+      } else {
+        fs.rmdirSync(path1)
+      }
+     return true;
+    } else {
+        
+      console.log("Directory path not found.")
+      return false;
+    }
+}
+
 function createFolderInUserFolder (req, res) {
     const { path, folderName, user } = req.body;
     if (path == undefined || folderName == undefined || user == undefined) {
@@ -292,6 +340,34 @@ function createFolderInUserFolder (req, res) {
     });
 }
 
+
+ function renameInUserFolder (req, res) {
+    const { path, oldName, newName, user } = req.body;
+    
+  if (path == undefined || oldName == undefined || newName == undefined || user == undefined) {
+        res.status(400);
+        const error = new Error.Error(5,"Invalid body.");
+        res.send(error);
+        return;
+    }
+
+    let dir = `allFiles/${user}/${path}`;
+    
+    fs.rename( dir + "/" + oldName, dir + "/" + newName, function(err) {
+        if (err) {
+            console.log("error: " + err)
+            const error = new Error.Error(8,"File/folder does not exist");
+            res.send(error);
+        } else {
+            var response = {
+                success: true,
+                message: "File/folder renamed sucessfully."
+            }
+            res.status = 200;
+            res.send(response);
+        }
+    });
+}
 module.exports = {
     getFileFromUserFolder,
     getFileFromAgentFolder,
@@ -301,7 +377,9 @@ module.exports = {
     getUserDirectoryTree,
     getAgentTextFile,
     getUserTextFile,
-    renameFile,
     deleteFileFromUserFolder,
-    createFolderInUserFolder
+    deleteFolderFromUserFolder,
+    createFolderInUserFolder,
+    renameInUserFolder
+ 
 }
