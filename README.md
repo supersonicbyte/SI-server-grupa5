@@ -5,13 +5,12 @@ Monitor server (MS) represents main backend module for "Monitor" application. Th
 
 Main server to MWA interface represents a part of the Monitor Server. This server offers real-time secure communication with Monitor Web Agent (MWA) which is implemented using WebSockets. Also, JSON Web Tokens are used for authorization and information exchange.
 
+The role of this server is to enable file management and command execution from web/mobile apps on MWA.
 
+## Info 
 Main server to MWA interface is developed using [Node.js](https://nodejs.org/en/) and deployed on [Heroku Cloud Platform](https://www.heroku.com/) at <https://si-grupa5.herokuapp.com/>.
 
 All API documentation can be found on Swagger [here](https://si-grupa5.herokuapp.com/api-docs/). 
-
-## Features
-
 
 ## To run this server
 1. Download this project and open it using Visual Studio Code
