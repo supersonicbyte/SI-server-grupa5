@@ -5,3 +5,5 @@ class Error {
         this.message = message;
     }
 }
+
+module.exports.Error = Error;
