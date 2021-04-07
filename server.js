@@ -33,28 +33,29 @@ app.post('/login', websocketLoginController.websocketLogin);
 *  Agent routes
 */
 app.post('/api/agent/command',agentController.executeCommandOnAgent); 
-app.get('/api/agent/online', agentController.getOnlineAgents);
+app.get('/api/agent/online', agentController.getOnlineAgents); 
 app.post('/api/agent/disconnect', agentController.dissconectAgent); 
 app.post('/api/agent/connect', agentController.connectAgent);
 app.post('/api/agent/screenshot', agentController.getScreenshot); 
 app.post('/api/agent/file/get',agentController.getFile);
 app.post('/api/agent/file/put', agentController.putFile); 
-app.post('/api/agent/file/directPut', agentController.putFileOnAgentDirectly);
-app.post('/api/agent/file/directGet', agentController.getFileFromAgentDirectly); 
+app.post('/api/agent/file/direct-put', agentController.putFileInAgentFolderDirectly);
+app.post('/api/agent/file/direct-get', agentController.getFileFromAgentFolderDirectly); 
 /**
  * Web routes
  */
-app.post('/api/web/user/file/get',webController.getFile);
-app.post('/api/web/agent/file/get', webController.getFileFromAgent); 
-app.post('/api/web/user/file/put', webController.putFileOnServer);
-app.post('/api/web/agent/file/put', webController.putFileOnAgent); 
-app.post('/api/web/agent/fileList', webController.getDirectoryTree); 
-app.post('/api/web/user/fileList', webController.getUserDirectoryTree);
-app.post('/api/web/agent/file/getText', webController.getTextFile);
+app.post('/api/web/user/file/get',webController.getFileFromUserFolder);
+app.post('/api/web/agent/file/get', webController.getFileFromAgentFolder); 
+app.post('/api/web/user/file/put', webController.putFileInUserFolder);
+app.post('/api/web/agent/file/put', webController.putFileInAgentFolder); 
+app.post('/api/web/agent/file-tree', webController.getAgentDirectoryTree); 
+app.post('/api/web/user/file-tree', webController.getUserDirectoryTree);
+app.post('/api/web/agent/file/get-text', webController.getAgentTextFile);
+app.post('/api/web/user/file/get-text', webController.getUserTextFile);
 
 app.get('/', (req, res) => {
     res.send('<h1>Up and running.</h1>');
 })
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 25565;
 server.listen(PORT, () => console.log(`Listening on port ${PORT}`));

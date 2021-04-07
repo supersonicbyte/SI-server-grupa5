@@ -7,7 +7,7 @@ const fs = require("fs")
 const clients = new Map();
 const responseMap = new Map();
 const messageMap = new Map();
-const uniqueIds = new Map();
+const uniqueIds = [];
 const mainFolder = "allFiles";
 /**
  * Configure websocket and server callbacks
@@ -37,6 +37,8 @@ function configure(wss, server) {
                     return;
                 }
                 console.log("Client connected: " + "Client: " + message.name + " " + message.deviceUid + " " + date.toUTCString());
+                ws.name=message.name;
+                ws.location=message.location;
                 ws.deviceUid = message.deviceUid;
                 ws.path = message.path;
                 ws.status = "Waiting";
@@ -49,6 +51,7 @@ function configure(wss, server) {
             } else if (message.type === "sendScreenshot") {
                 messageMap[message.deviceUid].message = message.message; 
                 responseMap[message.deviceUid].resolve(messageMap[message.deviceUid]);
+            
             } else if (message.type === "sendFile") {
                 console.log("I got a file ");
                 let buff = new Buffer.from(message.message, 'base64');
@@ -63,9 +66,9 @@ function configure(wss, server) {
                 }
                 fs.writeFile(dir + "/" + message.fileName, buff, function (err) {
                     if (err) {
-                        responseMap[message.deviceUid].reject({ type: "Error", message: "Error writing file" });
+                        responseMap[message.deviceUid].reject({ success: false, message: "Error writing file!" });
                     } else {
-                        responseMap[message.deviceUid].resolve({ type: "Success", message: "File successfully written." });
+                        responseMap[message.deviceUid].resolve({ success: true, message: "File successfully written." });
                         console.log("File written to " + dir + "/" + message.fileName);
                     }
                 });
@@ -95,7 +98,7 @@ function configure(wss, server) {
             console.log(id + " has disconnected");
             let socket = clients[id];
             if (socket == undefined) return;
-            const error = new Error(3,"Device took too long to respond.");
+            const error = new Error.Error(3,"Device took too long to respond.");
             responseMap[id].status = 400;
             responseMap[id].resolve(error);
             clients[id] = undefined;

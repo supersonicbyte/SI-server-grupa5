@@ -6,7 +6,7 @@ async function agentValidator(req, res, next) {
     const validation = await accessAuth.validateUserAccess(authHeader, deviceUid);
     if (validation.status != 200) {
         res.status(validation.status);
-        const error = new Error(5, "Not authorized");
+        const error = new Error.Error(5, "Not authorized");
         res.send(error);
         return;
     }

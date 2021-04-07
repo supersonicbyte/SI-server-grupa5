@@ -8,7 +8,7 @@ async function apiValidator(req, res, next) {
     const validation = await auth.validateJWT(authHeader);
     if (validation.status != 200) {
         res.status(validation.status);
-        const error = new Error(1,"Token not valid");
+        const error = new Error.Error(1,"Token not valid");
         res.send(error);
         return;
     } else {
