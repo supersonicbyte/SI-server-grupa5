@@ -81,7 +81,7 @@ async function putFileInUserFolder(req, res) {
                     console.log("done");
                     const response = {
                         success: true,
-                        message: "File uploaded sucessfuly."
+                        message: "File uploaded sucessfully."
                     }
                     res.json(response);
                 }
@@ -108,7 +108,7 @@ async function putFileInAgentFolder(req, res) {
     fs.mkdir(dir, { recursive: true }, (err) => {
         if (err) {
             res.status(404);
-            const error = new Error.Error(12, "Unkown error while making directories.")
+            const error = new Error.Error(12, "Unknown error while making directories.")
             res.send(error);
             return;
         } else {
@@ -239,6 +239,59 @@ function getUserTextFile(req, res)  {
     });
 }
 
+function renameFile (req, res) {
+
+}
+
+function deleteFileFromUserFolder (req, res) {
+    const { path, fileName, user } = req.body;
+    if (path == undefined || fileName == undefined || user == undefined) {
+        res.status(400);
+        const error = new Error.Error(5,"Invalid body.");
+        res.send(error);
+        return;
+    }
+    let dir = `allFiles/${user}/${path}`;
+    fs.unlink(dir + "/" + fileName, function(err) {
+        if (err) {
+            console.log("error: " + err)
+            const error = new Error.Error(8,"File does not exist.");
+            res.send(error);
+        } else {
+            var response = {
+                success: true,
+                message: "File deleted sucessfully."
+            }
+            res.status = 200;
+            res.send(response);
+        }
+    });
+}
+
+function createFolderInUserFolder (req, res) {
+    const { path, folderName, user } = req.body;
+    if (path == undefined || folderName == undefined || user == undefined) {
+        res.status(400);
+        const error = new Error.Error(5,"Invalid body.");
+        res.send(error);
+        return;
+    }
+    let dir = `allFiles/${user}/${path}/${folderName}`;
+    fs.mkdir(dir, { recursive: true }, (err) => {
+        if (err) {
+            const error = new Error.Error(12, "Unknown error while making directories.")
+            res.send(error);
+            return;
+        } else {
+            const response = {
+                success: true,
+                message: "Folder created sucessfully."
+            }
+            res.json(response);
+        }
+    });
+}
+
 module.exports = {
     getFileFromUserFolder,
     getFileFromAgentFolder,
@@ -247,5 +300,8 @@ module.exports = {
     getAgentDirectoryTree,
     getUserDirectoryTree,
     getAgentTextFile,
-    getUserTextFile
+    getUserTextFile,
+    renameFile,
+    deleteFileFromUserFolder,
+    createFolderInUserFolder
 }
