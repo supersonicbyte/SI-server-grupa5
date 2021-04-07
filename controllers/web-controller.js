@@ -3,6 +3,7 @@ const fs = require("fs");
 const WebSocketService = require('../ws/websocket-service.js');
 const timeoutError = require('../models/timeout-error.js');
 const dirTree = require("directory-tree");
+const fse = require('fs-extra');
 
 async function getFileFromUserFolder(req, res) {
     const { path, fileName, user } = req.body;
@@ -368,6 +369,65 @@ function createFolderInUserFolder (req, res) {
         }
     });
 }
+
+function copyInsideUserFolder (req, res) {
+    const { oldPath, newPath, name, user } = req.body;
+    
+    if (oldPath == undefined || newPath == undefined || name == undefined || user == undefined) {
+        res.status(400);
+        const error = new Error.Error(5,"Invalid body.");
+        res.send(error);
+        return;
+    }
+    
+    let oldDir = `allFiles/${user}/${oldPath}/${name}`;
+    let newDir = `allFiles/${user}/${newPath}/${name}`;
+    
+    fse.copy( oldDir, newDir, function(err) {
+        if (err) {
+            console.log("error: " + err)
+            const error = new Error.Error(8,"File/folder does not exist");
+            res.send(error);
+        } else {
+            var response = {
+                success: true,
+                message: "File/folder copied sucessfully."
+            }
+            res.status = 200;
+            res.send(response);
+        }
+    });
+}
+
+function moveInsideUserFolder (req, res) {
+    const { oldPath, newPath, name, user } = req.body;
+    
+    if (oldPath == undefined || newPath == undefined || name == undefined || user == undefined) {
+        res.status(400);
+        const error = new Error.Error(5,"Invalid body.");
+        res.send(error);
+        return;
+    }
+    
+    let oldDir = `allFiles/${user}/${oldPath}/${name}`;
+    let newDir = `allFiles/${user}/${newPath}/${name}`;
+    
+    fse.move( oldDir, newDir, function(err) {
+        if (err) {
+            console.log("error: " + err)
+            const error = new Error.Error(8,"File/folder does not exist");
+            res.send(error);
+        } else {
+            var response = {
+                success: true,
+                message: "File/folder moved sucessfully."
+            }
+            res.status = 200;
+            res.send(response);
+        }
+    });
+}
+
 module.exports = {
     getFileFromUserFolder,
     getFileFromAgentFolder,
@@ -380,6 +440,8 @@ module.exports = {
     deleteFileFromUserFolder,
     deleteFolderFromUserFolder,
     createFolderInUserFolder,
-    renameInUserFolder
+    renameInUserFolder,
+    copyInsideUserFolder,
+    moveInsideUserFolder
  
 }

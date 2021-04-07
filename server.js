@@ -17,7 +17,7 @@ const webController = require('./controllers/web-controller.js');
 app.use(express.json());
 app.use(cors());
 app.use(express.static('public'));
-//app.use('/api', apiValidator.apiValidator);
+app.use('/api', apiValidator.apiValidator);
 env.config()
 
 app.use('/api/*/agent', agentValidator.agentValidator);
@@ -56,6 +56,8 @@ app.post('/api/web/user/rename', webController.renameInUserFolder);
 app.post('/api/web/user/file/delete', webController.deleteFileFromUserFolder);
 app.post('/api/web/user/folder/delete', webController.deleteFolderFromUserFolder);
 app.post('/api/web/user/folder/create', webController.createFolderInUserFolder);
+app.post('/api/web/user/copy', webController.copyInsideUserFolder);
+app.post('/api/web/user/move', webController.moveInsideUserFolder);
 
 
 app.get('/', (req, res) => {
