@@ -105,6 +105,7 @@ function configure(wss, server) {
 
     server.on('upgrade', function(request, socket, head) {
         console.log(request.headers.cookie);
+        if (request.headers.cookie == undefined) return;
         if (!uniqueIds.includes(request.headers.cookie.split('=')[1])) {
             console.log(request.headers);
             socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
