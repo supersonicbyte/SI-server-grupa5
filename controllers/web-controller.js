@@ -168,7 +168,7 @@ function getAgentDirectoryTree(req, res) {
     if (!fs.existsSync(path)) {
         fs.mkdirSync(path);
     }
-    const tree = dirTree(path);
+    const tree = dirTree(path, {attributes:['birthtime']})
     res.status(200);
     res.send(tree);
 }
@@ -185,7 +185,7 @@ function getUserDirectoryTree(req, res) {
     if (!fs.existsSync(path)) {
         fs.mkdirSync(path);
     }
-    const tree = dirTree(path);
+    const tree = dirTree(path, {attributes:['birthtime']});
     res.status(200);
     res.send(tree);
 }
@@ -442,6 +442,5 @@ module.exports = {
     createFolderInUserFolder,
     renameInUserFolder,
     copyInsideUserFolder,
-    moveInsideUserFolder
- 
+    moveInsideUserFolder 
 }
