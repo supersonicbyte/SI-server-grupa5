@@ -84,7 +84,7 @@
                             }
                         }
                     },
-                    "503": {
+                    "403": {
                         "description": "Unauthorized attempt",
                         "content": {
                             "application/json": {
@@ -103,6 +103,7 @@
                 }
             }
         },
+
         "/api/agent/screenshot": {
             "post": {
                 "tags": [
@@ -138,7 +139,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/error404NotFound"
+                                    "$ref": "#/components/schemas/error"
                                 }
                             }
                         }
@@ -148,7 +149,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/error400"
+                                    "$ref": "#/components/schemas/error"
                                 }
                             }
                         }
@@ -158,7 +159,7 @@
                         "content": {
                             "text/plain": {
                                 "schema": {
-                                    "$ref":"#/components/schemas/error403"
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -187,24 +188,21 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successful"
-                    },
-                    "404NotFound": {
-                        "description": "Agent is not connected to the server",
+                        "description": "Successful",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/error404NotFound"
+                                    "$ref":"#/components/schemas/command200"
                                 }
                             }
                         }
                     },
-                    "404InUse": {
+                    "404": {
                         "description": "Agent is already in use",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/error404InUse"
+                                    "$ref": "#/components/schemas/error"
                                 }
                             }
                         }
@@ -214,7 +212,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/error400"
+                                    "$ref": "#/components/schemas/error"
                                 }
                             }
                         }
@@ -224,7 +222,7 @@
                         "content": {
                             "text/plain": {
                                 "schema": {
-                                    "$ref":"#/components/schemas/error403"
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -263,38 +261,12 @@
                             }
                         }
                     },
-                    "404NotFound": {
+                    "404": {
                         "description": "Agent can't be disconnected",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Device is not connected to the server!"
-                                        },
-                                        "deviceUid": {
-                                            "type": "string",
-                                            "example":"54323-6dsag-674-dag"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "404InUse": {
-                        "description":"Agent is already in use",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type":"object",
-                                    "properties": {
-                                        "error": {
-                                            "type":"string",
-                                            "example":"You are not connected to that user!"
-                                        }
-                                    }
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -304,7 +276,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/error400"
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -314,7 +286,7 @@
                         "content": {
                             "text/plain": {
                                 "schema": {
-                                    "$ref":"#/components/schemas/error403"
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -352,38 +324,12 @@
                             }
                         }
                     },
-                    "404NotFound": {
+                    "404": {
                         "description": "Agent can't be connected",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Device is not found!"
-                                        },
-                                        "deviceUid": {
-                                            "type": "string",
-                                            "example":"54323-6dsag-674-dag"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "404InUse": {
-                        "description":"Agent is already in use",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type":"object",
-                                    "properties": {
-                                        "error": {
-                                            "type":"string",
-                                            "example":"Device is already in use! || You are already connected to this user!"
-                                        }
-                                    }
+                                    "$ref": "#/components/schemas/error"
                                 }
                             }
                         }
@@ -393,7 +339,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/error400"
+                                    "$ref": "#/components/schemas/error"
                                 }
                             }
                         }
@@ -403,7 +349,7 @@
                         "content": {
                             "text/plain": {
                                 "schema": {
-                                    "$ref":"#/components/schemas/error403"
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -439,7 +385,7 @@
                         "content": {
                             "text/plain": {
                                 "schema": {
-                                    "$ref":"#/components/schemas/error403"
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -483,13 +429,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type":"string",
-                                            "example": "Error, no such file!"
-                                        }
-                                    }
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -499,7 +439,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/error400"
+                                    "$ref": "#/components/schemas/error"
                                 }
                             }
                         }
@@ -509,7 +449,7 @@
                         "content": {
                             "text/plain": {
                                 "schema": {
-                                    "$ref":"#/components/schemas/error403"
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -558,13 +498,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type":"object",
-                                    "properties": {
-                                        "error": {
-                                            "type":"string",
-                                            "example":"Error!"
-                                        }
-                                    }
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -574,7 +508,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/error400"
+                                    "$ref": "#/components/schemas/error"
                                 }
                             }
                         }
@@ -584,7 +518,7 @@
                         "content": {
                             "text/plain": {
                                 "schema": {
-                                    "$ref":"#/components/schemas/error403"
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -628,13 +562,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type":"string",
-                                            "example": "Error, no such file!"
-                                        }
-                                    }
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -644,7 +572,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/error400"
+                                    "$ref": "#/components/schemas/error"
                                 }
                             }
                         }
@@ -654,7 +582,7 @@
                         "content": {
                             "text/plain": {
                                 "schema": {
-                                    "$ref":"#/components/schemas/error403"
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -689,9 +617,13 @@
                                 "schema": {
                                     "type":"object",
                                     "properties": {
+                                        "success": {
+                                            "type":"boolean",
+                                            "example":true
+                                        },
                                         "message": {
                                             "type":"string",
-                                            "example":"Done!"
+                                            "example":"File uploaded successfully."
                                         }
                                     }
                                 }
@@ -703,13 +635,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type":"object",
-                                    "properties": {
-                                        "error": {
-                                            "type":"string",
-                                            "example":"Error!"
-                                        }
-                                    }
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -719,7 +645,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/error400"
+                                    "$ref": "#/components/schemas/error"
                                 }
                             }
                         }
@@ -729,7 +655,7 @@
                         "content": {
                             "text/plain": {
                                 "schema": {
-                                    "$ref":"#/components/schemas/error403"
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -759,24 +685,31 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successful"
-                    },
-                    "404NotFound": {
-                        "description": "Could not find file",
+                        "description": "Successful",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref":"#/components/schemas/error404NotFound"
+                                    "type":"object",
+                                    "properties": {
+                                        "success": {
+                                            "type":"boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type":"string",
+                                            "example":"File successfully written."
+                                        }
+                                    }
                                 }
                             }
                         }
                     },
-                    "404InUse": {
-                        "description": "Agent is already in use",
+                    "404": {
+                        "description": "Could not find file",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/error404InUse"
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -786,7 +719,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/error400"
+                                    "$ref": "#/components/schemas/error"
                                 }
                             }
                         }
@@ -796,7 +729,7 @@
                         "content": {
                             "text/plain": {
                                 "schema": {
-                                    "$ref":"#/components/schemas/error403"
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -825,14 +758,27 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successful"
+                        "description": "Successful",
+                        "schema": {
+                            "type":"object",
+                            "properties": {
+                                "success": {
+                                    "type":"boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type":"string",
+                                    "example":"File successfully written."
+                                }
+                            }
+                        }
                     },
                     "404": {
                         "description": "Could not find file",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref":"#/components/schemas/error404NotFound"
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -842,7 +788,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/error400"
+                                    "$ref": "#/components/schemas/error"
                                 }
                             }
                         }
@@ -852,7 +798,7 @@
                         "content": {
                             "text/plain": {
                                 "schema": {
-                                    "$ref":"#/components/schemas/error403"
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -860,7 +806,7 @@
                 }
             }
         },
-        "/api/web/user/fileList": {
+        "/api/web/user/file-tree": {
             "post": {
                 "tags": [
                     "UserFiles"
@@ -888,7 +834,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/error400"
+                                    "$ref": "#/components/schemas/error"
                                 }
                             }
                         }
@@ -898,7 +844,7 @@
                         "content": {
                             "text/plain": {
                                 "schema": {
-                                    "$ref":"#/components/schemas/error403"
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -906,7 +852,7 @@
                 }
             }
         },
-        "/api/web/agent/fileList": {
+        "/api/web/agent/file-tree": {
             "post": {
                 "tags": [
                     "AgentFiles"
@@ -934,7 +880,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/error400"
+                                    "$ref": "#/components/schemas/error"
                                 }
                             }
                         }
@@ -944,7 +890,7 @@
                         "content": {
                             "text/plain": {
                                 "schema": {
-                                    "$ref":"#/components/schemas/error403"
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -952,7 +898,7 @@
                 }
             }
         },
-        "/api/agent/file/directPut": {
+        "/api/agent/file/direct-put": {
             "post": {
                 "tags": [
                     "AgentFiles"
@@ -977,12 +923,12 @@
                                         "type": "string",
                                         "example":"/"
                                     },
+                                    "base64": {
+                                        "type":"string"
+                                    },
                                     "user": {
                                         "type": "string",
                                         "example":"user@mail.com"
-                                    },
-                                    "base64": {
-                                        "type":"string"
                                     }
                                 }
                             }
@@ -994,14 +940,26 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successful"
+                        "description": "Successful",
+                        "schema": {
+                            "type":"object",
+                            "properties": {
+                                "fileName": {
+                                    "type":"string",
+                                    "example":"File"
+                                },
+                                "base64": {
+                                    "type":"string"
+                                }
+                            }
+                        }
                     },
                     "400": {
                         "description": "Bad request body",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/error400"
+                                    "$ref": "#/components/schemas/error"
                                 }
                             }
                         }
@@ -1011,7 +969,7 @@
                         "content": {
                             "text/plain": {
                                 "schema": {
-                                    "$ref":"#/components/schemas/error403"
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -1019,7 +977,7 @@
                 }
             }
         },
-        "/api/agent/file/directGet": {
+        "/api/agent/file/direct-get": {
             "post": {
                 "tags": [
                     "AgentFiles"
@@ -1040,14 +998,26 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successful"
+                        "description": "Successful",
+                        "schema": {
+                            "type":"object",
+                            "properties": {
+                                "fileName": {
+                                    "type":"string",
+                                    "example":"File"
+                                },
+                                "base64": {
+                                    "type":"string"
+                                }
+                            }
+                        }
                     },
-                    "404InUse": {
-                        "description":"Agent is already in use",
+                    "404": {
+                        "description":"Error",
                         "content":{
                             "application/json": {
                                 "schema": {
-                                    "$ref":"#/components/schemas/error404InUse"
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -1057,7 +1027,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/error400"
+                                    "$ref": "#/components/schemas/error"
                                 }
                             }
                         }
@@ -1067,7 +1037,7 @@
                         "content": {
                             "text/plain": {
                                 "schema": {
-                                    "$ref":"#/components/schemas/error403"
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -1075,7 +1045,7 @@
                 }
             }
         },
-        "/api/web/user/file/getText": {
+        "/api/web/user/file/get-text": {
             "post": {
                 "tags": [
                     "UserFiles"
@@ -1120,13 +1090,7 @@
                         "content":{
                             "application/json": {
                                 "schema": {
-                                    "type":"object",
-                                    "properties": {
-                                        "error": {
-                                            "type":"string",
-                                            "example": "Error, no such file!"
-                                        }
-                                    }
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -1136,7 +1100,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/error400"
+                                    "$ref": "#/components/schemas/error"
                                 }
                             }
                         }
@@ -1146,7 +1110,7 @@
                         "content": {
                             "text/plain": {
                                 "schema": {
-                                    "$ref":"#/components/schemas/error403"
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -1154,7 +1118,7 @@
                 }
             }
         },
-        "/api/web/agent/file/getText": {
+        "/api/web/agent/file/get-text": {
             "post": {
                 "tags": [
                     "AgentFiles"
@@ -1199,13 +1163,7 @@
                         "content":{
                             "application/json": {
                                 "schema": {
-                                    "type":"object",
-                                    "properties": {
-                                        "error": {
-                                            "type":"string",
-                                            "example": "Error, no such file!"
-                                        }
-                                    }
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -1215,7 +1173,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/error400"
+                                    "$ref": "#/components/schemas/error"
                                 }
                             }
                         }
@@ -1225,7 +1183,7 @@
                         "content": {
                             "text/plain": {
                                 "schema": {
-                                    "$ref":"#/components/schemas/error403"
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -1311,20 +1269,20 @@
                         "type": "string",
                         "example":"54323-6dsag-674-dag"
                     },
-                    "fileName": {
-                        "type": "string",
-                        "example":"File"
-                    },
                     "path": {
                         "type":"string",
                         "example":"C:\\user\\windows\\desktop"
                     },
-                    "user": {
+                    "fileName": {
                         "type": "string",
-                        "example":"user@mail.com"
+                        "example":"File"
                     },
                     "base64": {
                         "type":"string"
+                    },
+                    "user": {
+                        "type": "string",
+                        "example":"user@mail.com"
                     }
                 }
             },
@@ -1387,20 +1345,20 @@
             "webUserPut": {
                 "type": "object",
                 "properties": {
-                    "fileName": {
-                        "type": "string",
-                        "example":"File"
-                    },
                     "path": {
                         "type":"string",
                         "example":"C:\\user\\windows\\desktop"
                     },
-                    "user": {
+                    "fileName": {
                         "type": "string",
-                        "example":"user@mail.com"
+                        "example":"File"
                     },
                     "base64": {
                         "type":"string"
+                    },
+                    "user": {
+                        "type": "string",
+                        "example":"user@mail.com"
                     }
                 }
             },
@@ -1468,6 +1426,10 @@
             "connected": {
                 "type":"object",
                 "properties": {
+                    "success": {
+                        "type":"boolean",
+                        "example": true
+                    },
                     "type": {
                         "type":"string",
                         "example":"In use"
@@ -1485,6 +1447,14 @@
             "clients": {
                 "type": "object",
                 "properties": {
+                    "name": {
+                        "type":"string",
+                        "example":"Agent"
+                    },
+                    "location": {
+                        "type":"string",
+                        "example": "Location"
+                    },
                     "deviceUid": {
                         "type": "string",
                         "example":"54323-6dsag-674-dag"
@@ -1499,19 +1469,6 @@
                     }
                 }
             },
-            "error400": {
-                "type": "object",
-                "properties": {
-                    "message": {
-                        "type": "string",
-                        "example": "Erorr, got wrong json"
-                    }
-                }
-            },
-            "error403": {
-                "type":"string",
-                "example":"Token not valid"
-            },
             "files200": {
                 "type": "object",
                 "properties": {
@@ -1524,29 +1481,20 @@
                     }
                 }
             },
-            "error404NotFound": {
+            "error": {
                 "type": "object",
                 "properties": {
-                    "error": {
-                        "type": "string",
-                        "example": "Device is not connected to the server!"
+                    "success": {
+                        "type":"boolean",
+                        "example":false
                     },
-                    "deviceUid": {
-                        "type": "string",
-                        "example":"54323-6dsag-674-dag"
-                    }
-                }
-            },
-            "error404InUse": {
-                "type": "object",
-                "properties": {
-                    "error": {
-                        "type": "string",
-                        "example": "Agent in use by another user! || You are not connected to that Agent!"
+                    "errpr_id": {
+                        "type": "integer",
+                        "example": 0
                     },
-                    "deviceUid": {
+                    "message": {
                         "type": "string",
-                        "example":"54323-6dsag-674-dag"
+                        "example":"Error message"
                     }
                 }
             },
@@ -1560,6 +1508,23 @@
                     "message": {
                         "type": "string",
                         "example": "Message"
+                    }
+                }
+            },
+            "command200": {
+                "type":"object",
+                "properties": {
+                    "token": {
+                        "type": "string",
+                        "example": "Your token"
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Message"
+                    },
+                    "path": {
+                        "type":"string",
+                        "example":"C:\\user\\windows\\desktop"
                     }
                 }
             }
