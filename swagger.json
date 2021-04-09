@@ -394,139 +394,6 @@
             }
         },
 
-        "/api/web/agent/file/get": {
-            "post": {
-                "tags": [
-                    "AgentFiles"
-                ],
-                "summary": "Get an agent file that is saved on the server",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/webAgentGet"
-                            }
-                        }
-                    }
-                },
-                "produces": [
-                    "application/json"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/files200"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "File could not be read",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref":"#/components/schemas/error"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request body",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/error"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Invalid JWT token",
-                        "content": {
-                            "text/plain": {
-                                "schema": {
-                                    "$ref":"#/components/schemas/error"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/web/agent/file/put": {
-            "post": {
-                "tags": [
-                    "AgentFiles"
-                ],
-                "summary": "Put a file for an agent on the server.",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/webAgentPut"
-                            }
-                        }
-                    }
-                },
-                "produces": [
-                    "application/json"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type":"object",
-                                    "properties": {
-                                        "message": {
-                                            "type":"string",
-                                            "example":"Done!"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "File could not be found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref":"#/components/schemas/error"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request body",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/error"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Invalid JWT token",
-                        "content": {
-                            "text/plain": {
-                                "schema": {
-                                    "$ref":"#/components/schemas/error"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-
         "/api/web/user/file/get": {
             "post": {
                 "tags": [
@@ -663,7 +530,1207 @@
                 }
             }
         },
+        "/api/web/user/file-tree": {
+            "post": {
+                "tags": [
+                    "UserFiles"
+                ],
+                "summary": "Get a hierarchy of files for the user.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/userFileList"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful"
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/web/user/file/get-text": {
+            "post": {
+                "tags": [
+                    "UserFiles"
+                ],
+                "summary": "Get data of an user file from server in text format",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/webUserGetText"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "fileName": {
+                                            "type":"string",
+                                            "example":"File"
+                                        },
+                                        "text": {
+                                            "type": "string",
+                                            "example": "File contents"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"There is no such file",
+                        "content":{
+                            "application/json": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/web/user/rename": {
+            "post": {
+                "tags": [
+                    "UserFiles"
+                ],
+                "summary": "Rename file/folder in user folder",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/userRename"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "success": {
+                                            "type":"boolean",
+                                            "example":true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "File/folder renamed sucessfully."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"File or folder do not exist",
+                        "content": {
+                            "application/json": {
+                                "schema":{
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/web/user/file/delete": {
+            "post": {
+                "tags": [
+                    "UserFiles"
+                ],
+                "summary": "Delete file in user folder",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/userFileDelete"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "success": {
+                                            "type":"boolean",
+                                            "example":true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "File deleted successfully."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"File do not exist",
+                        "content": {
+                            "application/json": {
+                                "schema":{
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/web/user/folder/delete": {
+            "post":{
+                "tags": [
+                    "UserFiles"
+                ],
+                "summary": "Delete folder in user folder",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/userFolderDeleteAndCreate"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "success": {
+                                            "type":"boolean",
+                                            "example":true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Folder deleted sucessfully."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"Folder does not exist",
+                        "content": {
+                            "application/json": {
+                                "schema":{
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/web/user/folder/create": {
+            "post": {
+                "tags": [
+                    "UserFiles"
+                ],
+                "summary": "Create folder in user folder",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/userFolderDeleteAndCreate"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "success": {
+                                            "type":"boolean",
+                                            "example":true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Folder created sucessfully."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"Unknown error while making directory",
+                        "content": {
+                            "application/json": {
+                                "schema":{
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/web/user/copy": {
+            "post": {
+                "tags": [
+                    "UserFiles"
+                ],
+                "summary": "Copy file or folder in user folder",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/userCopyAndMove"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "success": {
+                                            "type":"boolean",
+                                            "example":true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "File/folder copied sucessfully."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"File or folder do not exist",
+                        "content": {
+                            "application/json": {
+                                "schema":{
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/web/user/move": {
+            "post": {
+                "tags": [
+                    "UserFiles"
+                ],
+                "summary": "Move file or folder in user folder",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/userCopyAndMove"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "success": {
+                                            "type":"boolean",
+                                            "example":true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "File/folder moved sucessfully."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"File or folder do not exist",
+                        "content": {
+                            "application/json": {
+                                "schema":{
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
 
+        "/api/web/agent/rename": {
+            "post": {
+                "tags": [
+                    "AgentFiles"
+                ],
+                "summary": "Rename file/folder in agent folder",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/agentRename"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "success": {
+                                            "type":"boolean",
+                                            "example":true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "File/folder renamed sucessfully."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"File or folder do not exist",
+                        "content": {
+                            "application/json": {
+                                "schema":{
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/web/agent/file/delete": {
+            "post": {
+                "tags": [
+                    "AgentFiles"
+                ],
+                "summary": "Delete file in agent folder",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/agentFileDelete"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "success": {
+                                            "type":"boolean",
+                                            "example":true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "File deleted sucessfully."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"File does not exist",
+                        "content": {
+                            "application/json": {
+                                "schema":{
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/web/agent/folder/delete": {
+            "post": {
+                "tags": [
+                    "AgentFiles"
+                ],
+                "summary": "Delete folder in agent folder",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/agentFolderDeleteAndCreate"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "success": {
+                                            "type":"boolean",
+                                            "example":true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Folder deleted sucsessfully."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"Folder does not exist",
+                        "content": {
+                            "application/json": {
+                                "schema":{
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/web/agent/folder/create": {
+            "post": {
+                "tags": [
+                    "AgentFiles"
+                ],
+                "summary": "Create folder in agent folder",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/agentFolderDeleteAndCreate"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "success": {
+                                            "type":"boolean",
+                                            "example":true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Folder created sucsessfully."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"Unknown error while making directory",
+                        "content": {
+                            "application/json": {
+                                "schema":{
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/web/agent/copy": {
+            "post": {
+                "tags": [
+                    "AgentFiles"
+                ],
+                "summary": "Copy file or folder in agent folder",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/agentCopyAndMove"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "success": {
+                                            "type":"boolean",
+                                            "example":true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "File/folder copied succsessfully."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"File or folder do not exist",
+                        "content": {
+                            "application/json": {
+                                "schema":{
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/web/agent/move": {
+            "post": {
+                "tags": [
+                    "AgentFiles"
+                ],
+                "summary": "Move file or folder in agent folder",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/agentCopyAndMove"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "success": {
+                                            "type":"boolean",
+                                            "example":true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "File/folder moved succsessfully."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"File or folder do not exist",
+                        "content": {
+                            "application/json": {
+                                "schema":{
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/web/agent/file/get": {
+            "post": {
+                "tags": [
+                    "AgentFiles"
+                ],
+                "summary": "Get an agent file that is saved on the server",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/webAgentGet"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/files200"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "File could not be read",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/web/agent/file/put": {
+            "post": {
+                "tags": [
+                    "AgentFiles"
+                ],
+                "summary": "Put a file for an agent on the server.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/webAgentPut"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "message": {
+                                            "type":"string",
+                                            "example":"Done!"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "File could not be found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/web/agent/file/get-text": {
+            "post": {
+                "tags": [
+                    "AgentFiles"
+                ],
+                "summary": "Get data of an agent file from server in text format",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/webAgentGetText"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type":"object",
+                                    "properties": {
+                                        "fileName": {
+                                            "type":"string",
+                                            "example":"File"
+                                        },
+                                        "text": {
+                                            "type": "string",
+                                            "example": "File contents"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description":"There is no such file",
+                        "content":{
+                            "application/json": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/agent/file/get": {
             "post": {
                 "tags": [
@@ -782,52 +1849,6 @@
                                 }
                             }
                         }
-                    },
-                    "400": {
-                        "description": "Bad request body",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/error"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Invalid JWT token",
-                        "content": {
-                            "text/plain": {
-                                "schema": {
-                                    "$ref":"#/components/schemas/error"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/web/user/file-tree": {
-            "post": {
-                "tags": [
-                    "UserFiles"
-                ],
-                "summary": "Get a hierarchy of files for the user.",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/userFileList"
-                            }
-                        }
-                    }
-                },
-                "produces": [
-                    "application/json"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful"
                     },
                     "400": {
                         "description": "Bad request body",
@@ -1044,152 +2065,6 @@
                     }
                 }
             }
-        },
-        "/api/web/user/file/get-text": {
-            "post": {
-                "tags": [
-                    "UserFiles"
-                ],
-                "summary": "Get data of an user file from server in text format",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/webUserGetText"
-                            }
-                        }
-                    }
-                },
-                "produces": [
-                    "application/json"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type":"object",
-                                    "properties": {
-                                        "fileName": {
-                                            "type":"string",
-                                            "example":"File"
-                                        },
-                                        "text": {
-                                            "type": "string",
-                                            "example": "File contents"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description":"There is no such file",
-                        "content":{
-                            "application/json": {
-                                "schema": {
-                                    "$ref":"#/components/schemas/error"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request body",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/error"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Invalid JWT token",
-                        "content": {
-                            "text/plain": {
-                                "schema": {
-                                    "$ref":"#/components/schemas/error"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/web/agent/file/get-text": {
-            "post": {
-                "tags": [
-                    "AgentFiles"
-                ],
-                "summary": "Get data of an agent file from server in text format",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/webAgentGetText"
-                            }
-                        }
-                    }
-                },
-                "produces": [
-                    "application/json"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type":"object",
-                                    "properties": {
-                                        "fileName": {
-                                            "type":"string",
-                                            "example":"File"
-                                        },
-                                        "text": {
-                                            "type": "string",
-                                            "example": "File contents"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description":"There is no such file",
-                        "content":{
-                            "application/json": {
-                                "schema": {
-                                    "$ref":"#/components/schemas/error"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request body",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/error"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Invalid JWT token",
-                        "content": {
-                            "text/plain": {
-                                "schema": {
-                                    "$ref":"#/components/schemas/error"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
     },
     "components": {
@@ -1286,6 +2161,129 @@
                     }
                 }
             },
+            "agentFileList": {
+                "type": "object",
+                "properties": {
+                    "deviceUid": {
+                        "type": "string",
+                        "example":"54323-6dsag-674-dag"
+                    },
+                    "user": {
+                        "type": "string",
+                        "example":"user@mail.com"
+                    }
+                }
+            },
+            "webAgentGetText": {
+                "type": "object",
+                "properties": {
+                    "deviceUid": {
+                        "type": "string",
+                        "example":"54323-6dsag-674-dag"
+                    },
+                    "path": {
+                        "type":"string",
+                        "example":"C:\\user\\windows\\desktop"
+                    },
+                    "fileName": {
+                        "type": "string",
+                        "example":"File"
+                    },
+                    "user": {
+                        "type": "string",
+                        "example":"user@mail.com"
+                    }
+                }
+            },
+            "agentRename": {
+                "type":"object",
+                "properties": {
+                    "deviceUid": {
+                        "type":"string",
+                        "example":"54323-6dsag-674-dag"
+                    },
+                    "path": {
+                        "type":"string",
+                        "example":"allFiles/"
+                    },
+                    "oldName": {
+                        "type":"string",
+                        "example":"Old name"
+                    },
+                    "newName": {
+                        "type":"string",
+                        "example":"New name"
+                    },
+                    "user": {
+                        "type":"string",
+                        "example":"user@mail.com"
+                    }
+                }
+            },
+            "agentFolderDeleteAndCreate": {
+                "type": "object",
+                "properties": {
+                    "deviceUid": {
+                        "type":"string",
+                        "example":"54323-6dsag-674-dag"
+                    },
+                    "path": {
+                        "type":"string",
+                        "example":"allFiles/"
+                    },
+                    "folderName": {
+                        "type":"string",
+                        "example":"Folder"
+                    },
+                    "user": {
+                        "type":"string",
+                        "example":"user@mail.com"
+                    }
+                }
+            },
+            "agentFileDelete": {
+                "deviceUid": {
+                    "type":"string",
+                    "example":"54323-6dsag-674-dag"
+                },
+                "path": {
+                    "type":"string",
+                    "example":"allFiles/"
+                },
+                "fileName": {
+                    "type":"string",
+                    "example":"File"
+                },
+                "user": {
+                    "type":"string",
+                    "example":"user@mail.com"
+                }
+            },
+            "agentCopyAndMove": {
+                "type":"object",
+                "properties": {
+                    "deviceUid": {
+                        "type":"string",
+                        "example":"54323-6dsag-674-dag"
+                    },
+                    "oldPath": {
+                        "type":"string",
+                        "example":"allFiles/"
+                    },
+                    "newPath": {
+                        "type":"string",
+                        "example":"allFiles/"
+                    },
+                    "name": {
+                        "type":"string",
+                        "example":"File"
+                    },
+                    "user": {
+                        "type":"string",
+                        "example":"user@mail.com"
+                    }
+                }
+            },
 
             "webUserGet": {
                 "type": "object",
@@ -1321,27 +2319,6 @@
                     }
                 }
             },
-            "webAgentGetText": {
-                "type": "object",
-                "properties": {
-                    "deviceUid": {
-                        "type": "string",
-                        "example":"54323-6dsag-674-dag"
-                    },
-                    "path": {
-                        "type":"string",
-                        "example":"C:\\user\\windows\\desktop"
-                    },
-                    "fileName": {
-                        "type": "string",
-                        "example":"File"
-                    },
-                    "user": {
-                        "type": "string",
-                        "example":"user@mail.com"
-                    }
-                }
-            },
             "webUserPut": {
                 "type": "object",
                 "properties": {
@@ -1362,7 +2339,6 @@
                     }
                 }
             },
-
             "userFileList": {
                 "type": "object",
                 "properties": {
@@ -1372,19 +2348,83 @@
                     }
                 }
             },
-            "agentFileList": {
-                "type": "object",
+            "userRename": {
+                "type":"object",
                 "properties": {
-                    "deviceUid": {
-                        "type": "string",
-                        "example":"54323-6dsag-674-dag"
+                    "path": {
+                        "type":"string",
+                        "example":"C:\\user\\windows\\desktop"
+                    },
+                    "oldName": {
+                        "type":"string",
+                        "example":"Old name"
+                    },
+                    "newName": {
+                        "type":"string",
+                        "example":"New name"
                     },
                     "user": {
-                        "type": "string",
+                        "type":"string",
                         "example":"user@mail.com"
                     }
                 }
             },
+            "userFolderDeleteAndCreate": {
+                "type":"object",
+                "properties": {
+                    "path": {
+                        "type":"string",
+                        "example":"allFiles/"
+                    },
+                    "folderName": {
+                        "type":"string",
+                        "example":"Folder"
+                    },
+                    "user": {
+                        "type":"string",
+                        "example":"user@mail.com"
+                    }
+                }
+            },
+            "userFileDelete": {
+                "type":"object",
+                "properties": {
+                    "path": {
+                        "type":"string",
+                        "example":"allFiles/"
+                    },
+                    "fileName": {
+                        "type":"string",
+                        "example":"File"
+                    },
+                    "user": {
+                        "type":"string",
+                        "example":"user@mail.com"
+                    }
+                }
+            },
+            "userCopyAndMove": {
+                "type":"object",
+                "properties": {
+                    "oldPath": {
+                        "type":"string",
+                        "example":"allFiles/"
+                    },
+                    "newPath": {
+                        "type":"string",
+                        "example":"allFiles/"
+                    },
+                    "name": {
+                        "type":"string",
+                        "example":"File"
+                    },
+                    "user": {
+                        "type":"string",
+                        "example":"user@mail.com"
+                    }
+                }
+            },
+
             "file": {
                 "type": "object",
                 "properties": {
