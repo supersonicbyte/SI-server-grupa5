@@ -5,23 +5,49 @@ const timeoutError = require('../models/timeout-error.js');
 const dirTree = require("directory-tree");
 const fse = require('fs-extra');
 
-async function getFileFromUserFolder(req, res) {
+const removeDir = function(path1) {
+    if (fs.existsSync(path1)) {
+      const files = fs.readdirSync(path1)
+  
+      if (files.length > 0) {
+        files.forEach(function(filename) {
+          if (fs.statSync(path1 + "/" + filename).isDirectory()) {
+            removeDir(path1 + "/" + filename)
+          } else {
+            fs.unlinkSync(path1 + "/" + filename)
+          }
+        })
+        fs.rmdirSync(path1)
+      } else {
+        fs.rmdirSync(path1)
+      }
+     return true;
+    } else {
+        
+      console.log("Directory path not found.")
+      return false;
+    }
+}
+
+//#region UserFTP
+function getUserTextFile(req, res)  { 
     const { path, fileName, user } = req.body;
-    if (fileName == undefined || user == undefined || path == undefined) {
+    if (fileName == undefined || user == undefined) {
         res.status(400);
-        const error = new Error.Error(7, "Body invalid.");
+        const error = new Error.Error(5,"Invalid body.");
         res.send(error);
         return;
     }
-    const fullPath = `allFiles/${user}/${path}/${fileName}`;
-    fs.readFile(fullPath, { encoding: 'base64' }, function (err, data) {
+    const dir = `allFiles/${user}`;
+    fs.readFile(dir + "/" + fileName, { encoding: 'utf-8' }, function(err, fileText) {
         if (err) {
-            const error = new Error.Error(11, "File does not exist.");
-            res.json(error);
+            console.log("error: " + err)
+            const error = new Error.Error(8,"File does not exist");
+            res.send(error);
         } else {
             var response = {
                 fileName: fileName,
-                base64: data
+                text: fileText
             }
             res.status = 200;
             res.send(response);
@@ -29,32 +55,21 @@ async function getFileFromUserFolder(req, res) {
     });
 }
 
-async function getFileFromAgentFolder(req, res) {
-    const { deviceUid, path, fileName, user } = req.body;
-    if (deviceUid == undefined || fileName == undefined || user == undefined) {
-        const error = new Error.Error(7, "Invalid body.");
+function getUserDirectoryTree(req, res) { 
+    const { user } = req.body;
+    if (user == undefined) {
+        res.status(400);
+        const error = new Error.Error(5,"Invalid body.");
         res.send(error);
         return;
     }
-    let dir = `allFiles/${deviceUid}`;
-    if (fileName === "config.json")
-        dir = dir + "/config";
-    else
-        dir = dir + "/" + path
-    fs.readFile(dir + "/" + fileName, { encoding: 'base64' }, function (err, data) {
-        if (err) {
-            console.log("/api/web/agent/file/get error: " + err)
-            const error = new Error.Error(11, "File does not exist.");
-            res.json(error);
-        } else {
-            var response = {
-                fileName: fileName,
-                base64: data
-            }
-            res.status = 200;
-            res.send(response);
-        }
-    });
+    let path = `allFiles/${user}`;
+    if (!fs.existsSync(path)) {
+        fs.mkdirSync(path);
+    }
+    const tree = dirTree(path, {attributes:['birthtime']});
+    res.status(200);
+    res.send(tree);
 }
 
 async function putFileInUserFolder(req, res) {
@@ -90,6 +105,232 @@ async function putFileInUserFolder(req, res) {
         }
     });
 
+}
+
+async function getFileFromUserFolder(req, res) {
+    const { path, fileName, user } = req.body;
+    if (fileName == undefined || user == undefined || path == undefined) {
+        res.status(400);
+        const error = new Error.Error(7, "Body invalid.");
+        res.send(error);
+        return;
+    }
+    const fullPath = `allFiles/${user}/${path}/${fileName}`;
+    fs.readFile(fullPath, { encoding: 'base64' }, function (err, data) {
+        if (err) {
+            const error = new Error.Error(11, "File does not exist.");
+            res.json(error);
+        } else {
+            var response = {
+                fileName: fileName,
+                base64: data
+            }
+            res.status = 200;
+            res.send(response);
+        }
+    });
+}
+
+function renameInUserFolder (req, res) {
+    const { path, oldName, newName, user } = req.body;
+    
+  if (path == undefined || oldName == undefined || newName == undefined || user == undefined) {
+        res.status(400);
+        const error = new Error.Error(5,"Invalid body.");
+        res.send(error);
+        return;
+    }
+
+    let dir = `allFiles/${user}/${path}`;
+    
+    fs.rename( dir + "/" + oldName, dir + "/" + newName, function(err) {
+        if (err) {
+            console.log("error: " + err)
+            const error = new Error.Error(8,"File/folder does not exist");
+            res.send(error);
+        } else {
+            var response = {
+                success: true,
+                message: "File/folder renamed sucessfully."
+            }
+            res.status = 200;
+            res.send(response);
+        }
+    });
+}
+
+function deleteFileFromUserFolder (req, res) {
+    const { path, fileName, user } = req.body;
+    if (path == undefined || fileName == undefined || user == undefined) {
+        res.status(400);
+        const error = new Error.Error(5,"Invalid body.");
+        res.send(error);
+        return;
+    }
+    let dir = `allFiles/${user}/${path}`;
+    fs.unlink(dir + "/" + fileName, function(err) {
+        if (err) {
+            console.log("error: " + err)
+            const error = new Error.Error(8,"File does not exist.");
+            res.send(error);
+        } else {
+            var response = {
+                success: true,
+                message: "File deleted sucessfully."
+            }
+            res.status = 200;
+            res.send(response);
+        }
+    });
+}
+
+function deleteFolderFromUserFolder (req, res) {
+    const { path, folderName, user } = req.body;
+    if (path == undefined || folderName == undefined || user == undefined) {
+        res.status(400);
+        const error = new Error.Error(5,"Invalid body.");
+        res.send(error);
+        return;
+    }
+    let dir = `allFiles/${user}/${path}/${folderName}`;
+    let returnValue = removeDir(dir)
+    if(returnValue){
+        var response = {
+            success: true,
+            message: "Folder deleted sucessfully."
+        }
+        res.status = 200;
+        res.send(response);
+    }else{
+        
+        const error = new Error.Error(8,"Folder does not exist.");
+        res.send(error);
+    }
+}
+
+function createFolderInUserFolder (req, res) {
+    const { path, folderName, user } = req.body;
+    if (path == undefined || folderName == undefined || user == undefined) {
+        res.status(400);
+        const error = new Error.Error(5,"Invalid body.");
+        res.send(error);
+        return;
+    }
+    let dir = `allFiles/${user}/${path}/${folderName}`;
+    fs.mkdir(dir, { recursive: true }, (err) => {
+        if (err) {
+            const error = new Error.Error(12, "Unknown error while making directories.")
+            res.send(error);
+            return;
+        } else {
+            const response = {
+                success: true,
+                message: "Folder created sucessfully."
+            }
+            res.json(response);
+        }
+    });
+}
+
+function copyInsideUserFolder (req, res) {
+    const { oldPath, newPath, name, user } = req.body;
+    
+    if (oldPath == undefined || newPath == undefined || name == undefined || user == undefined) {
+        res.status(400);
+        const error = new Error.Error(5,"Invalid body.");
+        res.send(error);
+        return;
+    }
+    
+    let oldDir = `allFiles/${user}/${oldPath}/${name}`;
+    let newDir = `allFiles/${user}/${newPath}/${name}`;
+    
+    fse.copy( oldDir, newDir, function(err) {
+        if (err) {
+            console.log("error: " + err)
+            const error = new Error.Error(8,"File/folder does not exist");
+            res.send(error);
+        } else {
+            var response = {
+                success: true,
+                message: "File/folder copied sucessfully."
+            }
+            res.status = 200;
+            res.send(response);
+        }
+    });
+}
+
+function moveInsideUserFolder (req, res) {
+    const { oldPath, newPath, name, user } = req.body;
+    
+    if (oldPath == undefined || newPath == undefined || name == undefined || user == undefined) {
+        res.status(400);
+        const error = new Error.Error(5,"Invalid body.");
+        res.send(error);
+        return;
+    }
+    
+    let oldDir = `allFiles/${user}/${oldPath}/${name}`;
+    let newDir = `allFiles/${user}/${newPath}/${name}`;
+
+    /*if (!fs.existsSync(oldDir)) {
+        const error = new Error.Error(8,"File/folder "+oldDir+"  does not exist1");
+        res.send(error);
+        return;
+    }
+    if (!fs.existsSync(newDir)) {
+        const error = new Error.Error(8,"File/folder "+newDir+" does not exist2");
+        res.send(error);
+        return;
+    }*/
+  
+    fse.move( oldDir, newDir, function(err) {
+        if (err) {
+            console.log("error: " + err)
+            const error = new Error.Error(8,"File/folder does not exist");
+            res.send(error);
+        } else {
+    
+            var response = {
+                success: true,
+                message: "File/folder moved sucessfully."
+            }
+            res.status = 200;
+            res.send(response);
+        }
+    });
+}
+
+//#endregion
+
+//#region AgentFTP
+async function getFileFromAgentFolder(req, res) {
+    const { deviceUid, path, fileName, user } = req.body;
+    if (deviceUid == undefined || fileName == undefined || user == undefined) {
+        const error = new Error.Error(7, "Invalid body.");
+        res.send(error);
+        return;
+    }
+    let dir = `allFiles/${deviceUid}`;
+    if (fileName === "config.json")
+        dir = dir + "/config";
+    else
+        dir = dir + "/" + path
+    fs.readFile(dir + "/" + fileName, { encoding: 'base64' }, function (err, data) {
+        if (err) {
+            console.log("/api/web/agent/file/get error: " + err)
+            const error = new Error.Error(11, "File does not exist.");
+            res.json(error);
+        } else {
+            var response = {
+                fileName: fileName,
+                base64: data
+            }
+            res.status = 200;
+            res.send(response);
+        }
+    });
 }
 
 async function putFileInAgentFolder(req, res) {
@@ -173,23 +414,6 @@ function getAgentDirectoryTree(req, res) {
     res.send(tree);
 }
 
-function getUserDirectoryTree(req, res) { 
-    const { user } = req.body;
-    if (user == undefined) {
-        res.status(400);
-        const error = new Error.Error(5,"Invalid body.");
-        res.send(error);
-        return;
-    }
-    let path = `allFiles/${user}`;
-    if (!fs.existsSync(path)) {
-        fs.mkdirSync(path);
-    }
-    const tree = dirTree(path, {attributes:['birthtime']});
-    res.status(200);
-    res.send(tree);
-}
-
 function getAgentTextFile(req, res)  { 
     const { deviceUid, path, fileName, user } = req.body;
     if (fileName == undefined || user == undefined) {
@@ -215,135 +439,8 @@ function getAgentTextFile(req, res)  {
     });
 }
 
-function getUserTextFile(req, res)  { 
-    const { path, fileName, user } = req.body;
-    if (fileName == undefined || user == undefined) {
-        res.status(400);
-        const error = new Error.Error(5,"Invalid body.");
-        res.send(error);
-        return;
-    }
-    const dir = `allFiles/${user}`;
-    fs.readFile(dir + "/" + fileName, { encoding: 'utf-8' }, function(err, fileText) {
-        if (err) {
-            console.log("error: " + err)
-            const error = new Error.Error(8,"File does not exist");
-            res.send(error);
-        } else {
-            var response = {
-                fileName: fileName,
-                text: fileText
-            }
-            res.status = 200;
-            res.send(response);
-        }
-    });
-}
-
-function renameFile (req, res) {
-
-}
-
-function deleteFileFromUserFolder (req, res) {
-    const { path, fileName, user } = req.body;
-    if (path == undefined || fileName == undefined || user == undefined) {
-        res.status(400);
-        const error = new Error.Error(5,"Invalid body.");
-        res.send(error);
-        return;
-    }
-    let dir = `allFiles/${user}/${path}`;
-    fs.unlink(dir + "/" + fileName, function(err) {
-        if (err) {
-            console.log("error: " + err)
-            const error = new Error.Error(8,"File does not exist.");
-            res.send(error);
-        } else {
-            var response = {
-                success: true,
-                message: "File deleted sucessfully."
-            }
-            res.status = 200;
-            res.send(response);
-        }
-    });
-}
-
-function deleteFolderFromUserFolder (req, res) {
-    const { path, folderName, user } = req.body;
-    if (path == undefined || folderName == undefined || user == undefined) {
-        res.status(400);
-        const error = new Error.Error(5,"Invalid body.");
-        res.send(error);
-        return;
-    }
-    let dir = `allFiles/${user}/${path}/${folderName}`;
-    let returnValue = removeDir(dir)
-    if(returnValue){
-        var response = {
-            success: true,
-            message: "Folder deleted sucessfully."
-        }
-        res.status = 200;
-        res.send(response);
-    }else{
-        
-        const error = new Error.Error(8,"Folder does not exist.");
-        res.send(error);
-    }
-}
-
-const removeDir = function(path1) {
-    if (fs.existsSync(path1)) {
-      const files = fs.readdirSync(path1)
-  
-      if (files.length > 0) {
-        files.forEach(function(filename) {
-          if (fs.statSync(path1 + "/" + filename).isDirectory()) {
-            removeDir(path1 + "/" + filename)
-          } else {
-            fs.unlinkSync(path1 + "/" + filename)
-          }
-        })
-        fs.rmdirSync(path1)
-      } else {
-        fs.rmdirSync(path1)
-      }
-     return true;
-    } else {
-        
-      console.log("Directory path not found.")
-      return false;
-    }
-}
-
-function createFolderInUserFolder (req, res) {
-    const { path, folderName, user } = req.body;
-    if (path == undefined || folderName == undefined || user == undefined) {
-        res.status(400);
-        const error = new Error.Error(5,"Invalid body.");
-        res.send(error);
-        return;
-    }
-    let dir = `allFiles/${user}/${path}/${folderName}`;
-    fs.mkdir(dir, { recursive: true }, (err) => {
-        if (err) {
-            const error = new Error.Error(12, "Unknown error while making directories.")
-            res.send(error);
-            return;
-        } else {
-            const response = {
-                success: true,
-                message: "Folder created sucessfully."
-            }
-            res.json(response);
-        }
-    });
-}
-
-
- function renameInUserFolder (req, res) {
-    const { path, oldName, newName, user } = req.body;
+function renameInAgentFolder (req, res) {
+    const {deviceUid, path, oldName, newName, user } = req.body;
     
   if (path == undefined || oldName == undefined || newName == undefined || user == undefined) {
         res.status(400);
@@ -352,7 +449,7 @@ function createFolderInUserFolder (req, res) {
         return;
     }
 
-    let dir = `allFiles/${user}/${path}`;
+    let dir = `allFiles/${deviceUid}/${path}`;
     
     fs.rename( dir + "/" + oldName, dir + "/" + newName, function(err) {
         if (err) {
@@ -370,8 +467,81 @@ function createFolderInUserFolder (req, res) {
     });
 }
 
-function copyInsideUserFolder (req, res) {
-    const { oldPath, newPath, name, user } = req.body;
+function deleteFileFromAgentFolder (req, res) {
+    const {deviceUid, path, fileName, user } = req.body;
+    if (path == undefined || fileName == undefined || user == undefined) {
+        res.status(400);
+        const error = new Error.Error(5,"Invalid body.");
+        res.send(error);
+        return;
+    }
+    let dir = `allFiles/${deviceUid}/${path}`;
+    fs.unlink(dir + "/" + fileName, function(err) {
+        if (err) {
+            console.log("error: " + err)
+            const error = new Error.Error(8,"File does not exist.");
+            res.send(error);
+        } else {
+            var response = {
+                success: true,
+                message: "File deleted sucessfully."
+            }
+            res.status = 200;
+            res.send(response);
+        }
+    });
+}
+
+function deleteFolderFromAgentFolder (req, res) {
+    const { deviceUid,path, folderName, user } = req.body;
+    if (path == undefined || folderName == undefined || user == undefined) {
+        res.status(400);
+        const error = new Error.Error(5,"Invalid body.");
+        res.send(error);
+        return;
+    }
+    let dir = `allFiles/${deviceUid}/${path}/${folderName}`;
+    let returnValue = removeDir(dir)
+    if(returnValue){
+        var response = {
+            success: true,
+            message: "Folder deleted sucessfully."
+        }
+        res.status = 200;
+        res.send(response);
+    }else{
+        
+        const error = new Error.Error(8,"Folder does not exist.");
+        res.send(error);
+    }
+}
+
+function createFolderInAgentFolder (req, res) {
+    const {deviceUid, path, folderName, user } = req.body;
+    if (path == undefined || folderName == undefined || user == undefined) {
+        res.status(400);
+        const error = new Error.Error(5,"Invalid body.");
+        res.send(error);
+        return;
+    }
+    let dir = `allFiles/${deviceUid}/${path}/${folderName}`;
+    fs.mkdir(dir, { recursive: true }, (err) => {
+        if (err) {
+            const error = new Error.Error(12, "Unknown error while making directories.")
+            res.send(error);
+            return;
+        } else {
+            const response = {
+                success: true,
+                message: "Folder created sucessfully."
+            }
+            res.json(response);
+        }
+    });
+}
+
+function copyInsideAgentFolder (req, res) {
+    const {deviceUid, oldPath, newPath, name, user } = req.body;
     
     if (oldPath == undefined || newPath == undefined || name == undefined || user == undefined) {
         res.status(400);
@@ -380,8 +550,8 @@ function copyInsideUserFolder (req, res) {
         return;
     }
     
-    let oldDir = `allFiles/${user}/${oldPath}/${name}`;
-    let newDir = `allFiles/${user}/${newPath}/${name}`;
+    let oldDir = `allFiles/${deviceUid}/${oldPath}/${name}`;
+    let newDir = `allFiles/${deviceUid}/${newPath}/${name}`;
     
     fse.copy( oldDir, newDir, function(err) {
         if (err) {
@@ -399,8 +569,8 @@ function copyInsideUserFolder (req, res) {
     });
 }
 
-function moveInsideUserFolder (req, res) {
-    const { oldPath, newPath, name, user } = req.body;
+function moveInsideAgentFolder (req, res) {
+    const {deviceUid, oldPath, newPath, name, user } = req.body;
     
     if (oldPath == undefined || newPath == undefined || name == undefined || user == undefined) {
         res.status(400);
@@ -409,15 +579,16 @@ function moveInsideUserFolder (req, res) {
         return;
     }
     
-    let oldDir = `allFiles/${user}/${oldPath}/${name}`;
-    let newDir = `allFiles/${user}/${newPath}/${name}`;
-    
+    let oldDir = `allFiles/${deviceUid}/${oldPath}/${name}`;
+    let newDir = `allFiles/${deviceUid}/${newPath}/${name}`;
+  
     fse.move( oldDir, newDir, function(err) {
         if (err) {
             console.log("error: " + err)
             const error = new Error.Error(8,"File/folder does not exist");
             res.send(error);
         } else {
+    
             var response = {
                 success: true,
                 message: "File/folder moved sucessfully."
@@ -428,6 +599,8 @@ function moveInsideUserFolder (req, res) {
     });
 }
 
+//#endregion
+
 module.exports = {
     getFileFromUserFolder,
     getFileFromAgentFolder,
@@ -436,11 +609,17 @@ module.exports = {
     getAgentDirectoryTree,
     getUserDirectoryTree,
     getAgentTextFile,
-    getUserTextFile,
+    getUserTextFile,   
+    renameInUserFolder,
     deleteFileFromUserFolder,
     deleteFolderFromUserFolder,
     createFolderInUserFolder,
-    renameInUserFolder,
     copyInsideUserFolder,
-    moveInsideUserFolder 
+    moveInsideUserFolder,
+    renameInAgentFolder,
+    deleteFileFromAgentFolder,
+    deleteFolderFromAgentFolder,
+    createFolderInAgentFolder,
+    copyInsideAgentFolder,
+    moveInsideAgentFolder
 }
