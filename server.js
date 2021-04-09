@@ -53,6 +53,21 @@ app.post('/api/web/user/file-tree', webController.getUserDirectoryTree);
 app.post('/api/web/agent/file/get-text', webController.getAgentTextFile);
 app.post('/api/web/user/file/get-text', webController.getUserTextFile);
 
+app.post('/api/web/user/rename', webController.renameInUserFolder);
+app.post('/api/web/user/file/delete', webController.deleteFileFromUserFolder);
+app.post('/api/web/user/folder/delete', webController.deleteFolderFromUserFolder);
+app.post('/api/web/user/folder/create', webController.createFolderInUserFolder);
+app.post('/api/web/user/copy', webController.copyInsideUserFolder);
+app.post('/api/web/user/move', webController.moveInsideUserFolder);
+
+app.post('/api/web/agent/rename', webController.renameInAgentFolder);
+app.post('/api/web/agent/file/delete', webController.deleteFileFromAgentFolder);
+app.post('/api/web/agent/folder/delete', webController.deleteFolderFromAgentFolder);
+app.post('/api/web/agent/folder/create', webController.createFolderInAgentFolder);
+app.post('/api/web/agent/copy', webController.copyInsideAgentFolder);
+app.post('/api/web/agent/move', webController.moveInsideAgentFolder);
+
+
 app.get('/', (req, res) => {
     res.send('<h1>Up and running.</h1>');
 })
