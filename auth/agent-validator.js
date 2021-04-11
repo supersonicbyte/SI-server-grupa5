@@ -1,4 +1,5 @@
 const accessAuth = require('./access_auth.js');
+const Error = require('../models/error.js');
 
 async function agentValidator(req, res, next) {
     const { user, deviceUid } = req.body;
