@@ -38,7 +38,7 @@ function getUserTextFile(req, res)  {
         res.send(error);
         return;
     }
-    const dir = `allFiles/${user}`;
+    const dir = `allFiles/${user}/${path}`;
     fs.readFile(dir + "/" + fileName, { encoding: 'utf-8' }, function(err, fileText) {
         if (err) {
             console.log("error: " + err)
