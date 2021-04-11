@@ -3,7 +3,7 @@
     "info": {
         "version": "1.0.0",
         "title": "Main server to MWA interface /interakcija",
-        "description": "NodeJS",
+        "description": "Server that allows communication between two or more clients. The paths for the server are relative. Each client gets their own folder as root.",
         "license": {
             "name": "si-grupa5.herokuapp.com",
             "url": "https://si-grupa5.herokuapp.com/"
