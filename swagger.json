@@ -3,7 +3,7 @@
     "info": {
         "version": "1.0.0",
         "title": "Main server to MWA interface /interakcija",
-        "description": "NodeJS",
+        "description": "Server that allows communication between two or more clients. The paths for the server are relative. Each client gets their own folder as root.",
         "license": {
             "name": "si-grupa5.herokuapp.com",
             "url": "https://si-grupa5.herokuapp.com/"
@@ -1942,7 +1942,7 @@
                                     },
                                     "path": {
                                         "type": "string",
-                                        "example":"/"
+                                        "example":"TestFolder"
                                     },
                                     "base64": {
                                         "type":"string"
@@ -2095,7 +2095,7 @@
                     },
                     "path": {
                         "type":"string",
-                        "example":"C:\\user\\windows\\desktop"
+                        "example":"TestFolder"
                     },
                     "user": {
                         "type":"string",
@@ -2125,7 +2125,7 @@
                     },
                     "path": {
                         "type":"string",
-                        "example":"C:\\user\\windows\\desktop"
+                        "example":"TestFolder"
                     },
                     "fileName": {
                         "type": "string",
@@ -2146,7 +2146,7 @@
                     },
                     "path": {
                         "type":"string",
-                        "example":"C:\\user\\windows\\desktop"
+                        "example":"TestFolder"
                     },
                     "fileName": {
                         "type": "string",
@@ -2183,7 +2183,7 @@
                     },
                     "path": {
                         "type":"string",
-                        "example":"C:\\user\\windows\\desktop"
+                        "example":"TestFolder/Folder"
                     },
                     "fileName": {
                         "type": "string",
@@ -2204,15 +2204,15 @@
                     },
                     "path": {
                         "type":"string",
-                        "example":"user@mail.com"
+                        "example":"TestFolder"
                     },
                     "oldName": {
                         "type":"string",
-                        "example":"Old name"
+                        "example":"Folder"
                     },
                     "newName": {
                         "type":"string",
-                        "example":"New name"
+                        "example":"NewFolder"
                     },
                     "user": {
                         "type":"string",
@@ -2229,7 +2229,7 @@
                     },
                     "path": {
                         "type":"string",
-                        "example":"user@mail.com/user@mail.com"
+                        "example":"TestFolder"
                     },
                     "folderName": {
                         "type":"string",
@@ -2248,7 +2248,7 @@
                 },
                 "path": {
                     "type":"string",
-                    "example":"user@mail.com"
+                    "example":"TestFolder/Folder"
                 },
                 "fileName": {
                     "type":"string",
@@ -2268,11 +2268,11 @@
                     },
                     "oldPath": {
                         "type":"string",
-                        "example":"user@mail.com"
+                        "example":"TestFolder"
                     },
                     "newPath": {
                         "type":"string",
-                        "example":"user@mail.com/user@mail.com"
+                        "example":"TestFolder/Folder"
                     },
                     "name": {
                         "type":"string",
@@ -2290,7 +2290,7 @@
                 "properties": {
                     "path": {
                         "type":"string",
-                        "example":"C:\\user\\windows\\desktop"
+                        "example":"TestFolder"
                     },
                     "fileName": {
                         "type": "string",
@@ -2307,7 +2307,7 @@
                 "properties": {
                     "path": {
                         "type":"string",
-                        "example":"C:\\user\\windows\\desktop"
+                        "example":"TestFolder/Folder"
                     },
                     "fileName": {
                         "type": "string",
@@ -2324,7 +2324,7 @@
                 "properties": {
                     "path": {
                         "type":"string",
-                        "example":"C:\\user\\windows\\desktop"
+                        "example":"TestFolder/Folder"
                     },
                     "fileName": {
                         "type": "string",
@@ -2353,15 +2353,15 @@
                 "properties": {
                     "path": {
                         "type":"string",
-                        "example":"user@mail.com"
+                        "example":"TestFolder"
                     },
                     "oldName": {
                         "type":"string",
-                        "example":"Old name"
+                        "example":"Folder"
                     },
                     "newName": {
                         "type":"string",
-                        "example":"New name"
+                        "example":"NewFolder"
                     },
                     "user": {
                         "type":"string",
@@ -2374,7 +2374,7 @@
                 "properties": {
                     "path": {
                         "type":"string",
-                        "example":"user@mail.com"
+                        "example":"TestFolder"
                     },
                     "folderName": {
                         "type":"string",
@@ -2391,7 +2391,7 @@
                 "properties": {
                     "path": {
                         "type":"string",
-                        "example":"user@mail.com"
+                        "example":"TestFolder/Folder"
                     },
                     "fileName": {
                         "type":"string",
@@ -2408,11 +2408,11 @@
                 "properties": {
                     "oldPath": {
                         "type":"string",
-                        "example":"user@mail.com"
+                        "example":"TestFolder/Folder"
                     },
                     "newPath": {
                         "type":"string",
-                        "example":"user@mail.com/user@mail.com"
+                        "example":"TestFolder"
                     },
                     "name": {
                         "type":"string",
@@ -2438,7 +2438,7 @@
                     },
                     "path": {
                         "type":"string",
-                        "example":"C:\\user\\windows\\desktop"
+                        "example":"TestFolder"
                     },
                     "user": {
                         "type": "string",
@@ -2501,7 +2501,7 @@
                     },
                     "path": {
                         "type":"string",
-                        "example":"C:\\user\\windows\\desktop"
+                        "example":"TestFolder"
                     },
                     "status": {
                         "type":"string",
@@ -2564,7 +2564,7 @@
                     },
                     "path": {
                         "type":"string",
-                        "example":"C:\\user\\windows\\desktop"
+                        "example":"TestFolder"
                     }
                 }
             }
