@@ -3,7 +3,7 @@ const timeoutError = require('../models/timeout-error.js');
 const Error = require('../models/error.js');
 const fs = require("fs");
 
-async function executeCommandOnAgent(req, res) {
+async function executeCommandOnAgent(req, res) { // /api/agent/command
     const { deviceUid, command, path, user } = req.body;
     if (deviceUid == undefined || command == undefined || path == undefined || user == undefined) {
         res.status(400);
@@ -34,7 +34,7 @@ async function executeCommandOnAgent(req, res) {
     WebSocketService.clearResponsePromiseForDevice(deviceUid);
 
     const errorTimeout = setTimeout(timeoutError.timeoutError, 10000, deviceUid);
-    WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => {
+    WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => { // type: command_result
         clearTimeout(errorTimeout);
         WebSocketService.clearResponsePromiseForDevice(deviceUid);
         res.json(val);
@@ -44,7 +44,7 @@ async function executeCommandOnAgent(req, res) {
     });
 }
 
-function getOnlineAgents(req, res) {
+function getOnlineAgents(req, res) { // /api/agent/online
     let clientArray = [];
     // auth for online clients?
     const authHeader = req.headers.authorization;
@@ -57,7 +57,7 @@ function getOnlineAgents(req, res) {
     res.send(clientArray)
 }
 
-async function dissconectAgent(req, res) {
+async function dissconectAgent(req, res) { // /api/agent/disconnect
     const { deviceUid, user } = req.body;
     if (deviceUid == undefined || user == undefined) {
         res.status(400);
@@ -89,7 +89,7 @@ async function dissconectAgent(req, res) {
     res.json(response);
 }
 
-async function connectAgent(req, res) {
+async function connectAgent(req, res) { // /api/agent/connect
     const { deviceUid, user } = req.body;
     if (deviceUid == undefined || user == undefined) {
         res.status(400);
@@ -124,7 +124,7 @@ async function connectAgent(req, res) {
     }
 }
 
-async function getScreenshot(req, res) {
+async function getScreenshot(req, res) { // /api/agent/screenshot
     const { deviceUid, user } = req.body;
     if (deviceUid == undefined || user == undefined) {
         res.status(400);
@@ -144,7 +144,7 @@ async function getScreenshot(req, res) {
     }
     ws.send(JSON.stringify(response));
     const errorTimeout = setTimeout(timeoutError.timeoutError, 10000, deviceUid);
-    WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => {
+    WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => { // type: sendScreenshot
         clearTimeout(errorTimeout);
         WebSocketService.clearResponsePromiseForDevice(deviceUid);
         res.json(val);
@@ -154,7 +154,7 @@ async function getScreenshot(req, res) {
     });
 }
 
-async function getFile(req, res) {
+async function getFile(req, res) { // /api/agent/file/get
     const { deviceUid, fileName, path, user } = req.body;
     if (deviceUid == undefined || fileName == undefined || path == undefined || user == undefined) {
         res.status(400);
@@ -183,7 +183,7 @@ async function getFile(req, res) {
         }
         ws.send(JSON.stringify(response));
         const errorTimeout = setTimeout(timeoutError.timeoutError, 10000, deviceUid);
-        WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => {
+        WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => { // type: sendFile
             clearTimeout(errorTimeout);
             WebSocketService.clearResponsePromiseForDevice(deviceUid);
             res.json(val);
@@ -194,7 +194,7 @@ async function getFile(req, res) {
     }
 }
 
-async function putFile(req, res) {
+async function putFile(req, res) { // /api/agent/file/put
     const { deviceUid, fileName, path, user } = req.body;
     if (deviceUid == undefined || fileName == undefined || path == undefined || user == undefined) {
         res.status(400);
@@ -227,7 +227,7 @@ async function putFile(req, res) {
             }
             ws.send(JSON.stringify(response));
             const errorTimeout = setTimeout(timeoutError.timeoutError, 10000, deviceUid);
-            WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => {
+            WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => { // type: savedFile
                 clearTimeout(errorTimeout);
                 WebSocketService.clearResponsePromiseForDevice(deviceUid);
                 res.json(val);
@@ -239,7 +239,7 @@ async function putFile(req, res) {
     });
 }
 
-async function putFileInAgentFolderDirectly(req, res) {
+async function putFileInAgentFolderDirectly(req, res) { // /api/agent/file/direct-put
     const { deviceUid, fileName, path, base64, user } = req.body;
     if (deviceUid == undefined || fileName == undefined || path == undefined || user == undefined || base64 == undefined) {
         res.status(400);
@@ -262,7 +262,7 @@ async function putFileInAgentFolderDirectly(req, res) {
     }
     ws.send(JSON.stringify(response));
     const errorTimeout = setTimeout(timeoutError.timeoutError, 10000, deviceUid);
-    WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => {
+    WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => { // type: savedFile
         clearTimeout(errorTimeout);
         WebSocketService.clearResponsePromiseForDevice(deviceUid);
         res.json(val);
@@ -272,7 +272,7 @@ async function putFileInAgentFolderDirectly(req, res) {
     });
 }
 
-async function getFileFromAgentFolderDirectly(req, res)  { 
+async function getFileFromAgentFolderDirectly(req, res)  { // /api/agent/file/direct-get
     const { deviceUid, fileName, path, user } = req.body;
     if (deviceUid == undefined || fileName == undefined || path == undefined || user == undefined) {
         res.status(400);
@@ -302,7 +302,7 @@ async function getFileFromAgentFolderDirectly(req, res)  {
             }
             ws.send(JSON.stringify(response));
             const errorTimeout = setTimeout(timeoutError.timeoutError, 10000, deviceUid);
-            WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => {
+            WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => { // type: sendFileDirect
                 clearTimeout(errorTimeout);
                 WebSocketService.clearResponsePromiseForDevice(deviceUid);
                 res.json(val);
