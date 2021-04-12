@@ -1,5 +1,6 @@
 
 const fetch = require('node-fetch');
+const Error = require('../models/error.js');
 /**
  * Validates token
  */
