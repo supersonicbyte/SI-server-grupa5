@@ -30,7 +30,7 @@ const removeDir = function(path1) {
 }
 
 //#region UserFTP
-function getUserTextFile(req, res)  { 
+function getUserTextFile(req, res)  { // /api/web/user/file/get-text
     const { path, fileName, user } = req.body;
     if (fileName == undefined || user == undefined) {
         res.status(400);
@@ -55,7 +55,7 @@ function getUserTextFile(req, res)  {
     });
 }
 
-function getUserDirectoryTree(req, res) { 
+function getUserDirectoryTree(req, res) { // /api/web/user/file-tree
     const { user } = req.body;
     if (user == undefined) {
         res.status(400);
@@ -72,7 +72,7 @@ function getUserDirectoryTree(req, res) {
     res.send(tree);
 }
 
-async function putFileInUserFolder(req, res) {
+async function putFileInUserFolder(req, res) { // /api/web/user/file/put
     const { path, fileName, base64, user } = req.body;
     if (fileName == undefined || base64 == undefined || user == undefined) {
         res.status(400);
@@ -107,7 +107,7 @@ async function putFileInUserFolder(req, res) {
 
 }
 
-async function getFileFromUserFolder(req, res) {
+async function getFileFromUserFolder(req, res) { // /api/web/user/file/get
     const { path, fileName, user } = req.body;
     if (fileName == undefined || user == undefined || path == undefined) {
         res.status(400);
@@ -131,7 +131,7 @@ async function getFileFromUserFolder(req, res) {
     });
 }
 
-function renameInUserFolder (req, res) {
+function renameInUserFolder (req, res) { // /api/web/user/rename
     const { path, oldName, newName, user } = req.body;
     
   if (path == undefined || oldName == undefined || newName == undefined || user == undefined) {
@@ -159,7 +159,7 @@ function renameInUserFolder (req, res) {
     });
 }
 
-function deleteFileFromUserFolder (req, res) {
+function deleteFileFromUserFolder (req, res) { // /api/web/user/file/delete
     const { path, fileName, user } = req.body;
     if (path == undefined || fileName == undefined || user == undefined) {
         res.status(400);
@@ -184,7 +184,7 @@ function deleteFileFromUserFolder (req, res) {
     });
 }
 
-function deleteFolderFromUserFolder (req, res) {
+function deleteFolderFromUserFolder (req, res) { // /api/web/user/folder/delete
     const { path, folderName, user } = req.body;
     if (path == undefined || folderName == undefined || user == undefined) {
         res.status(400);
@@ -206,9 +206,9 @@ function deleteFolderFromUserFolder (req, res) {
         const error = new Error.Error(8,"Folder does not exist.");
         res.send(error);
     }
-}
+} 
 
-function createFolderInUserFolder (req, res) {
+function createFolderInUserFolder (req, res) { // /api/web/user/folder/create
     const { path, folderName, user } = req.body;
     if (path == undefined || folderName == undefined || user == undefined) {
         res.status(400);
@@ -232,7 +232,7 @@ function createFolderInUserFolder (req, res) {
     });
 }
 
-function copyInsideUserFolder (req, res) {
+function copyInsideUserFolder (req, res) { // /api/web/user/copy
     const { oldPath, newPath, name, user } = req.body;
     
     if (oldPath == undefined || newPath == undefined || name == undefined || user == undefined) {
@@ -261,7 +261,7 @@ function copyInsideUserFolder (req, res) {
     });
 }
 
-function moveInsideUserFolder (req, res) {
+function moveInsideUserFolder (req, res) { // /api/web/user/move
     const { oldPath, newPath, name, user } = req.body;
     
     if (oldPath == undefined || newPath == undefined || name == undefined || user == undefined) {
@@ -305,7 +305,7 @@ function moveInsideUserFolder (req, res) {
 //#endregion
 
 //#region AgentFTP
-async function getFileFromAgentFolder(req, res) {
+async function getFileFromAgentFolder(req, res) { // /api/web/agent/file/get
     const { deviceUid, path, fileName, user } = req.body;
     if (deviceUid == undefined || fileName == undefined || user == undefined) {
         const error = new Error.Error(7, "Invalid body.");
@@ -333,7 +333,7 @@ async function getFileFromAgentFolder(req, res) {
     });
 }
 
-async function putFileInAgentFolder(req, res) {
+async function putFileInAgentFolder(req, res) { // /api/web/agent/file/put
     const { deviceUid, path, fileName, base64, user } = req.body;
     if (deviceUid == undefined || fileName == undefined || base64 == undefined || user == undefined) {
         res.status(400);
@@ -397,7 +397,7 @@ async function putFileInAgentFolder(req, res) {
     });
 }
 
-function getAgentDirectoryTree(req, res) {
+function getAgentDirectoryTree(req, res) { // /api/web/agent/file-tree
     const { deviceUid, user } = req.body;
     if (deviceUid == undefined || user == undefined) {
         res.status(400);
@@ -414,7 +414,7 @@ function getAgentDirectoryTree(req, res) {
     res.send(tree);
 }
 
-function getAgentTextFile(req, res)  { 
+function getAgentTextFile(req, res)  { // /api/web/agent/file/get-text
     const { deviceUid, path, fileName, user } = req.body;
     if (fileName == undefined || user == undefined) {
         res.status(400);
@@ -439,7 +439,7 @@ function getAgentTextFile(req, res)  {
     });
 }
 
-function renameInAgentFolder (req, res) {
+function renameInAgentFolder (req, res) { // /api/web/agent/rename
     const {deviceUid, path, oldName, newName, user } = req.body;
     
   if (path == undefined || oldName == undefined || newName == undefined || user == undefined) {
@@ -467,7 +467,7 @@ function renameInAgentFolder (req, res) {
     });
 }
 
-function deleteFileFromAgentFolder (req, res) {
+function deleteFileFromAgentFolder (req, res) { // /api/web/agent/file/delete
     const {deviceUid, path, fileName, user } = req.body;
     if (path == undefined || fileName == undefined || user == undefined) {
         res.status(400);
@@ -492,7 +492,7 @@ function deleteFileFromAgentFolder (req, res) {
     });
 }
 
-function deleteFolderFromAgentFolder (req, res) {
+function deleteFolderFromAgentFolder (req, res) { // /api/web/agent/folder/delete
     const { deviceUid,path, folderName, user } = req.body;
     if (path == undefined || folderName == undefined || user == undefined) {
         res.status(400);
@@ -516,7 +516,7 @@ function deleteFolderFromAgentFolder (req, res) {
     }
 }
 
-function createFolderInAgentFolder (req, res) {
+function createFolderInAgentFolder (req, res) { // /api/web/agent/folder/create
     const {deviceUid, path, folderName, user } = req.body;
     if (path == undefined || folderName == undefined || user == undefined) {
         res.status(400);
@@ -540,7 +540,7 @@ function createFolderInAgentFolder (req, res) {
     });
 }
 
-function copyInsideAgentFolder (req, res) {
+function copyInsideAgentFolder (req, res) { // /api/web/agent/copy
     const {deviceUid, oldPath, newPath, name, user } = req.body;
     
     if (oldPath == undefined || newPath == undefined || name == undefined || user == undefined) {
@@ -569,7 +569,7 @@ function copyInsideAgentFolder (req, res) {
     });
 }
 
-function moveInsideAgentFolder (req, res) {
+function moveInsideAgentFolder (req, res) { // /api/web/agent/move
     const {deviceUid, oldPath, newPath, name, user } = req.body;
     
     if (oldPath == undefined || newPath == undefined || name == undefined || user == undefined) {

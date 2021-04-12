@@ -2,7 +2,7 @@ const auth = require('./auth.js');
 const Error = require('../models/error.js');
 const WebSocketService = require('../ws/websocket-service.js');
 
-async function apiValidator(req, res, next) {
+async function apiValidator(req, res, next) { // /api
     const { deviceUid, command } = req.body;
     const authHeader = req.headers.authorization;
     const validation = await auth.validateJWT(authHeader);
