@@ -5,6 +5,7 @@ const {promiseStatus} = require('promise-status-async');
 
 async function agentValidator(req, res, next) {
     const { user, deviceUid } = req.body;
+
     let ws = WebSocketService.getClients()[deviceUid];
     if (ws == undefined) {
         const error = new Error.Error(9, "Device is not connected.");

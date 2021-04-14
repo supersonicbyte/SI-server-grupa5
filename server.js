@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static('public'));
 app.use('/api', apiValidator.apiValidator);
-env.config()
+env.config();
 
 app.use('*/agent', agentValidator.agentValidator);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
@@ -33,7 +33,7 @@ app.post('/login', websocketLoginController.websocketLogin);
 *  Agent routes
 */
 app.post('/api/agent/command',agentController.executeCommandOnAgent); 
-app.get('/api/agent/online', agentController.getOnlineAgents); 
+app.get('/api/agents/online', agentController.getOnlineAgents); 
 app.post('/api/agent/disconnect', agentController.dissconectAgent); 
 app.post('/api/agent/connect', agentController.connectAgent);
 app.post('/api/agent/screenshot', agentController.getScreenshot); 
