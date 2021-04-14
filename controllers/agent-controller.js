@@ -126,6 +126,7 @@ async function connectAgent(req, res) {
 
 async function getScreenshot(req, res) {
     const { deviceUid, user } = req.body;
+
     if (deviceUid == undefined || user == undefined) {
         res.status(400);
         const error = new Error.Error(10, "Bad body.");
@@ -133,11 +134,7 @@ async function getScreenshot(req, res) {
         return;
     }
     let ws = WebSocketService.getClient(deviceUid);
-    if (ws == undefined) {
-        const error = new Error.Error(9, "Device is not connected.");
-        res.statusCode = 404;
-        res.json(error);
-    }
+  
     const response = {
         type: "getScreenshot",
         user: user
@@ -163,11 +160,7 @@ async function getFile(req, res) {
         return;
     }
     let ws = WebSocketService.getClient(deviceUid);
-    if (ws == undefined) {
-        const error = new Error.Error(9, "Device is not connected.");
-        res.statusCode = 400;
-        res.json(error);
-    }
+
     if ((ws.status == "In use" && ws.user != user) || ws.status == "Waiting") {
         const error = new Error.Error(4, "Agent already in use.");
         if (ws.status == "Waiting") error.message = "You are not connected to that Agent!";
@@ -203,11 +196,7 @@ async function putFile(req, res) {
         return;
     }
     let ws = WebSocketService.getClient(deviceUid)
-    if (ws == undefined) {
-        const error = new Error.Error(9, "Device is not connected.");
-        res.statusCode = 400;
-        res.json(error);
-    }
+
     let dir = `allFiles/${deviceUid}/`;
     if (fileName === "config.json") {
         dir += "config"
@@ -239,7 +228,7 @@ async function putFile(req, res) {
     });
 }
 
-async function putFileInAgentFolderDirectly(req, res) {
+async function putFileInAgentDirectly(req, res) {
     const { deviceUid, fileName, path, base64, user } = req.body;
     if (deviceUid == undefined || fileName == undefined || path == undefined || user == undefined || base64 == undefined) {
         res.status(400);
@@ -248,11 +237,7 @@ async function putFileInAgentFolderDirectly(req, res) {
         return;
     }
     let ws = WebSocketService.getClient(deviceUid);
-    if (ws == undefined) {
-        const error = new Error.Error(9, "Device is not connected.");
-        res.statusCode = 400;
-        res.json(error);
-    }
+
     const response = {
         type: "putFile",
         fileName: fileName,
@@ -272,7 +257,7 @@ async function putFileInAgentFolderDirectly(req, res) {
     });
 }
 
-async function getFileFromAgentFolderDirectly(req, res)  { 
+async function getFileFromAgentDirectly(req, res)  { 
     const { deviceUid, fileName, path, user } = req.body;
     if (deviceUid == undefined || fileName == undefined || path == undefined || user == undefined) {
         res.status(400);
@@ -281,12 +266,7 @@ async function getFileFromAgentFolderDirectly(req, res)  {
         return;
     }
     let ws = WebSocketService.getClient(deviceUid);
-    if (ws == undefined) {
-        const error = new Error.Error(9, "Device is not connected.");
-        res.statusCode = 400;
-        res.json(error);
-        return;
-    }
+
         if ((ws.status == "In use" && ws.user != user) || ws.status == "Waiting") {
             const error = new Error.Error(4, "Agent is already in use.");
             if (ws.status == "Waiting") error.message = "You are not connected to that agent.";
@@ -321,6 +301,6 @@ module.exports = {
     getScreenshot,
     getFile,
     putFile,
-    putFileInAgentFolderDirectly,
-    getFileFromAgentFolderDirectly
+    putFileInAgentDirectly,
+    getFileFromAgentDirectly
 }

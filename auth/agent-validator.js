@@ -5,8 +5,14 @@ const {promiseStatus} = require('promise-status-async');
 
 async function agentValidator(req, res, next) {
     const { user, deviceUid } = req.body;
-    let clients = WebSocketService.getClients();
-     if (clients[deviceUid].busy) {
+    let ws = WebSocketService.getClients()[deviceUid];
+    if (ws == undefined) {
+        const error = new Error.Error(9, "Device is not connected.");
+        res.statusCode = 404;
+        res.json(error);
+        return;
+    }
+     if (ws.busy) {
         res.status(400);
         const error = new Error.Error(10, "Agent already in use");
         res.send(error);
