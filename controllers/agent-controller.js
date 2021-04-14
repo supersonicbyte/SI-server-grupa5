@@ -216,8 +216,12 @@ async function putFileToAgentFromFolder(req, res) {
     }
 
     
-    let response = [];
-    let iter = deviceUids.length;
+    res.response = [];
+    res.iter = deviceUids.length;
+    console.log("Iter je "+res.iter);
+    res.iter--;
+    console.log("Sad je "+res.iter);
+    res.iter++;
 
     for(d in deviceUids){
 
@@ -227,7 +231,7 @@ async function putFileToAgentFromFolder(req, res) {
     let vertified = await verifyAgent(ws,res);
 
     if(!vertified.success){
-        addToResponse(response,{message:vertified.message,deviceUid:deviceUid},res,iter);
+        addToResponse(res,{message:vertified.message,deviceUid:deviceUid});
         continue;
     }
 
@@ -240,7 +244,7 @@ async function putFileToAgentFromFolder(req, res) {
         if (err) {
             console.log("error: " + err);
             const error = new Error.Error(13, "File does not exists.");
-            addToResponse(response,error,res,iter);
+            addToResponse(res.response,error,res,res.iter);
         } else {
             var response = {
                 type: "putFile",
@@ -255,14 +259,13 @@ async function putFileToAgentFromFolder(req, res) {
             WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => {
                 clearTimeout(errorTimeout);
                 WebSocketService.clearResponsePromiseForDevice(deviceUid);
-                console.log(response.length);
-                res.send("Got it ");
-                //addToResponse(response,val,res,iter);
+                console.log(res.response.length);
+                addToResponse(res,val);
 
             }).catch((err) => {
                 ws.busy=false;
                 res.statusCode = 404;
-                addToResponse(response,err,res,iter);
+                addToResponse(res,err);
             });
         }
     });
@@ -272,11 +275,12 @@ async function putFileToAgentFromFolder(req, res) {
     
 }
 
-async function addToResponse(response,value,res,iter){
+async function addToResponse(res,value){
 
-    response.push(value);
-    iter--;
-    if(iter<=0)res.send(response);
+    res.response.push(value);
+    res.iter--;
+    console.log("Iter je sada "+res.iter);
+    if(res.iter<=0)res.send(res.response);
 
 }
 
