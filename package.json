@@ -29,6 +29,7 @@
         "express-session": "^1.17.1",
         "fs-extra": "^9.1.0",
         "node-fetch": "^2.6.1",
+        "promise-status-async": "^1.1.11",
         "swagger-ui-express": "^4.1.6",
         "uuid": "^8.3.2",
         "ws": "^7.4.4"
