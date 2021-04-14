@@ -41,6 +41,7 @@ app.post('/api/agent/file/get',agentController.getFile);
 app.post('/api/agent/file/put', agentController.putFile); 
 app.post('/api/agent/file/direct-put', agentController.putFileInAgentFolderDirectly);
 app.post('/api/agent/file/direct-get', agentController.getFileFromAgentFolderDirectly); 
+app.post('/api/agent/systeminfo', webController.getSystemInfo);
 /**
  * Web routes
  */
@@ -59,6 +60,7 @@ app.post('/api/web/user/folder/delete', webController.deleteFolderFromUserFolder
 app.post('/api/web/user/folder/create', webController.createFolderInUserFolder);
 app.post('/api/web/user/copy', webController.copyInsideUserFolder);
 app.post('/api/web/user/move', webController.moveInsideUserFolder);
+
 
 app.post('/api/web/agent/rename', webController.renameInAgentFolder);
 app.post('/api/web/agent/file/delete', webController.deleteFileFromAgentFolder);

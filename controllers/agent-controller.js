@@ -313,6 +313,36 @@ async function getFileFromAgentFolderDirectly(req, res)  {
         }
 }
 
+function getSystemInfo (req, res) {
+    const { deviceUid, user } = req.body;
+    if (deviceUid == undefined || user == undefined) {
+        res.status(400);
+        const error = new Error.Error(10, "Bad body.");
+        res.send(error);
+        return;
+    }
+    let ws = WebSocketService.getClient(deviceUid);
+    if (ws == undefined) {
+        const error = new Error.Error(9, "Device is not connected.");
+        res.statusCode = 404;
+        res.json(error);
+    }
+    const response = {
+        type: "getSystemInfo",
+        user: user
+    }
+    
+    ws.send(JSON.stringify(response));
+    const errorTimeout = setTimeout(timeoutError.timeoutError, 10000, deviceUid);
+    WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => {
+        clearTimeout(errorTimeout);
+        WebSocketService.clearResponsePromiseForDevice(deviceUid);
+        res.json(val);
+    }).catch((err) => {
+        res.statusCode = 404;
+        res.json(err);
+    }); 
+}
 module.exports = {
     executeCommandOnAgent,
     getOnlineAgents,
@@ -322,5 +352,6 @@ module.exports = {
     getFile,
     putFile,
     putFileInAgentFolderDirectly,
-    getFileFromAgentFolderDirectly
+    getFileFromAgentFolderDirectly,
+    getSystemInfo
 }
