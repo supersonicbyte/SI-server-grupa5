@@ -1,7 +1,6 @@
 const accessAuth = require('./access_auth.js');
 const Error = require('../models/error.js');
 const WebSocketService = require('../ws/websocket-service.js');
-const {promiseStatus} = require('promise-status-async');
 
 async function agentValidator(req, res, next) {
     const { user, deviceUid } = req.body;
