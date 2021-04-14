@@ -313,9 +313,9 @@ async function getFileFromAgentFolderDirectly(req, res)  {
         }
 }
 
-function getSystemInfo (req, res) {
-    const { deviceUid, user } = req.body;
-    if (deviceUid == undefined || user == undefined) {
+function getInfo (req, res) {
+    const { deviceUid, info } = req.body;
+    if (deviceUid == undefined || info == undefined) {
         res.status(400);
         const error = new Error.Error(10, "Bad body.");
         res.send(error);
@@ -327,9 +327,10 @@ function getSystemInfo (req, res) {
         res.statusCode = 404;
         res.json(error);
     }
+
     const response = {
-        type: "getSystemInfo",
-        user: user
+        type: info,
+        user: res.use.mail
     }
     
     ws.send(JSON.stringify(response));
@@ -343,6 +344,7 @@ function getSystemInfo (req, res) {
         res.json(err);
     }); 
 }
+
 module.exports = {
     executeCommandOnAgent,
     getOnlineAgents,
@@ -353,5 +355,5 @@ module.exports = {
     putFile,
     putFileInAgentFolderDirectly,
     getFileFromAgentFolderDirectly,
-    getSystemInfo
+    getInfo
 }

@@ -41,7 +41,7 @@ app.post('/api/agent/file/get',agentController.getFile);
 app.post('/api/agent/file/put', agentController.putFile); 
 app.post('/api/agent/file/direct-put', agentController.putFileInAgentFolderDirectly);
 app.post('/api/agent/file/direct-get', agentController.getFileFromAgentFolderDirectly); 
-app.post('/api/agent/systeminfo', webController.getSystemInfo);
+app.post('/api/agent/systeminfo', agentController.getSystemInfo);
 /**
  * Web routes
  */
