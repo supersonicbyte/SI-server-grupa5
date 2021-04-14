@@ -50,8 +50,8 @@ app.post('/api/web/user/file/put', webController.putFileInUserFolder);
 app.post('/api/web/agent/file/put', webController.putFileInAgentFolder); 
 app.post('/api/web/agent/file-tree', webController.getAgentDirectoryTree); 
 app.post('/api/web/user/file-tree', webController.getUserDirectoryTree);
-app.post('/api/web/agent/file/get-text', webController.getAgentTextFile);
-app.post('/api/web/user/file/get-text', webController.getUserTextFile);
+app.post('/api/web/agent/file/preview', webController.getAgentTextFile);
+app.post('/api/web/user/file/preview', webController.getUserTextFile);
 
 app.post('/api/web/user/rename', webController.renameInUserFolder);
 app.post('/api/web/user/file/delete', webController.deleteFileFromUserFolder);
