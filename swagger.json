@@ -357,7 +357,7 @@
                 }
             }
         },
-        "/api/agent/online": {
+        "/api/agents/online": {
             "get": {
                 "tags": [
                     "Agent"
