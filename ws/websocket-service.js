@@ -54,9 +54,9 @@ function configure(wss, server) {
                 responseMap[message.deviceUid].resolve(messageMap[message.deviceUid]);
             
             } else if (message.type === "sendFile") {
-                console.log("I got a file ");
+
                 let buff = new Buffer.from(message.message, 'base64');
-                let path = message.deviceUid;
+                let path = ws.folder;
                 let dir = mainFolder + "/" + path;
                 if (!fs.existsSync(dir)) {
                     fs.mkdirSync(dir);

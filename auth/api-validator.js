@@ -1,5 +1,6 @@
 const auth = require('./auth.js');
 const Error = require('../models/error.js');
+const User = require('../models/user.js');
 const WebSocketService = require('../ws/websocket-service.js');
 
 async function apiValidator(req, res, next) {
@@ -12,14 +13,16 @@ async function apiValidator(req, res, next) {
         res.send(error);
         return;
     } else {
-        const x = await validation.json();
+        const result = await validation.json();
         const messageResponse =
         {
-            token: x.accessToken, 
+            token: result.accessToken, 
             message: "" 
         }
         WebSocketService.setMessageResponseForDevice(deviceUid, messageResponse);
+        req.user =new User.User(result.id,result.mail);
     }
+    
     next();
 }
 

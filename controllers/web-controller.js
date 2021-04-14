@@ -31,14 +31,14 @@ const removeDir = function(path1) {
 
 //#region UserFTP
 function getUserTextFile(req, res)  { 
-    const { path, fileName, user } = req.body;
-    if (fileName == undefined || user == undefined) {
+    const { path, fileName} = req.body;
+    if (fileName == undefined) {
         res.status(400);
         const error = new Error.Error(5,"Invalid body.");
         res.send(error);
         return;
     }
-    const dir = `allFiles/${user}/${path}`;
+    const dir = `allFiles/${req.user.mail}/${path}`;
     fs.readFile(dir + "/" + fileName, { encoding: 'utf-8' }, function(err, fileText) {
         if (err) {
             console.log("error: " + err)
@@ -55,15 +55,9 @@ function getUserTextFile(req, res)  {
     });
 }
 
-function getUserDirectoryTree(req, res) { 
-    const { user } = req.body;
-    if (user == undefined) {
-        res.status(400);
-        const error = new Error.Error(5,"Invalid body.");
-        res.send(error);
-        return;
-    }
-    let path = `allFiles/${user}`;
+function getUserDirectoryTree(req, res) {
+
+    let path = `allFiles/${req.user.mail}`;
     if (!fs.existsSync(path)) {
         fs.mkdirSync(path);
     }
@@ -73,15 +67,15 @@ function getUserDirectoryTree(req, res) {
 }
 
 async function putFileInUserFolder(req, res) {
-    const { path, fileName, base64, user } = req.body;
-    if (fileName == undefined || base64 == undefined || user == undefined) {
+    const { path, fileName, base64 } = req.body;
+    if (fileName == undefined || base64 == undefined) {
         res.status(400);
         const error = new Error.Error(7, "Invalid body.");
         res.send(error);
         return;
     }
     let buff = new Buffer.from(base64, 'base64');
-    let dir = `allFiles/${user}/${path}`;
+    let dir = `allFiles/${req.user.mail}/${path}`;
     fs.mkdir(dir, { recursive: true }, (err) => {
         if (err) {
             const error = new Error.Error(12, "Unkown error while making directories.")
@@ -108,14 +102,14 @@ async function putFileInUserFolder(req, res) {
 }
 
 async function getFileFromUserFolder(req, res) {
-    const { path, fileName, user } = req.body;
-    if (fileName == undefined || user == undefined || path == undefined) {
+    const { path, fileName } = req.body;
+    if (fileName == undefined || path == undefined) {
         res.status(400);
         const error = new Error.Error(7, "Body invalid.");
         res.send(error);
         return;
     }
-    const fullPath = `allFiles/${user}/${path}/${fileName}`;
+    const fullPath = `allFiles/${req.user.mail}/${path}/${fileName}`;
     fs.readFile(fullPath, { encoding: 'base64' }, function (err, data) {
         if (err) {
             const error = new Error.Error(11, "File does not exist.");
@@ -132,16 +126,16 @@ async function getFileFromUserFolder(req, res) {
 }
 
 function renameInUserFolder (req, res) {
-    const { path, oldName, newName, user } = req.body;
+    const { path, oldName, newName} = req.body;
     
-  if (path == undefined || oldName == undefined || newName == undefined || user == undefined) {
+  if (path == undefined || oldName == undefined || newName == undefined) {
         res.status(400);
         const error = new Error.Error(5,"Invalid body.");
         res.send(error);
         return;
     }
 
-    let dir = `allFiles/${user}/${path}`;
+    let dir = `allFiles/${req.user.mail}/${path}`;
     
     fs.rename( dir + "/" + oldName, dir + "/" + newName, function(err) {
         if (err) {
@@ -161,13 +155,13 @@ function renameInUserFolder (req, res) {
 
 function deleteFileFromUserFolder (req, res) {
     const { path, fileName, user } = req.body;
-    if (path == undefined || fileName == undefined || user == undefined) {
+    if (path == undefined || fileName == undefined) {
         res.status(400);
         const error = new Error.Error(5,"Invalid body.");
         res.send(error);
         return;
     }
-    let dir = `allFiles/${user}/${path}`;
+    let dir = `allFiles/${req.user.mail}/${path}`;
     fs.unlink(dir + "/" + fileName, function(err) {
         if (err) {
             console.log("error: " + err)
@@ -186,13 +180,13 @@ function deleteFileFromUserFolder (req, res) {
 
 function deleteFolderFromUserFolder (req, res) {
     const { path, folderName, user } = req.body;
-    if (path == undefined || folderName == undefined || user == undefined) {
+    if (path == undefined || folderName == undefined) {
         res.status(400);
         const error = new Error.Error(5,"Invalid body.");
         res.send(error);
         return;
     }
-    let dir = `allFiles/${user}/${path}/${folderName}`;
+    let dir = `allFiles/${req.user.mail}/${path}/${folderName}`;
     let returnValue = removeDir(dir)
     if(returnValue){
         var response = {
@@ -209,14 +203,14 @@ function deleteFolderFromUserFolder (req, res) {
 }
 
 function createFolderInUserFolder (req, res) {
-    const { path, folderName, user } = req.body;
-    if (path == undefined || folderName == undefined || user == undefined) {
+    const { path, folderName } = req.body;
+    if (path == undefined || folderName == undefined) {
         res.status(400);
         const error = new Error.Error(5,"Invalid body.");
         res.send(error);
         return;
     }
-    let dir = `allFiles/${user}/${path}/${folderName}`;
+    let dir = `allFiles/${req.user.mail}/${path}/${folderName}`;
     fs.mkdir(dir, { recursive: true }, (err) => {
         if (err) {
             const error = new Error.Error(12, "Unknown error while making directories.")
@@ -233,17 +227,17 @@ function createFolderInUserFolder (req, res) {
 }
 
 function copyInsideUserFolder (req, res) {
-    const { oldPath, newPath, name, user } = req.body;
+    const { oldPath, newPath, name} = req.body;
     
-    if (oldPath == undefined || newPath == undefined || name == undefined || user == undefined) {
+    if (oldPath == undefined || newPath == undefined || name == undefined ) {
         res.status(400);
         const error = new Error.Error(5,"Invalid body.");
         res.send(error);
         return;
     }
     
-    let oldDir = `allFiles/${user}/${oldPath}/${name}`;
-    let newDir = `allFiles/${user}/${newPath}/${name}`;
+    let oldDir = `allFiles/${req.user.mail}/${oldPath}/${name}`;
+    let newDir = `allFiles/${req.user.mail}/${newPath}/${name}`;
     
     fse.copy( oldDir, newDir, function(err) {
         if (err) {
@@ -262,28 +256,17 @@ function copyInsideUserFolder (req, res) {
 }
 
 function moveInsideUserFolder (req, res) {
-    const { oldPath, newPath, name, user } = req.body;
+    const { oldPath, newPath, name } = req.body;
     
-    if (oldPath == undefined || newPath == undefined || name == undefined || user == undefined) {
+    if (oldPath == undefined || newPath == undefined || name == undefined) {
         res.status(400);
         const error = new Error.Error(5,"Invalid body.");
         res.send(error);
         return;
     }
     
-    let oldDir = `allFiles/${user}/${oldPath}/${name}`;
-    let newDir = `allFiles/${user}/${newPath}/${name}`;
-
-    /*if (!fs.existsSync(oldDir)) {
-        const error = new Error.Error(8,"File/folder "+oldDir+"  does not exist1");
-        res.send(error);
-        return;
-    }
-    if (!fs.existsSync(newDir)) {
-        const error = new Error.Error(8,"File/folder "+newDir+" does not exist2");
-        res.send(error);
-        return;
-    }*/
+    let oldDir = `allFiles/${req.user.mail}/${oldPath}/${name}`;
+    let newDir = `allFiles/${req.user.mail}/${newPath}/${name}`;
   
     fse.move( oldDir, newDir, function(err) {
         if (err) {
@@ -306,8 +289,8 @@ function moveInsideUserFolder (req, res) {
 
 //#region AgentFTP
 async function getFileFromAgentFolder(req, res) {
-    const { deviceUid, path, fileName, user } = req.body;
-    if (deviceUid == undefined || fileName == undefined || user == undefined) {
+    const { deviceUid, path, fileName} = req.body;
+    if (deviceUid == undefined || fileName == undefined ) {
         const error = new Error.Error(7, "Invalid body.");
         res.send(error);
         return;
@@ -334,8 +317,8 @@ async function getFileFromAgentFolder(req, res) {
 }
 
 async function putFileInAgentFolder(req, res) {
-    const { deviceUid, path, fileName, base64, user } = req.body;
-    if (deviceUid == undefined || fileName == undefined || base64 == undefined || user == undefined) {
+    const { deviceUid, path, fileName, base64 } = req.body;
+    if (deviceUid == undefined || fileName == undefined || base64 == undefined) {
         res.status(400);
         const error = new Error.Error(7, "Invalid body.");
         res.send(error);
@@ -374,7 +357,7 @@ async function putFileInAgentFolder(req, res) {
                             fileName: fileName,
                             path: "",
                             data: base64,
-                            user: user
+                            user: req.user.mail
                         }
 
                         ws.send(JSON.stringify(response));
@@ -398,8 +381,8 @@ async function putFileInAgentFolder(req, res) {
 }
 
 function getAgentDirectoryTree(req, res) {
-    const { deviceUid, user } = req.body;
-    if (deviceUid == undefined || user == undefined) {
+    const { deviceUid } = req.body;
+    if (deviceUid == undefined ) {
         res.status(400);
         const error = new Error.Error(7, "Invalid body.");
         res.send(error);
@@ -415,8 +398,8 @@ function getAgentDirectoryTree(req, res) {
 }
 
 function getAgentTextFile(req, res)  { 
-    const { deviceUid, path, fileName, user } = req.body;
-    if (fileName == undefined || user == undefined) {
+    const { deviceUid, path, fileName } = req.body;
+    if (fileName == undefined) {
         res.status(400);
         const error = new Error.Error(5,"Invalid body.");
         res.send(error);
@@ -440,9 +423,9 @@ function getAgentTextFile(req, res)  {
 }
 
 function renameInAgentFolder (req, res) {
-    const {deviceUid, path, oldName, newName, user } = req.body;
+    const {deviceUid, path, oldName, newName} = req.body;
     
-  if (path == undefined || oldName == undefined || newName == undefined || user == undefined) {
+  if (path == undefined || oldName == undefined || newName == undefined) {
         res.status(400);
         const error = new Error.Error(5,"Invalid body.");
         res.send(error);
@@ -468,8 +451,8 @@ function renameInAgentFolder (req, res) {
 }
 
 function deleteFileFromAgentFolder (req, res) {
-    const {deviceUid, path, fileName, user } = req.body;
-    if (path == undefined || fileName == undefined || user == undefined) {
+    const {deviceUid, path, fileName } = req.body;
+    if (path == undefined || fileName == undefined ) {
         res.status(400);
         const error = new Error.Error(5,"Invalid body.");
         res.send(error);
@@ -493,8 +476,8 @@ function deleteFileFromAgentFolder (req, res) {
 }
 
 function deleteFolderFromAgentFolder (req, res) {
-    const { deviceUid,path, folderName, user } = req.body;
-    if (path == undefined || folderName == undefined || user == undefined) {
+    const { deviceUid,path, folderName} = req.body;
+    if (path == undefined || folderName == undefined ) {
         res.status(400);
         const error = new Error.Error(5,"Invalid body.");
         res.send(error);
@@ -517,8 +500,8 @@ function deleteFolderFromAgentFolder (req, res) {
 }
 
 function createFolderInAgentFolder (req, res) {
-    const {deviceUid, path, folderName, user } = req.body;
-    if (path == undefined || folderName == undefined || user == undefined) {
+    const {deviceUid, path, folderName} = req.body;
+    if (path == undefined || folderName == undefined) {
         res.status(400);
         const error = new Error.Error(5,"Invalid body.");
         res.send(error);
@@ -541,9 +524,9 @@ function createFolderInAgentFolder (req, res) {
 }
 
 function copyInsideAgentFolder (req, res) {
-    const {deviceUid, oldPath, newPath, name, user } = req.body;
+    const {deviceUid, oldPath, newPath, name } = req.body;
     
-    if (oldPath == undefined || newPath == undefined || name == undefined || user == undefined) {
+    if (oldPath == undefined || newPath == undefined || name == undefined) {
         res.status(400);
         const error = new Error.Error(5,"Invalid body.");
         res.send(error);
@@ -570,9 +553,9 @@ function copyInsideAgentFolder (req, res) {
 }
 
 function moveInsideAgentFolder (req, res) {
-    const {deviceUid, oldPath, newPath, name, user } = req.body;
+    const {deviceUid, oldPath, newPath, name } = req.body;
     
-    if (oldPath == undefined || newPath == undefined || name == undefined || user == undefined) {
+    if (oldPath == undefined || newPath == undefined || name == undefined) {
         res.status(400);
         const error = new Error.Error(5,"Invalid body.");
         res.send(error);

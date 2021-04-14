@@ -5,16 +5,23 @@ const {promiseStatus} = require('promise-status-async');
 
 async function agentValidator(req, res, next) {
     
-    const { user, deviceUid } = req.body;
+    if( process.env.DEBUG === 'true'){
+        next();
+        return;
+    }
+
+    const {deviceUid}  = req.body;
    
     const authHeader = req.headers.authorization;
     const validation = await accessAuth.validateUserAccess(authHeader, deviceUid);
     if (validation.status != 200) {
         res.status(validation.status);
         const error = new Error.Error(5, "Not authorized");
+        console.log("Token:\n"+authHeader+"\n"+deviceUid);
         res.send(error);
         return;
     }
+
     next();
 }
 

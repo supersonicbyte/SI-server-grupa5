@@ -2,18 +2,23 @@ const WebSocketService = require('../ws/websocket-service.js');
 const timeoutError = require('../models/timeout-error.js');
 const Error = require('../models/error.js');
 const fs = require("fs");
+const { ESRCH } = require('constants');
 
 async function executeCommandOnAgent(req, res) {
-    const { deviceUid, command, path, user } = req.body;
-    if (deviceUid == undefined || command == undefined || path == undefined || user == undefined) {
+    const { deviceUid, command, path } = req.body;
+    if (deviceUid == undefined || command == undefined || path == undefined ) {
         res.status(400);
         const error = new Error.Error(6, "Body not valid.")
         res.send(error);
         return;
     }
     let ws = WebSocketService.getClient(deviceUid);
-    if(!verifyAgent(ws,res)) return;
-    if ((ws.status == "In use" && ws.user != user) || ws.status == "Waiting") {
+    let vertified = await verifyAgent(ws,res);
+    if(!vertified.success){
+        res.send(vertified.message);
+        return;
+    }
+    if ((ws.status == "In use" && ws.user != req.user.mail) || ws.status == "Waiting") {
         const error = new Error.Error(7, "Device already in use.");
         if (ws.status == "Waiting") error.message = "You are not connected to that agent.";
         res.statusCode = 404;
@@ -23,7 +28,7 @@ async function executeCommandOnAgent(req, res) {
     const commandMessage = {
         type: "command",
         command: command,
-        user: user,
+        user: req.user.mail,
         path: path
     }
     ws.send(JSON.stringify(commandMessage));
@@ -56,16 +61,20 @@ function getOnlineAgents(req, res) {
 }
 
 async function dissconectAgent(req, res) {
-    const { deviceUid, user } = req.body;
-    if (deviceUid == undefined || user == undefined) {
+    const { deviceUid } = req.body;
+    if (deviceUid == undefined) {
         res.status(400);
         const error = new Error.Error(10, "Bady not valid.");
         res.send(error);
         return;
     }
     let ws = WebSocketService.getClient(deviceUid);
-    if(!verifyAgent(ws,res)) return;
-    if (ws.status == "In use" && ws.user != user) {
+    let vertified = await verifyAgent(ws,res);
+    if(!vertified.success){
+        res.send(vertified.message);
+        return;
+    }
+    if (ws.status == "In use" && ws.user != req.user.mail) {
         const error = new Error.Error(7, "You are not connected to the agent.");
         res.statusCode = 404;
         res.json(error);
@@ -84,18 +93,22 @@ async function dissconectAgent(req, res) {
 }
 
 async function connectAgent(req, res) {
-    const { deviceUid, user } = req.body;
-    if (deviceUid == undefined || user == undefined) {
+    const { deviceUid } = req.body;
+    if (deviceUid == undefined) {
         res.status(400);
         const error = new Error.Error(10, "Bad body.");
         res.send(error);
         return;
     }
     let ws = WebSocketService.getClient(deviceUid);
-    if(!verifyAgent(ws,res)) return;
+    let vertified = await verifyAgent(ws,res);
+    if(!vertified.success){
+        res.send(vertified.message);
+        return;
+    }
     if (ws.status === "In use") {
         const error = new Error.Error(9, "Device already in use.")
-        if (ws.user == user) error.message = "You are already connected to this user!";
+        if (ws.user == req.user.mail) error.message = "You are already connected to this user!";
         res.statusCode = 404;
         res.json(error);
         return;
@@ -107,7 +120,7 @@ async function connectAgent(req, res) {
             message: "Connection successful!"
         }
         ws.status = "In use";
-        ws.user = user;
+        ws.user = req.user.mail;
         ws.send(JSON.stringify(response));
         res.statusCode = 200;
         res.json(response);
@@ -115,19 +128,23 @@ async function connectAgent(req, res) {
 }
 
 async function getScreenshot(req, res) {
-    const { deviceUid, user } = req.body;
+    const { deviceUid} = req.body;
 
-    if (deviceUid == undefined || user == undefined) {
+    if (deviceUid == undefined) {
         res.status(400);
         const error = new Error.Error(10, "Bad body.");
         res.send(error);
         return;
     }
     let ws = WebSocketService.getClient(deviceUid);
-    if(!verifyAgent(ws,res)) return;
+    let vertified = await verifyAgent(ws,res);
+    if(!vertified.success){
+        res.send(vertified.message);
+        return;
+    }
     const response = {
         type: "getScreenshot",
-        user: user
+        user: req.user.mail
     }
     ws.send(JSON.stringify(response));
     ws.busy=true;
@@ -143,17 +160,22 @@ async function getScreenshot(req, res) {
     });
 }
 
-async function getFile(req, res) {
-    const { deviceUid, fileName, path, user } = req.body;
-    if (deviceUid == undefined || fileName == undefined || path == undefined || user == undefined) {
+async function getFileFromAgentToFolder(req, res) {
+    const folder = req.params.folder;
+    const { deviceUid, fileName, path } = req.body;
+    if (deviceUid == undefined || fileName == undefined || path == undefined || folder == undefined ) {
         res.status(400);
         const error = new Error.Error(7, "Invalid body.");
         res.send(error);
         return;
     }
     let ws = WebSocketService.getClient(deviceUid);
-    if(!verifyAgent(ws,res)) return;
-    if ((ws.status == "In use" && ws.user != user) || ws.status == "Waiting") {
+    let vertified = await verifyAgent(ws,res);
+    if(!vertified.success){
+        res.send(vertified.message);
+        return;
+    }
+    if ((ws.status == "In use" && ws.user != req.user.mail) || ws.status == "Waiting") {
         const error = new Error.Error(4, "Agent already in use.");
         if (ws.status == "Waiting") error.message = "You are not connected to that Agent!";
         res.statusCode = 404;
@@ -166,6 +188,7 @@ async function getFile(req, res) {
             path: path,
             user: user
         }
+        ws.folder = folder;
         ws.send(JSON.stringify(response));
         ws.busy=true;
         const errorTimeout = setTimeout(timeoutError.timeoutError, 10000, deviceUid);
@@ -181,32 +204,50 @@ async function getFile(req, res) {
     }
 }
 
-async function putFile(req, res) {
-    const { deviceUid, fileName, path, user } = req.body;
-    if (deviceUid == undefined || fileName == undefined || path == undefined || user == undefined) {
+async function putFileToAgentFromFolder(req, res) {
+
+    const folder = req.params.folder;
+    const { deviceUids, fileName, path } = req.body;
+    if (deviceUids == undefined || fileName == undefined || path == undefined || folder == undefined) {
         res.status(400);
         const error = new Error.Error(7, "Invalid body.");
         res.send(error);
         return;
     }
-    let ws = WebSocketService.getClient(deviceUid)
-    if(!verifyAgent(ws,res)) return;
-    let dir = `allFiles/${deviceUid}/`;
+
+    
+    let response = [];
+    let iter = deviceUids.length;
+
+    for(d in deviceUids){
+
+    deviceUid = deviceUids[d].deviceUid;
+    let ws = WebSocketService.getClient(deviceUid);
+    
+    let vertified = await verifyAgent(ws,res);
+
+    if(!vertified.success){
+        addToResponse(response,{message:vertified.message,deviceUid:deviceUid},res,iter);
+        continue;
+    }
+
+    let dir = `allFiles/${folder}/`;
     if (fileName === "config.json") {
         dir += "config"
     }
+
     fs.readFile(dir + "/" + fileName, { encoding: 'base64' }, function (err, data) {
         if (err) {
-            console.log("error: " + err + " \n" + dir + "/" + fileName)
+            console.log("error: " + err);
             const error = new Error.Error(13, "File does not exists.");
-            res.json(error);
+            addToResponse(response,error,res,iter);
         } else {
             var response = {
                 type: "putFile",
                 fileName: fileName,
                 path: path,
                 data: data,
-                user: user
+                user: req.user.mail
             }
             ws.send(JSON.stringify(response));
             ws.busy=true;
@@ -214,32 +255,51 @@ async function putFile(req, res) {
             WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => {
                 clearTimeout(errorTimeout);
                 WebSocketService.clearResponsePromiseForDevice(deviceUid);
-                res.json(val);
+                console.log(response.length);
+                res.send("Got it ");
+                //addToResponse(response,val,res,iter);
+
             }).catch((err) => {
                 ws.busy=false;
                 res.statusCode = 404;
-                res.json(err);
+                addToResponse(response,err,res,iter);
             });
         }
     });
+
+    }
+
+    
+}
+
+async function addToResponse(response,value,res,iter){
+
+    response.push(value);
+    iter--;
+    if(iter<=0)res.send(response);
+
 }
 
 async function putFileInAgentDirectly(req, res) {
-    const { deviceUid, fileName, path, base64, user } = req.body;
-    if (deviceUid == undefined || fileName == undefined || path == undefined || user == undefined || base64 == undefined) {
+    const { deviceUid, fileName, path, base64 } = req.body;
+    if (deviceUid == undefined || fileName == undefined || path == undefined ||  base64 == undefined) {
         res.status(400);
         const error = new Error.Error(7, "Invalid body.");
         res.send(error);
         return;
     }
     let ws = WebSocketService.getClient(deviceUid);
-    if(!verifyAgent(ws,res)) return;
+    let vertified = await verifyAgent(ws,res);
+    if(!vertified.success){
+        res.send(vertified.message);
+        return;
+    }
     const response = {
         type: "putFile",
         fileName: fileName,
         path: path,
         data: base64,
-        user: user
+        user: req.user.mail
     }
     ws.send(JSON.stringify(response));
     ws.busy=true;
@@ -256,16 +316,20 @@ async function putFileInAgentDirectly(req, res) {
 }
 
 async function getFileFromAgentDirectly(req, res)  { 
-    const { deviceUid, fileName, path, user } = req.body;
-    if (deviceUid == undefined || fileName == undefined || path == undefined || user == undefined) {
+    const { deviceUid, fileName, path} = req.body;
+    if (deviceUid == undefined || fileName == undefined || path == undefined ) {
         res.status(400);
         const error = new Error.Error(7, "Invalid body.");
         res.send(error);
         return;
     }
     let ws = WebSocketService.getClient(deviceUid);
-    if(!verifyAgent(ws,res)) return;
-    if ((ws.status == "In use" && ws.user != user) || ws.status == "Waiting") {
+    let vertified = await verifyAgent(ws,res);
+    if(!vertified.success){
+        res.send(vertified.message);
+        return;
+    }
+    if ((ws.status == "In use" && ws.user != req.user.mail) || ws.status == "Waiting") {
         const error = new Error.Error(4, "Agent is already in use.");
         if (ws.status == "Waiting") error.message = "You are not connected to that agent.";
         res.statusCode = 400;
@@ -295,19 +359,24 @@ async function getFileFromAgentDirectly(req, res)  {
 
 async function verifyAgent(ws,res){
 
+    
+    let returnMessage = {
+        message:"All okay",
+        success:true
+    }
     if (ws == undefined) {
         const error = new Error.Error(9, "Device is not connected.");
         res.statusCode = 404;
-        res.json(error);
-        return false;
+        returnMessage.message=error;
+        returnMessage.success=false;
     }
-    if (ws.busy) {
+    else if (ws.busy) {
         res.status(400);
         const error = new Error.Error(10, "Agent already in use");
-        res.send(error);
-        return false;
+        returnMessage.message=error;
+        returnMessage.success=false;
      }
-     return true;
+     return returnMessage;
 
 }
 
@@ -317,8 +386,8 @@ module.exports = {
     dissconectAgent,
     connectAgent,
     getScreenshot,
-    getFile,
-    putFile,
+    getFileFromAgentToFolder,
+    putFileToAgentFromFolder,
     putFileInAgentDirectly,
     getFileFromAgentDirectly
 }
