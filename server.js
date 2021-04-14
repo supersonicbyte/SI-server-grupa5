@@ -20,7 +20,7 @@ app.use(express.static('public'));
 app.use('/api', apiValidator.apiValidator);
 env.config()
 
-app.use('/api/*/agent', agentValidator.agentValidator);
+app.use('*/agent', agentValidator.agentValidator);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 

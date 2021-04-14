@@ -42,6 +42,7 @@ function configure(wss, server) {
                 ws.deviceUid = message.deviceUid;
                 ws.path = message.path;
                 ws.status = "Waiting";
+                ws.busy = false;
                 ws.send(JSON.stringify({ type: "Connected" }));
                 clients[message.deviceUid] = ws;
                 responseMap[message.deviceUid] = emptyPromise();
@@ -147,6 +148,7 @@ function getResponsePromiseForDevice(id) {
 
 function clearResponsePromiseForDevice(id) {
     responseMap[id] = emptyPromise()
+    clients[id].busy = false;
 }
 
 function getClients() {
