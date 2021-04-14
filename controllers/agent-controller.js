@@ -31,6 +31,7 @@ async function executeCommandOnAgent(req, res) {
         path: path
     }
     ws.send(JSON.stringify(commandMessage));
+    ws.busy=true;
     WebSocketService.clearResponsePromiseForDevice(deviceUid);
 
     const errorTimeout = setTimeout(timeoutError.timeoutError, 10000, deviceUid);
@@ -39,6 +40,7 @@ async function executeCommandOnAgent(req, res) {
         WebSocketService.clearResponsePromiseForDevice(deviceUid);
         res.json(val);
     }).catch((err) => {
+        ws.busy=false;
         res.statusCode = 404;
         res.json(err);
     });
@@ -140,12 +142,14 @@ async function getScreenshot(req, res) {
         user: user
     }
     ws.send(JSON.stringify(response));
+    ws.busy=true;
     const errorTimeout = setTimeout(timeoutError.timeoutError, 10000, deviceUid);
     WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => {
         clearTimeout(errorTimeout);
         WebSocketService.clearResponsePromiseForDevice(deviceUid);
         res.json(val);
     }).catch((err) => {
+        ws.busy=false;
         res.statusCode = 404;
         res.json(err);
     });
@@ -175,12 +179,14 @@ async function getFile(req, res) {
             user: user
         }
         ws.send(JSON.stringify(response));
+        ws.busy=true;
         const errorTimeout = setTimeout(timeoutError.timeoutError, 10000, deviceUid);
         WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => {
             clearTimeout(errorTimeout);
             WebSocketService.clearResponsePromiseForDevice(deviceUid);
             res.json(val);
         }).catch((err) => {
+            ws.busy=false;
             res.statusCode = 404;
             res.json(err);
         });
@@ -215,12 +221,14 @@ async function putFile(req, res) {
                 user: user
             }
             ws.send(JSON.stringify(response));
+            ws.busy=true;
             const errorTimeout = setTimeout(timeoutError.timeoutError, 10000, deviceUid);
             WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => {
                 clearTimeout(errorTimeout);
                 WebSocketService.clearResponsePromiseForDevice(deviceUid);
                 res.json(val);
             }).catch((err) => {
+                ws.busy=false;
                 res.statusCode = 404;
                 res.json(err);
             });
@@ -246,12 +254,14 @@ async function putFileInAgentDirectly(req, res) {
         user: user
     }
     ws.send(JSON.stringify(response));
+    ws.busy=true;
     const errorTimeout = setTimeout(timeoutError.timeoutError, 10000, deviceUid);
     WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => {
         clearTimeout(errorTimeout);
         WebSocketService.clearResponsePromiseForDevice(deviceUid);
         res.json(val);
     }).catch((err) => {
+        ws.busy=false;
         res.statusCode = 404;
         res.json(err);
     });
@@ -281,12 +291,14 @@ async function getFileFromAgentDirectly(req, res)  {
                 user: user
             }
             ws.send(JSON.stringify(response));
+            ws.busy=true;
             const errorTimeout = setTimeout(timeoutError.timeoutError, 10000, deviceUid);
             WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => {
                 clearTimeout(errorTimeout);
                 WebSocketService.clearResponsePromiseForDevice(deviceUid);
                 res.json(val);
             }).catch((err) => {
+                ws.busy=false;
                 res.statusCode = 404;
                 res.json(err);
             });

@@ -19,7 +19,7 @@ async function agentValidator(req, res, next) {
         res.send(error);
         return;
      }
-    ws.busy=true;
+
     const authHeader = req.headers.authorization;
     const validation = await accessAuth.validateUserAccess(authHeader, deviceUid);
     if (validation.status != 200) {
