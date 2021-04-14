@@ -5,21 +5,14 @@ const {promiseStatus} = require('promise-status-async');
 
 async function agentValidator(req, res, next) {
     const { user, deviceUid } = req.body;
-    console.log("evo nas");
-    let response = WebSocketService.getResponsePromiseForDevice(deviceUid);
-    //console.log(response);
-    let status = await promiseStatus(response);
-    console.log("status " + status);
-     if (status === "pending") {
+    let clients = WebSocketService.getClients();
+     if (clients[deviceUid].busy) {
         res.status(400);
-        let error = {
-            success: false,
-            message: "Agent in use."
-        }
+        const error = new Error.Error(10, "Agent already in use");
         res.send(error);
         return;
      }
-
+    clients[deviceUid].busy = true;
     const authHeader = req.headers.authorization;
     const validation = await accessAuth.validateUserAccess(authHeader, deviceUid);
     if (validation.status != 200) {

@@ -52,7 +52,7 @@ function getOnlineAgents(req, res) {
     for (let c in clients) {
         let client = clients[c];
         if (client == undefined) continue;
-        clientArray.push({ name: client.name, location: client.location, deviceUid: client.deviceUid, path: client.path, status: client.status })
+        clientArray.push({ name: client.name, location: client.location, deviceUid: client.deviceUid, path: client.path, status: client.status, user: client.user })
     }
     res.send(clientArray)
 }
