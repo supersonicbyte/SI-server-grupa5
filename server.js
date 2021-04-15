@@ -17,7 +17,7 @@ const webController = require('./controllers/web-controller.js');
 app.use(express.json());
 app.use(cors());
 app.use(express.static('public'));
-app.use('/api', apiValidator.apiValidator);
+//app.use('/api', apiValidator.apiValidator);
 env.config()
 
 app.use('/api/*/agent', agentValidator.agentValidator);
@@ -41,7 +41,7 @@ app.post('/api/agent/file/get',agentController.getFile);
 app.post('/api/agent/file/put', agentController.putFile); 
 app.post('/api/agent/file/direct-put', agentController.putFileInAgentFolderDirectly);
 app.post('/api/agent/file/direct-get', agentController.getFileFromAgentFolderDirectly); 
-app.post('/api/agent/systeminfo', agentController.getSystemInfo);
+app.post('/api/agent/info/system', agentController.getInfo);
 /**
  * Web routes
  */

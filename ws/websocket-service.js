@@ -80,7 +80,7 @@ function configure(wss, server) {
                 responseMap[message.deviceUid].resolve(response);
             } else if (message.type === "savedFile") {
                 responseMap[message.deviceUid].resolve({ type: "Success", message: "File saved on agent!" });
-            } else if (message.type === "information") {
+            } else if (message.type === "sendInfo") {
                 messageMap[message.deviceUid].message = message.message; 
                 responseMap[message.deviceUid].resolve(messageMap[message.deviceUid]);
             

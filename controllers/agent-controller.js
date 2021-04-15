@@ -314,7 +314,7 @@ async function getFileFromAgentFolderDirectly(req, res)  {
 }
 
 function getInfo (req, res) {
-    const { deviceUid, info } = req.body;
+    const { deviceUid,user } = req.body;
     if (deviceUid == undefined || info == undefined) {
         res.status(400);
         const error = new Error.Error(10, "Bad body.");
@@ -329,8 +329,8 @@ function getInfo (req, res) {
     }
 
     const response = {
-        type: info,
-        user: res.use.mail
+        type: "systemInfo",
+        user: user
     }
     
     ws.send(JSON.stringify(response));
