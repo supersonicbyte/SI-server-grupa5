@@ -49,3 +49,15 @@ The user of application should be able to delete a folder.
 - Return the response to the client.
 - Push the code.
 - Make a pull request.
+
+## Feature 
+Get system intormation
+## Item
+The user of application should be able to get a system information from agent.
+## Task
+- Create a new branch and switch to it.
+- Create route for get system information.
+- Implement a socket request to the agent.
+- Return the response of socket to the client.
+- Push the code.
+- Make a pull request
