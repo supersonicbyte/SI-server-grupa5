@@ -116,7 +116,7 @@ async function connectAgent(req, res) {
         var response = {
             success: true,
             type: "In use",
-            user: user,
+            user: req.user.mail,
             message: "Connection successful!"
         }
         ws.status = "In use";
