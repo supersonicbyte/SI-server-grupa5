@@ -82,7 +82,7 @@ async function dissconectAgent(req, res) {
     }
     const response = {
         type: "Waiting",
-        user: user,
+        user: req.user.mail,
         message: "User successfully disconnected!"
     }
     ws.send(JSON.stringify(response));
@@ -304,8 +304,6 @@ async function readFile(dir,fileName,path) {
 
 async function addToResponse(res,value, sth){
 
-    console.log("Adding "+sth+" : "+JSON.stringify(value));
-
     res.response.push(value);
     if(--res.iter<=0)res.send(res.response);
 
@@ -401,7 +399,14 @@ function getInfo (req, res) {
         const error = new Error.Error(9, "Device is not connected.");
         res.statusCode = 404;
         res.json(error);
+        return;
     }
+    else if (ws.busy) {
+        res.status(400);
+        const error = new Error.Error(10, "Agent already in use");
+        res.json(error);
+        return;
+     }
 
     const response = {
         type: "systemInfo",

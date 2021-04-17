@@ -154,7 +154,6 @@ function getResponsePromiseForDevice(id) {
 }
 
 function clearResponsePromiseForDevice(id) {
-    console.log("Clering for "+id);
     responseMap[id] = emptyPromise()
     clients[id].busy = false;
 }

@@ -88,7 +88,6 @@ async function putFileInUserFolder(req, res) {
                     res.status(404);
                     res.json({ error: err });
                 } else {
-                    console.log("done");
                     const response = {
                         success: true,
                         message: "File uploaded sucessfully."
