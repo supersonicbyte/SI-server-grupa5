@@ -17,7 +17,6 @@ async function agentValidator(req, res, next) {
     if (validation.status != 200) {
         res.status(validation.status);
         const error = new Error.Error(5, "Not authorized");
-        console.log("Token:\n"+authHeader+"\n"+deviceUid);
         res.send(error);
         return;
     }
