@@ -207,80 +207,107 @@ async function getFileFromAgentToFolder(req, res) {
 async function putFileToAgentFromFolder(req, res) {
 
     const folder = req.params.folder;
-    const { deviceUids, fileName, path } = req.body;
-    if (deviceUids == undefined || fileName == undefined || path == undefined || folder == undefined) {
+    const { deviceUids, files } = req.body;
+    if (deviceUids == undefined || files == undefined || folder == undefined) {
         res.status(400);
         const error = new Error.Error(7, "Invalid body.");
         res.send(error);
         return;
     }
 
-    
     res.response = [];
     res.iter = deviceUids.length;
-    console.log("Iter je "+res.iter);
-    res.iter--;
-    console.log("Sad je "+res.iter);
-    res.iter++;
+
+    filesJson = [];
+    fileResponses = [];
+    
+
+    for(f in files){
+
+        fileName = files[f].fileName;
+        path = files[f].path;
+
+        let dir = `allFiles/${folder}/`;
+        if (fileName === "config.json") 
+            dir += "config"
+
+       try{
+       let temp = await readFile(dir,fileName,path,filesJson,fileResponses);
+       filesJson.push(temp);
+       }catch(e){
+        fileResponses.push(e);
+       }
+    }
 
     for(d in deviceUids){
 
-    deviceUid = deviceUids[d].deviceUid;
-    let ws = WebSocketService.getClient(deviceUid);
-    
-    let vertified = await verifyAgent(ws,res);
+        deviceUid = deviceUids[d].deviceUid;
+        let ws = WebSocketService.getClient(deviceUid);
+        
+        let vertified = await verifyAgent(ws,res);
 
-    if(!vertified.success){
-        addToResponse(res,{message:vertified.message,deviceUid:deviceUid});
-        continue;
-    }
+        if(!vertified.success){
+            addToResponse(res,{message:vertified.message,deviceUid:deviceUid},5);
+            continue;
+        }   
 
-    let dir = `allFiles/${folder}/`;
-    if (fileName === "config.json") {
-        dir += "config"
-    }
+        ws.errors = fileResponses;
 
-    fs.readFile(dir + "/" + fileName, { encoding: 'base64' }, function (err, data) {
-        if (err) {
-            console.log("error: " + err);
-            const error = new Error.Error(13, "File does not exists.");
-            addToResponse(res.response,error,res,res.iter);
-        } else {
-            var response = {
-                type: "putFile",
-                fileName: fileName,
-                path: path,
-                data: data,
-                user: req.user.mail
-            }
-            ws.send(JSON.stringify(response));
-            ws.busy=true;
-            const errorTimeout = setTimeout(timeoutError.timeoutError, 10000, deviceUid);
-            WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => {
-                clearTimeout(errorTimeout);
-                WebSocketService.clearResponsePromiseForDevice(deviceUid);
-                console.log(res.response.length);
-                addToResponse(res,val);
-
-            }).catch((err) => {
-                ws.busy=false;
-                res.statusCode = 404;
-                addToResponse(res,err);
-            });
+        let agentCommand = {
+            type:"putFiles",
+            user:req.user.mail,
+            files:filesJson
         }
-    });
+
+        ws.send(JSON.stringify(agentCommand));
+        ws.busy=true;
+        const errorTimeout = setTimeout(timeoutError.timeoutError, 10000, deviceUid);
+        WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => {
+            clearTimeout(errorTimeout);
+            WebSocketService.clearResponsePromiseForDevice(val.deviceUid);
+            addToResponse(res,val,0);
+
+        }).catch((err) => {
+            ws.busy=false;
+            res.statusCode = 404;
+            console.log(err);
+            addToResponse(res,err,-5);
+        });
 
     }
 
-    
+
 }
 
-async function addToResponse(res,value){
+
+async function readFile(dir,fileName,path) {
+
+    return new Promise((resolve, reject) => {
+        fs.readFile(dir + "/" + fileName, { encoding: 'base64' }, function (err, data) {
+            if (err) {
+                const error = new Error.Error(13, "File " + dir + "/" + fileName + "does not exists.");
+                reject({error:error});
+            }
+            else{
+                let response = {
+                    fileName: fileName,
+                    path: path,
+                    data: data
+                }
+                //filesJson.push(response);
+                resolve(response);
+            }
+        });
+    });
+
+  }
+
+async function addToResponse(res,value, sth){
+
+    console.log("Adding "+sth+" : "+JSON.stringify(value));
 
     res.response.push(value);
-    res.iter--;
-    console.log("Iter je sada "+res.iter);
-    if(res.iter<=0)res.send(res.response);
+    if(--res.iter<=0)res.send(res.response);
 
 }
 
