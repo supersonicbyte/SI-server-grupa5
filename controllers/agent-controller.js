@@ -186,7 +186,7 @@ async function getFileFromAgentToFolder(req, res) {
             type: "getFile",
             fileName: fileName,
             path: path,
-            user: user
+            user: req.user.mail
         }
         ws.folder = folder;
         ws.send(JSON.stringify(response));
@@ -371,7 +371,7 @@ async function getFileFromAgentDirectly(req, res)  {
             type: "getFileDirect",
             fileName: fileName,
             path: path,
-            user: user
+            user: req.user.mail
         }
         ws.send(JSON.stringify(response));
         ws.busy=true;
@@ -386,6 +386,38 @@ async function getFileFromAgentDirectly(req, res)  {
             res.json(err);
         });
     }
+}
+
+function getInfo (req, res) {
+    const { deviceUid } = req.body;
+    if (deviceUid == undefined ) {
+        res.status(400);
+        const error = new Error.Error(10, "Bad body.");
+        res.send(error);
+        return;
+    }
+    let ws = WebSocketService.getClient(deviceUid);
+    if (ws == undefined) {
+        const error = new Error.Error(9, "Device is not connected.");
+        res.statusCode = 404;
+        res.json(error);
+    }
+
+    const response = {
+        type: "systemInfo",
+        user: req.user.mail
+    }
+    
+    ws.send(JSON.stringify(response));
+    const errorTimeout = setTimeout(timeoutError.timeoutError, 10000, deviceUid);
+    WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => {
+        clearTimeout(errorTimeout);
+        WebSocketService.clearResponsePromiseForDevice(deviceUid);
+        res.json(val);
+    }).catch((err) => {
+        res.statusCode = 404;
+        res.json(err);
+    }); 
 }
 
 async function verifyAgent(ws,res){
@@ -411,6 +443,7 @@ async function verifyAgent(ws,res){
 
 }
 
+
 module.exports = {
     executeCommandOnAgent,
     getOnlineAgents,
@@ -420,5 +453,6 @@ module.exports = {
     getFileFromAgentToFolder,
     putFileToAgentFromFolder,
     putFileInAgentDirectly,
-    getFileFromAgentDirectly
+    getFileFromAgentDirectly,
+    getInfo
 }

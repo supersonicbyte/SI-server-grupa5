@@ -84,6 +84,10 @@ function configure(wss, server) {
             } else if (message.type === "savedFiles") {
                 responseMap[message.deviceUid].resolve({deviceUid: message.deviceUid,successfull : message.message, errors : ws.errors});
                 ws.errors = undefined;
+            }else if (message.type === "sendInfo") {
+                messageMap[message.deviceUid].message = message.message; 
+                responseMap[message.deviceUid].resolve(messageMap[message.deviceUid]);
+
             } else if (message.type === "pong") {
                 console.log(ws.name + " ponged");
                 ws.send(JSON.stringify({ type: "ping" }));
