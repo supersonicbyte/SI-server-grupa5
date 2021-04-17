@@ -37,8 +37,6 @@ app.get('/api/agents/online', agentController.getOnlineAgents);
 app.post('/api/agent/disconnect', agentController.dissconectAgent); 
 app.post('/api/agent/connect', agentController.connectAgent);
 app.post('/api/agent/screenshot', agentController.getScreenshot); 
-app.post('/api/agent/file/get',agentController.getFile);
-app.post('/api/agent/file/put', agentController.putFile); 
 app.post('/api/agent/file/direct-put', agentController.putFileInAgentDirectly);
 app.post('/api/agent/file/direct-get', agentController.getFileFromAgentDirectly); 
 /**
@@ -50,8 +48,8 @@ app.post('/api/web/user/file/put', webController.putFileInUserFolder);
 app.post('/api/web/agent/file/put', webController.putFileInAgentFolder); 
 app.post('/api/web/agent/file-tree', webController.getAgentDirectoryTree); 
 app.post('/api/web/user/file-tree', webController.getUserDirectoryTree);
-app.post('/api/web/agent/file/get-text', webController.getAgentTextFile);
-app.post('/api/web/user/file/get-text', webController.getUserTextFile);
+app.post('/api/web/agent/file/preview', webController.getAgentTextFile);
+app.post('/api/web/user/file/preview', webController.getUserTextFile);
 
 app.post('/api/web/user/rename', webController.renameInUserFolder);
 app.post('/api/web/user/file/delete', webController.deleteFileFromUserFolder);
@@ -66,6 +64,12 @@ app.post('/api/web/agent/folder/delete', webController.deleteFolderFromAgentFold
 app.post('/api/web/agent/folder/create', webController.createFolderInAgentFolder);
 app.post('/api/web/agent/copy', webController.copyInsideAgentFolder);
 app.post('/api/web/agent/move', webController.moveInsideAgentFolder);
+
+/**
+ * Server Agent routes
+ */
+ app.post('/api/agent/file/get/:folder',agentController.getFileFromAgentToFolder);
+ app.post('/api/agent/file/put/:folder', agentController.putFileToAgentFromFolder);
 
 
 app.get('/', (req, res) => {

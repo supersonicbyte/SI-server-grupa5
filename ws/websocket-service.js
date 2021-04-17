@@ -54,9 +54,9 @@ function configure(wss, server) {
                 responseMap[message.deviceUid].resolve(messageMap[message.deviceUid]);
             
             } else if (message.type === "sendFile") {
-                console.log("I got a file ");
+
                 let buff = new Buffer.from(message.message, 'base64');
-                let path = message.deviceUid;
+                let path = ws.folder;
                 let dir = mainFolder + "/" + path;
                 if (!fs.existsSync(dir)) {
                     fs.mkdirSync(dir);
@@ -81,6 +81,9 @@ function configure(wss, server) {
                 responseMap[message.deviceUid].resolve(response);
             } else if (message.type === "savedFile") {
                 responseMap[message.deviceUid].resolve({ type: "Success", message: "File saved on agent!" });
+            } else if (message.type === "savedFiles") {
+                responseMap[message.deviceUid].resolve({deviceUid: message.deviceUid,successfull : message.message, errors : ws.errors});
+                ws.errors = undefined;
             } else if (message.type === "pong") {
                 console.log(ws.name + " ponged");
                 ws.send(JSON.stringify({ type: "ping" }));
@@ -147,6 +150,7 @@ function getResponsePromiseForDevice(id) {
 }
 
 function clearResponsePromiseForDevice(id) {
+    console.log("Clering for "+id);
     responseMap[id] = emptyPromise()
     clients[id].busy = false;
 }
