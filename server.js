@@ -39,6 +39,7 @@ app.post('/api/agent/connect', agentController.connectAgent);
 app.post('/api/agent/screenshot', agentController.getScreenshot); 
 app.post('/api/agent/file/direct-put', agentController.putFileInAgentDirectly);
 app.post('/api/agent/file/direct-get', agentController.getFileFromAgentDirectly); 
+app.post('/api/agent/info/system', agentController.getInfo);
 /**
  * Web routes
  */
