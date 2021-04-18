@@ -398,7 +398,6 @@ async function getInfo (req, res) {
     let vertified = await verifyAgent(ws,req,res);
     if(!vertified.success){
         res.send(vertified.message);
-        return;
     }
 
     const response = {
