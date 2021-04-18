@@ -231,7 +231,7 @@ async function putFilesToAgentFromFolder(req, res) {
         deviceUid = deviceUids[d].deviceUid;
         let ws = WebSocketService.getClient(deviceUid);
         
-        let vertified = await verifyAgent(ws,req,res);
+        let vertified = await verifyAgentExist(ws,res);
 
         if(!vertified.success){
             addToResponse(res,{message:vertified.message,deviceUid:deviceUid},5);
@@ -516,6 +516,29 @@ async function verifyAgentConnect(ws,req,res){
         returnMessage.message=error;
         returnMessage.success=false;
         res.statusCode = 400;
+    }
+     return returnMessage;
+
+}
+
+async function verifyAgentExist(ws,res){
+
+    
+    let returnMessage = {
+        message:"All okay",
+        success:true
+    }
+    if (ws == undefined) {
+        const error = new Error.Error(9, "Device is not connected.");
+        res.statusCode = 404;
+        returnMessage.message=error;
+        returnMessage.success=false;
+    }
+    else if (ws.busy) {
+        res.status(400);
+        const error = new Error.Error(10, "Agent already in use");
+        returnMessage.message=error;
+        returnMessage.success=false;
     }
      return returnMessage;
 
