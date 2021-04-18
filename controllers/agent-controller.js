@@ -149,7 +149,7 @@ async function getFileFromAgentToFolder(req, res) {
         res.send(error);
         return;
     }
-    
+
     if(folder != deviceUid && folder != req.user.mail){
 
         res.status(300);
@@ -451,7 +451,7 @@ async function getInfo (req, res) {
     }
     
     ws.send(JSON.stringify(response));
-    const errorTimeout = setTimeout(timeoutError.timeoutError, 10000, deviceUid);
+    const errorTimeout = setTimeout(timeoutError.timeoutError, 30000, deviceUid);
     WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => {
         clearTimeout(errorTimeout);
         WebSocketService.clearResponsePromiseForDevice(deviceUid);
