@@ -288,6 +288,7 @@ function moveInsideUserFolder (req, res) {
 
 //#region AgentFTP
 async function getFileFromAgentFolder(req, res) {
+
     const { deviceUid, path, fileName} = req.body;
     if (deviceUid == undefined || fileName == undefined ) {
         const error = new Error.Error(7, "Invalid body.");
@@ -317,7 +318,7 @@ async function getFileFromAgentFolder(req, res) {
 
 async function putFileInAgentFolder(req, res) {
     const { deviceUid, path, fileName, base64 } = req.body;
-    if (deviceUid == undefined || fileName == undefined || base64 == undefined) {
+    if (deviceUid == undefined || fileName == undefined || base64 == undefined || path == undefined) {
         res.status(400);
         const error = new Error.Error(7, "Invalid body.");
         res.send(error);

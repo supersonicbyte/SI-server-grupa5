@@ -99,6 +99,13 @@ function configure(wss, server) {
 
                 }
             }
+            else if (message.type === "Empty") {
+                if (responseMap[message.deviceUid] != undefined) {
+                    responseMap[message.deviceUid].status = 405;
+                    responseMap[message.deviceUid].reject({ type: "Error", message: "Agent has not implemented that command "});
+
+                }
+            }
         });
 
         ws.on('close', () => {
