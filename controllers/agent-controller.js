@@ -93,6 +93,7 @@ async function connectAgent(req, res) {
         res.send(vertified.message);
         return;
     } 
+ 
     var response = {
         success: true,
         type: "In use",
@@ -101,7 +102,6 @@ async function connectAgent(req, res) {
     }
     ws.status = "In use";
     ws.user = req.user.mail;
-    ws.send(JSON.stringify(response));
     res.statusCode = 200;
     res.json(response);
     
@@ -149,12 +149,23 @@ async function getFileFromAgentToFolder(req, res) {
         res.send(error);
         return;
     }
+    if(folder != deviceUid && folder != req.user.mail){
+
+        res.status(300);
+        const error = new Error.Error(7, "Invalid folder.");
+        res.send(error);
+        return;
+
+    }
+
     let ws = WebSocketService.getClient(deviceUid);
     let vertified = await verifyAgent(ws,req,res);
     if(!vertified.success){
         res.send(vertified.message);
         return;
     }
+
+    console.log("I got the folder "+folder);
      
     var response = {
         type: "getFile",
@@ -187,6 +198,15 @@ async function putFileToAgentFromFolder(req, res) {
         const error = new Error.Error(7, "Invalid body.");
         res.send(error);
         return;
+    }
+
+    if(folder != deviceUid && folder != req.user.mail){
+
+        res.status(300);
+        const error = new Error.Error(7, "Invalid folder.");
+        res.send(error);
+        return;
+
     }
 
     let vertified = await verifyAgent(ws,req,res);
