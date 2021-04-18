@@ -70,7 +70,6 @@ function configure(wss, server) {
                         responseMap[message.deviceUid].reject({ success: false, message: "Error writing file!" });
                     } else {
                         responseMap[message.deviceUid].resolve({ success: true, message: "File successfully written." });
-                        console.log("File written to " + dir + "/" + message.fileName);
                     }
                 });
             } else if (message.type === "sendFileDirect") {
@@ -89,11 +88,9 @@ function configure(wss, server) {
                 responseMap[message.deviceUid].resolve(messageMap[message.deviceUid]);
 
             } else if (message.type === "pong") {
-                console.log(ws.name + " ponged");
                 ws.send(JSON.stringify({ type: "ping" }));
             } else if (message.type === "error") {
                 if (responseMap[message.deviceUid] != undefined) {
-                    console.log("Agent error");
                     responseMap[message.deviceUid].status = 405;
                     responseMap[message.deviceUid].reject({ type: "Error", message: message.message});
 
@@ -110,7 +107,6 @@ function configure(wss, server) {
 
         ws.on('close', () => {
             const id = ws.deviceUid;
-            console.log(id + " has disconnected");
             let socket = clients[id];
             if (socket == undefined) return;
             const error = new Error.Error(3,"Device took too long to respond.");
@@ -122,13 +118,10 @@ function configure(wss, server) {
     });
 
     server.on('upgrade', function(request, socket, head) {
-        console.log(request.headers.cookie);
         if (request.headers.cookie == undefined) return;
         if (!uniqueIds.includes(request.headers.cookie.split('=')[1])) {
-            console.log(request.headers);
             socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
             socket.destroy();
-            console.log("Destroyan");
             return;
         }
         wss.handleUpgrade(request, socket, head, function(ws) {

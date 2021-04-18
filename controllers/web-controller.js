@@ -344,13 +344,13 @@ async function putFileInAgentFolder(req, res) {
                     res.json({ error: err });
                     return;
                 } else {
+                    console.log("File written to: "+dir + "/" + fileName);
                     if (fileName === "config.json") {
                         let ws = WebSocketService.getClient(deviceUid);
                         if (ws == undefined) {
                             const error = new Error.Error(12, "Config saved but agent is not connected.");
                             res.statusCode = 210;
                             res.json(error);
-                            return;
                         }
                         var response = {
                             type: "putFile",
@@ -370,7 +370,6 @@ async function putFileInAgentFolder(req, res) {
                             res.statusCode = 404;
                             res.json(err);
                         });
-                        return;
                     } else {
                         res.json({ success: true, message: "Succesfuly uploaded file." });
                     };
