@@ -443,7 +443,6 @@ async function verifyAgent(ws,req,res){
         returnMessage.message=error;
         returnMessage.success=false;
         res.statusCode = 400;
-        return;
     }
      return returnMessage;
 
