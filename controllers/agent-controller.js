@@ -165,8 +165,6 @@ async function getFileFromAgentToFolder(req, res) {
         res.send(vertified.message);
         return;
     }
-
-    console.log("I got the folder "+folder);
      
     var response = {
         type: "getFile",
@@ -192,7 +190,9 @@ async function getFileFromAgentToFolder(req, res) {
 
 async function putFilesToAgentFromFolder(req, res) {
 
+
     const { deviceUids, files } = req.body;
+
     if (deviceUids == undefined || files == undefined) {
         res.status(400);
         const error = new Error.Error(7, "Invalid body.");
@@ -245,7 +245,6 @@ async function putFilesToAgentFromFolder(req, res) {
             user:req.user.mail,
             files:filesJson
         }
-
         ws.send(JSON.stringify(agentCommand));
         ws.busy=true;
         const errorTimeout = setTimeout(timeoutError.timeoutError, 10000, deviceUid);
@@ -260,9 +259,7 @@ async function putFilesToAgentFromFolder(req, res) {
             console.log(err);
             addToResponse(res,err,-5);
         });
-
     }
-
 
 }
 
@@ -439,10 +436,10 @@ async function getInfo (req, res) {
         return;
     }
     let ws = WebSocketService.getClient(deviceUid);
-
     let vertified = await verifyAgent(ws,req,res);
     if(!vertified.success){
         res.send(vertified.message);
+        return;
     }
 
     const response = {
@@ -477,7 +474,7 @@ async function verifyAgent(ws,req,res){
         returnMessage.success=false;
     }
     else if (ws.busy) {
-        res.status(400);
+        res.status(380);
         const error = new Error.Error(10, "Agent already in use");
         returnMessage.message=error;
         returnMessage.success=false;
@@ -487,7 +484,7 @@ async function verifyAgent(ws,req,res){
         if (ws.status == "Waiting") error.message = "You are not connected to that agent.";
         returnMessage.message=error;
         returnMessage.success=false;
-        res.statusCode = 400;
+        res.statusCode = 350;
     }
      return returnMessage;
 
