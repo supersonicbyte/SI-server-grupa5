@@ -67,22 +67,23 @@ function configure(wss, server) {
                 }
                 fs.writeFile(dir + "/" + message.fileName, buff, function (err) {
                     if (err) {
-                        responseMap[message.deviceUid].reject({ success: false, message: "Error writing file!" });
+                        responseMap[message.deviceUid].reject({ success: false, message: "Error writing file!", token:messageMap[message.deviceUid].token });
                     } else {
-                        responseMap[message.deviceUid].resolve({ success: true, message: "File successfully written." });
+                        responseMap[message.deviceUid].resolve({ success: true, message: "File successfully written.",token:messageMap[message.deviceUid].token });
                         console.log("File written to " + dir + "/" + message.fileName);
                     }
                 });
             } else if (message.type === "sendFileDirect") {
                 var response = {
                     fileName: message.fileName,
-                    base64: message.message
+                    base64: message.message,
+                    token:messageMap[message.deviceUid].token
                 }
                 responseMap[message.deviceUid].resolve(response);
             } else if (message.type === "savedFile") {
-                responseMap[message.deviceUid].resolve({ type: "Success", message: "File saved on agent!" });
+                responseMap[message.deviceUid].resolve({ type: "Success", message: "File saved on agent!",token:messageMap[message.deviceUid].token });
             } else if (message.type === "savedFiles") {
-                responseMap[message.deviceUid].resolve({deviceUid: message.deviceUid,successfull : message.message, errors : ws.errors});
+                responseMap[message.deviceUid].resolve({token:messageMap[message.deviceUid].token,deviceUid: message.deviceUid,successfull : message.message, errors : ws.errors});
                 ws.errors = undefined;
             }else if (message.type === "sendInfo") {
                 messageMap[message.deviceUid].message = message.message; 
@@ -95,7 +96,7 @@ function configure(wss, server) {
                 if (responseMap[message.deviceUid] != undefined) {
                     console.log("Agent error");
                     responseMap[message.deviceUid].status = 405;
-                    responseMap[message.deviceUid].reject({ type: "Error", message: message.message });
+                    responseMap[message.deviceUid].reject({ type: "Error", message: message.message,token:messageMap[message.deviceUid].token });
 
                 }
             }

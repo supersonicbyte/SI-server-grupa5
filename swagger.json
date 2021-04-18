@@ -1731,7 +1731,7 @@
                 }
             }
         },
-        "/api/agent/file/get": {
+        "/api/agent/file/get:folder": {
             "post": {
                 "tags": [
                     "AgentFiles"
@@ -1771,6 +1771,16 @@
                             }
                         }
                     },
+                    "300": {
+                        "description": "Invalid folder",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
                     "404": {
                         "description": "Could not find file",
                         "content": {
@@ -1804,7 +1814,7 @@
                 }
             }
         },
-        "/api/agent/file/put": {
+        "/api/agent/file/put:folder": {
             "post": {
                 "tags": [
                     "AgentFiles"
@@ -1836,6 +1846,85 @@
                                 "message": {
                                     "type":"string",
                                     "example":"File successfully written."
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Could not find file",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid JWT token",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/agent/files/put": {
+            "post": {
+                "tags": [
+                    "AgentFiles"
+                ],
+                "summary": "Puts files from user folder to the agents.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/files"
+                            }
+                        }
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful",
+                        "schema": {
+                            "type":"object",
+                            "properties": {
+                                "success": {
+                                    "type":"boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type":"string",
+                                    "example":"TODO Add here"
+                                }
+                            }
+                        }
+                    },
+                    "300": {
+                        "description": "Invalid folder",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "$ref":"#/components/schemas/error"
                                 }
                             }
                         }
@@ -2443,6 +2532,19 @@
                     "user": {
                         "type": "string",
                         "example":"user@mail.com"
+                    }
+                }
+            },
+            "files": {
+                "type": "object",
+                "properties": {
+                    "deviceUids": {
+                        "type": "array",
+                        "example":"TODO Add"
+                    },
+                    "files": {
+                        "type": "array",
+                        "example":"TODO Add"
                     }
                 }
             },

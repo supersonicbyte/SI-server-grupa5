@@ -70,7 +70,8 @@ app.post('/api/web/agent/move', webController.moveInsideAgentFolder);
  * Server Agent routes
  */
  app.post('/api/agent/file/get/:folder',agentController.getFileFromAgentToFolder);
- app.post('/api/agent/file/put/:folder', agentController.putFileToAgentFromFolder);
+ app.post('/api/agent/files/put', agentController.putFilesToAgentFromFolder);
+ app.post('/api/agent/file/put', agentController.putFileToAgentFromFolder);
 
 
 app.get('/', (req, res) => {

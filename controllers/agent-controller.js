@@ -149,6 +149,7 @@ async function getFileFromAgentToFolder(req, res) {
         res.send(error);
         return;
     }
+    
     if(folder != deviceUid && folder != req.user.mail){
 
         res.status(300);
@@ -189,31 +190,17 @@ async function getFileFromAgentToFolder(req, res) {
     
 }
 
-async function putFileToAgentFromFolder(req, res) {
+async function putFilesToAgentFromFolder(req, res) {
 
-    const folder = req.params.folder;
     const { deviceUids, files } = req.body;
-    if (deviceUids == undefined || files == undefined || folder == undefined) {
+    if (deviceUids == undefined || files == undefined) {
         res.status(400);
         const error = new Error.Error(7, "Invalid body.");
         res.send(error);
         return;
     }
 
-    if(folder != deviceUid && folder != req.user.mail){
-
-        res.status(300);
-        const error = new Error.Error(7, "Invalid folder.");
-        res.send(error);
-        return;
-
-    }
-
-    let vertified = await verifyAgent(ws,req,res);
-    if(!vertified.success){
-        res.send(vertified.message);
-        return;
-    }
+    let folder = req.user.mail;
 
     res.response = [];
     res.iter = deviceUids.length;
@@ -275,6 +262,64 @@ async function putFileToAgentFromFolder(req, res) {
         });
 
     }
+
+
+}
+
+async function putFileToAgentFromFolder(req, res) {
+
+const folder = req.params.folder;
+const { deviceUid, fileName, path, user } = req.body;
+    if (deviceUid == undefined || fileName == undefined || path == undefined || user == undefined) {
+        res.status(400);
+        const error = new Error.Error(7, "Invalid body.");
+        res.send(error);
+        return;
+    }
+    
+        if(folder != deviceUid && folder != req.user.mail){
+
+        res.status(300);
+        const error = new Error.Error(7, "Invalid folder.");
+        res.send(error);
+        return;
+
+    }
+
+    let ws = WebSocketService.getClient(deviceUid)
+
+    let dir = `allFiles/${folder}/`;
+    if (fileName === "config.json" && folder == deviceUid) {
+        dir += "config"
+    }
+
+    fs.readFile(dir + "/" + fileName, { encoding: 'base64' }, function (err, data) {
+        if (err) {
+            console.log("error: " + err + " \n" + dir + "/" + fileName)
+            const error = new Error.Error(13, "File does not exists.");
+            res.json(error);
+        } else {
+            var response = {
+                type: "putFile",
+                fileName: fileName,
+                path: path,
+                data: data,
+                user: user
+            }
+            ws.send(JSON.stringify(response));
+            ws.busy=true;
+            const errorTimeout = setTimeout(timeoutError.timeoutError, 10000, deviceUid);
+            WebSocketService.getResponsePromiseForDevice(deviceUid).then((val) => {
+                clearTimeout(errorTimeout);
+                WebSocketService.clearResponsePromiseForDevice(deviceUid);
+                res.json(val);
+            }).catch((err) => {
+                ws.busy=false;
+                res.statusCode = 404;
+                res.json(err);
+            });
+        }
+    });
 
 
 }
@@ -488,6 +533,7 @@ module.exports = {
     getScreenshot,
     getFileFromAgentToFolder,
     putFileToAgentFromFolder,
+    putFilesToAgentFromFolder,
     putFileInAgentDirectly,
     getFileFromAgentDirectly,
     getInfo
