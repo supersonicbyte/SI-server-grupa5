@@ -325,7 +325,7 @@ async function putFileInAgentFolder(req, res) {
         return;
     }
     let buff = new Buffer.from(base64, 'base64');
-    let dir = `allFIles/${deviceUid}`;
+    let dir = `allFiles/${deviceUid}`;
     if (fileName === "config.json")
         dir = dir + "/config";
     else
@@ -351,6 +351,7 @@ async function putFileInAgentFolder(req, res) {
                             const error = new Error.Error(12, "Config saved but agent is not connected.");
                             res.statusCode = 210;
                             res.json(error);
+                            return;
                         }
                         var response = {
                             type: "putFile",
@@ -370,6 +371,7 @@ async function putFileInAgentFolder(req, res) {
                             res.statusCode = 404;
                             res.json(err);
                         });
+                        return;
                     } else {
                         res.json({ success: true, message: "Succesfuly uploaded file." });
                     };
