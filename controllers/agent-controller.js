@@ -18,13 +18,6 @@ async function executeCommandOnAgent(req, res) {
         res.send(vertified.message);
         return;
     }
-    if ((ws.status == "In use" && ws.user != req.user.mail) || ws.status == "Waiting") {
-        const error = new Error.Error(7, "Device already in use.");
-        if (ws.status == "Waiting") error.message = "You are not connected to that agent.";
-        res.statusCode = 404;
-        res.json(error);
-        return;
-    }
     const commandMessage = {
         type: "command",
         command: command,
@@ -69,15 +62,9 @@ async function dissconectAgent(req, res) {
         return;
     }
     let ws = WebSocketService.getClient(deviceUid);
-    let vertified = await verifyAgent(ws,req,res);
+    let vertified = await verifyAgentConnect(ws,req,res);
     if(!vertified.success){
         res.send(vertified.message);
-        return;
-    }
-    if (ws.status == "In use" && ws.user != req.user.mail) {
-        const error = new Error.Error(7, "You are not connected to the agent.");
-        res.statusCode = 404;
-        res.json(error);
         return;
     }
     const response = {
@@ -101,30 +88,23 @@ async function connectAgent(req, res) {
         return;
     }
     let ws = WebSocketService.getClient(deviceUid);
-    let vertified = await verifyAgent(ws,req,res);
+    let vertified = await verifyAgentConnect(ws,req,res);
     if(!vertified.success){
         res.send(vertified.message);
         return;
+    } 
+    var response = {
+        success: true,
+        type: "In use",
+        user: req.user.mail,
+        message: "Connection successful!"
     }
-    if (ws.status === "In use") {
-        const error = new Error.Error(9, "Device already in use.")
-        if (ws.user == req.user.mail) error.message = "You are already connected to this user!";
-        res.statusCode = 404;
-        res.json(error);
-        return;
-    } else {
-        var response = {
-            success: true,
-            type: "In use",
-            user: req.user.mail,
-            message: "Connection successful!"
-        }
-        ws.status = "In use";
-        ws.user = req.user.mail;
-        ws.send(JSON.stringify(response));
-        res.statusCode = 200;
-        res.json(response);
-    }
+    ws.status = "In use";
+    ws.user = req.user.mail;
+    ws.send(JSON.stringify(response));
+    res.statusCode = 200;
+    res.json(response);
+    
 }
 
 async function getScreenshot(req, res) {
@@ -440,6 +420,37 @@ async function verifyAgent(ws,req,res){
     else if ((ws.status == "In use" && ws.user != req.user.mail) || ws.status == "Waiting") {
         const error = new Error.Error(4, "Agent is already in use.");
         if (ws.status == "Waiting") error.message = "You are not connected to that agent.";
+        returnMessage.message=error;
+        returnMessage.success=false;
+        res.statusCode = 400;
+    }
+     return returnMessage;
+
+}
+
+async function verifyAgentConnect(ws,req,res){
+
+    
+    let returnMessage = {
+        message:"All okay",
+        success:true
+    }
+    if (ws == undefined) {
+        const error = new Error.Error(9, "Device is not connected.");
+        res.statusCode = 404;
+        returnMessage.message=error;
+        returnMessage.success=false;
+    }
+    else if (ws.busy) {
+        res.status(400);
+        const error = new Error.Error(10, "Agent already in use");
+        returnMessage.message=error;
+        returnMessage.success=false;
+    }
+    else if ((ws.status == "In use" && ws.user != req.user.mail)) {
+        const error = new Error.Error(4, "Agent is already in use.");
+        if (ws.status == "Waiting") error.message = "You are not connected to that agent.";
+        else if (ws.user == req.user.mail) error.message = "You are already connected to this user!";
         returnMessage.message=error;
         returnMessage.success=false;
         res.statusCode = 400;
