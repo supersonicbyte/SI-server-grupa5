@@ -67,9 +67,9 @@ function configure(wss, server) {
                 }
                 fs.writeFile(dir + "/" + message.fileName, buff, function (err) {
                     if (err) {
-                        responseMap[message.deviceUid].reject({ success: false, message: "Error writing file!", token:messageMap[message.deviceUid].token });
+                        responseMap[message.deviceUid].reject({ success: false, message: "Error writing file!" });
                     } else {
-                        responseMap[message.deviceUid].resolve({ success: true, message: "File successfully written.",token:messageMap[message.deviceUid].token });
+                        responseMap[message.deviceUid].resolve({ success: true, message: "File successfully written." });
                         console.log("File written to " + dir + "/" + message.fileName);
                     }
                 });
