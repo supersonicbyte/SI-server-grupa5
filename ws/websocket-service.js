@@ -77,11 +77,10 @@ function configure(wss, server) {
                 var response = {
                     fileName: message.fileName,
                     base64: message.message,
-                    token:messageMap[message.deviceUid].token
                 }
                 responseMap[message.deviceUid].resolve(response);
             } else if (message.type === "savedFile") {
-                responseMap[message.deviceUid].resolve({ type: "Success", message: "File saved on agent!",token:messageMap[message.deviceUid].token });
+                responseMap[message.deviceUid].resolve({ type: "Success", message: "File saved on agent!" });
             } else if (message.type === "savedFiles") {
                 responseMap[message.deviceUid].resolve({token:messageMap[message.deviceUid].token,deviceUid: message.deviceUid,successfull : message.message, errors : ws.errors});
                 ws.errors = undefined;
@@ -96,7 +95,7 @@ function configure(wss, server) {
                 if (responseMap[message.deviceUid] != undefined) {
                     console.log("Agent error");
                     responseMap[message.deviceUid].status = 405;
-                    responseMap[message.deviceUid].reject({ type: "Error", message: message.message,token:messageMap[message.deviceUid].token });
+                    responseMap[message.deviceUid].reject({ type: "Error", message: message.message});
 
                 }
             }
