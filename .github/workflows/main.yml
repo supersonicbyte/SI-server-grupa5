@@ -38,16 +38,9 @@ jobs:
     needs: build
 
     steps:
-      - uses: actions/checkout@v1.0.0
-      - run: |+
-          cat >~/.netrc <<EOF
-          machine api.heroku.com
-              login $HEROKU_EMAIL
-              password $HEROKU_API_KEY
-          machine git.heroku.com
-              login $HEROKU_EMAIL
-              password $HEROKU_API_KEY
-          EOF
-      - run: heroku git:remote -a $(basename ${{ github.repository}} )
-      - run: git push heroku HEAD:refs/heads/master
-      - run: heroku run "POOL_SIZE=2 mix ecto.migrate"
+      - uses: actions/checkout@v2
+      - uses: akhileshns/heroku-deploy@v3.12.12
+      with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: "si-grupa-5"
+          heroku_email: ${{secrets.HEROKU_API_EMAIL}}
