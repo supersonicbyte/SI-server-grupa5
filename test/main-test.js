@@ -15,4 +15,11 @@ describe('Basic test',() => {
             assert.deepEqual("<h1>Up and running.</h1>", res.text);
         });
     })
+    it('Failing test', () =>{
+        chai.request(app)
+        .get("/")
+        .end((err, res) => {
+            assert.equal(300, res.status);
+        })
+    })
 })
