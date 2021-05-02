@@ -75,12 +75,12 @@ app.post('/api/web/agent/move', webController.moveInsideAgentFolder);
 
 
 app.get('/', (req, res) => {
-    res.send('<h1>Up and running.</h1>');
+    res.send('<h1>Up and running. + CI/CD</h1>');
 })
 
 const PORT = process.env.PORT || 25565;
 if(!module.parent) {
-    server.listen(PORT, () => console.log(`Listening on port ${PORT}.`));
+    server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
 }
 
 module.exports = app;
