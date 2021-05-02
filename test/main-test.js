@@ -12,14 +12,7 @@ describe('Basic test',() => {
         .get("/")
         .end((err, res) => {
             assert.equal(200, res.status);
-            assert.deepEqual("<h1>Up and running.</h1>", res.text);
+            assert.deepEqual("<h1>Up and running. + CI/CD</h1>", res.text);
         });
-    })
-    it('Failing test', () =>{
-        chai.request(app)
-        .get("/")
-        .end((err, res) => {
-            assert.equal(300, res.status);
-        })
     })
 })
