@@ -75,7 +75,7 @@ app.post('/api/web/agent/move', webController.moveInsideAgentFolder);
 
 
 app.get('/', (req, res) => {
-    res.send('<h1>Up and running. + CI/CD2</h1>');
+    res.send('<h1>Up and running.</h1>');
 })
 
 const PORT = process.env.PORT || 25565;
