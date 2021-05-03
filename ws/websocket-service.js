@@ -28,6 +28,7 @@ function configure(wss, server) {
                 message = JSON.parse(message);
             } catch (error) {
                 console.log(error);
+                return;
             }
             if (message.type === 'sendCredentials') {
                 if (clients[message.deviceUid] != undefined) {
