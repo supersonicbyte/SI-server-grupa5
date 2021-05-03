@@ -4,7 +4,7 @@
     "description": "",
     "main": "server.js",
     "scripts": {
-        "test": "mocha --timeout 10000",
+        "test": "nyc --reporter=text mocha --timeout 10000",
         "dev": "nodemon server",
         "start": "node server.js"
     },
@@ -32,6 +32,7 @@
         "fs-extra": "^9.1.0",
         "mocha": "^8.3.2",
         "node-fetch": "^2.6.1",
+        "nyc": "^15.1.0",
         "promise-status-async": "^1.1.11",
         "swagger-ui-express": "^4.1.6",
         "uuid": "^8.3.2",
