@@ -79,8 +79,9 @@ app.get('/', (req, res) => {
 })
 
 const PORT = process.env.PORT || 25565;
-if(!module.parent) {
-    server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
-}
+
+server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
+
 
 module.exports = app;
+module.exports = server;
