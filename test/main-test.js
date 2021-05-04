@@ -20,7 +20,7 @@ describe('Basic test',() => {
         chai.request(app)
         .get("/api/agents/online")
         .end((err, res) => {
-            assert.equal(403, res.status);
+            assert.equal(401, res.status);
             assert.deepEqual({
                 error_id: 1,
                 success: false,

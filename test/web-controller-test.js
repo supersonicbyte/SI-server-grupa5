@@ -234,4 +234,18 @@ describe('Web controller tests',() => {
            done();
         });
     })
+    it('16# /api/web/user/rename - should return invalid body', (done) => {
+        chai.request(server)
+        .post("/api/web/user/rename")
+        .set({ "Authorization": `Bearer ${process.env.UNIQUE_TOKEN}` })
+        .send( {fileName:"text11.txt",
+        path:"",
+        })
+        .end((err, res) => {
+           assert.equal(400, res.status);
+           console.log(res.body);
+           //assert.deepEqual({ fileName: 'text11.txt', text: 'some text so it isnt empty' },res.body);
+           done();
+        });
+    })
 })
