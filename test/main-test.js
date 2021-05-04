@@ -12,7 +12,7 @@ describe('Basic test',() => {
         .get("/")
         .end((err, res) => {
             assert.equal(200, res.status);
-            assert.deepEqual("<h1>Up and running. 1</h1>", res.text);
+            assert.deepEqual("<h1>Up and running. 2</h1>", res.text);
             done();
         });
     })
