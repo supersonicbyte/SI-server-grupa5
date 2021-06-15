@@ -13,12 +13,16 @@ const apiValidator = require('./auth/api-validator.js');
 const agentValidator = require('./auth/agent-validator.js');
 const agentController = require('./controllers/agent-controller.js');
 const webController = require('./controllers/web-controller.js');
+const bodyParser = require('body-parser');
 
 app.use(express.json());
 app.use(cors());
 app.use(express.static('public'));
 app.use('/api', apiValidator.apiValidator);
 env.config();
+
+app.use(bodyParser.urlencoded( {limit: '50mb', extended: true} ));
+app.use(bodyParser.json({limit: '50mb'}));
 
 app.use('*/agent', agentValidator.agentValidator);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
