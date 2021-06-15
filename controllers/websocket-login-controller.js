@@ -4,7 +4,13 @@ const WebSocketService = require('../ws/websocket-service.js')
 async function websocketLogin(req, res, next) {
     const uniqueId = req.body.id;
     const validation = await uniqueAuth.validateUniqueCode(uniqueId);
-    if (validation.status != 200) {
+
+    WebSocketService.addSession(uniqueId);
+    res.status(validation.status);
+    res.send({ message: 'Session updated' });
+    console.log("Session updated ");
+
+   /* if (validation.status != 200) {
         res.status(validation.status);
         res.send({ error: "Id not valid!" });
         console.log("Id not valid for " + uniqueId);
@@ -14,7 +20,8 @@ async function websocketLogin(req, res, next) {
         res.status(validation.status);
         res.send({ message: 'Session updated' });
         console.log("Session updated ");
-    }
+    }*/
+    //grupi 4 ne radi
     next();
 }
 
