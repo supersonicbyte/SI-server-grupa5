@@ -6,7 +6,7 @@ async function websocketLogin(req, res, next) {
     const validation = await uniqueAuth.validateUniqueCode(uniqueId);
 
     WebSocketService.addSession(uniqueId);
-    res.status(validation.status);
+    res.status(200);
     res.send({ message: 'Session updated' });
     console.log("Session updated ");
 
