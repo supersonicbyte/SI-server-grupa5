@@ -13,6 +13,7 @@ describe('Web controller tests',() => {
         try {
             fs.rmdirSync("allFiles", { recursive: true });
             console.log(`allFiles is deleted!`);
+
         } catch (err) {
             console.error(`Error while deleting ${dir}.`);
         }

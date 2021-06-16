@@ -2,6 +2,10 @@ let chai = require('chai');
 let chaiHttp = require('chai-http');
 let app = require('../server.js');
 
+const AdminToken = require('../models/admin-token.js');
+const fetch = require('node-fetch');
+
+
 chai.use(chaiHttp);
 let assert = chai.assert;
 

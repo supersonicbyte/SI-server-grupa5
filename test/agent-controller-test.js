@@ -5,15 +5,16 @@ const WebSocket = require('ws');
 const WebSocketService = require('../ws/websocket-service.js');
 
 
-
 chai.use(chaiHttp);
 let assert = chai.assert;
 
 const deviceIdCookie = "=fc548ecb-12ec-4ad5-8672-9d5a9565ff60";
 const deviceId = "fc548ecb-12ec-4ad5-8672-9d5a9565ff60";
+let token ;
 let ws;
 describe('Agent controller tests',() => {
     before((done) => {
+      //  token = AdminToken.getAdminToken();
         WebSocketService.addSession(deviceId);  
         ws = new WebSocket('ws://localhost:25565',
         [],
